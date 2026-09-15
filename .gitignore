@@ -1,0 +1,18 @@
+# Node / Expo
+node_modules/
+.expo/
+dist/
+web-build/
+*.log
+npm-debug.*
+yarn-error.*
+
+# Env
+.env
+.env.local
+
+# OS
+.DS_Store
+
+# Agent folders (may contain local credentials/artifacts)
+.claude/settings.local.json
