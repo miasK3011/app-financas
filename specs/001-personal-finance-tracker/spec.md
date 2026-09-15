@@ -83,18 +83,24 @@ adicionar tags/comentários a cada uma.
 
 ---
 
-### User Story 4 - Comprar parcelado e ver a divisão automática entre faturas (Priority: P1)
+### User Story 4 - Comprar parcelado, inclusive parcelamentos já em andamento, e ver a divisão automática entre faturas (Priority: P1)
 
 Como usuário, quero informar o valor total e o número de parcelas de uma compra no cartão, para
 que o app calcule e distribua automaticamente cada parcela na fatura mensal correspondente, sem eu
-precisar fazer essa conta manualmente.
+precisar fazer essa conta manualmente. Também quero poder cadastrar uma compra cujo parcelamento já
+está em andamento antes de eu começar a usar o app — informando em qual parcela estou atualmente —
+para que o sistema gere só as parcelas restantes, sem eu precisar recriar o histórico das que já
+paguei.
 
 **Why this priority**: É um dos pedidos centrais do app — parcelamento incorreto quebra a
-confiança no cálculo de fatura de meses futuros.
+confiança no cálculo de fatura de meses futuros. Sem o suporte a parcelamentos já em andamento, o
+usuário não conseguiria migrar para o app compras parceladas que já estava pagando antes de
+adotá-lo.
 
 **Independent Test**: Pode ser testado registrando uma compra de valor conhecido em N parcelas e
 conferindo se cada uma das N faturas seguintes recebe a fração correta do valor, todas com as
-mesmas tags/comentários da compra original.
+mesmas tags/comentários da compra original; e também registrando uma compra parcelada informando
+uma parcela atual maior que 1, conferindo que só as parcelas restantes são geradas.
 
 **Acceptance Scenarios**:
 
@@ -103,6 +109,14 @@ mesmas tags/comentários da compra original.
    corrente e uma em cada uma das duas faturas seguintes.
 2. **Given** essa mesma compra parcelada, **When** o usuário adiciona uma tag a ela, **Then** a
    tag aparece em todas as 3 parcelas, pois pertencem à mesma compra original.
+3. **Given** uma compra de R$ 1.200 em 12 parcelas, feita originalmente há alguns meses, **When**
+   o usuário a cadastra informando o valor total original, o total de 12 parcelas e que a parcela
+   atual (a próxima a vencer) é a 5ª, **Then** o sistema calcula o valor de cada parcela (R$ 100),
+   aloca a 5ª parcela na fatura correspondente e as parcelas 6 a 12 nas faturas seguintes, sem
+   criar nenhum registro para as parcelas 1 a 4 (já pagas antes de o usuário adotar o app).
+4. **Given** uma compra em 6 parcelas, **When** o usuário tenta informar que a parcela atual é a
+   8ª, **Then** o sistema impede o cadastro e avisa que a parcela atual não pode ser maior que o
+   total de parcelas.
 
 ---
 
@@ -219,6 +233,12 @@ como estava.
 - Importação de um arquivo CSV com linhas inválidas ou incompletas (ex.: sem data ou sem valor):
   essas linhas são ignoradas e reportadas ao usuário como não importadas, sem interromper a
   importação das linhas válidas.
+- Cadastro de uma compra parcelada cujo parcelamento já está em andamento (parte das parcelas já
+  foi paga antes de o usuário começar a usar o app): o sistema permite informar em qual parcela o
+  usuário está atualmente, e passa a gerar apenas as parcelas restantes a partir dali, sem exigir o
+  cadastro retroativo das parcelas já pagas.
+- Tentativa de informar uma parcela atual maior que a quantidade total de parcelas (ou menor que
+  1): o sistema impede o cadastro e avisa o usuário do erro.
 
 ## Requirements *(mandatory)*
 
@@ -232,58 +252,65 @@ como estava.
 - **FR-003**: O sistema DEVE permitir registrar uma compra informando forma de pagamento (Pix ou
   Cartão), valor total, data da compra e nome/descrição.
 - **FR-004**: Quando a forma de pagamento for Cartão, o sistema DEVE permitir informar a
-  quantidade de parcelas da compra.
-- **FR-005**: Quando uma compra no cartão for parcelada, o sistema DEVE dividir automaticamente o
-  valor total pelo número de parcelas e distribuir uma parcela em cada fatura mensal consecutiva,
-  a partir da fatura em que a compra se enquadra.
-- **FR-006**: O sistema DEVE permitir criar tags personalizadas e associá-las a qualquer compra,
+  quantidade total de parcelas da compra e, opcionalmente, qual parcela é a parcela atual (a
+  próxima a vencer) — usado para cadastrar compras cujo parcelamento já está em andamento antes da
+  adoção do app. Quando não informada, a parcela atual é assumida como a 1ª (compra nova).
+- **FR-005**: O sistema DEVE impedir o cadastro de uma compra parcelada quando o número da parcela
+  atual informado for maior que a quantidade total de parcelas, ou menor que 1.
+- **FR-006**: Quando uma compra no cartão for parcelada, o sistema DEVE dividir automaticamente o
+  valor total informado pela quantidade total de parcelas para obter o valor de cada parcela, e
+  distribuir uma parcela em cada fatura mensal consecutiva, começando pela parcela atual (1ª por
+  padrão) e indo até a última parcela. A parcela atual é alocada na fatura em que a compra se
+  enquadra (determinada pela data da compra, conforme FR-002); parcelas anteriores à parcela atual
+  não são criadas, pois representam parcelas já pagas antes do cadastro no app.
+- **FR-007**: O sistema DEVE permitir criar tags personalizadas e associá-las a qualquer compra,
   bem como adicionar comentários livres a qualquer compra.
-- **FR-007**: Todas as parcelas de uma mesma compra DEVEM compartilhar as mesmas tags e
+- **FR-008**: Todas as parcelas de uma mesma compra DEVEM compartilhar as mesmas tags e
   comentários da compra original.
-- **FR-008**: O sistema DEVE permitir importar transações de um cartão via upload de arquivo CSV,
+- **FR-009**: O sistema DEVE permitir importar transações de um cartão via upload de arquivo CSV,
   reconhecendo automaticamente data da compra, valor e nome/descrição de cada transação.
-- **FR-009**: O sistema DEVE suportar pelo menos dois formatos de CSV na importação: um formato
+- **FR-010**: O sistema DEVE suportar pelo menos dois formatos de CSV na importação: um formato
   genérico definido pelo próprio sistema, e o formato de exportação de fatura do Nubank.
-- **FR-010**: O sistema DEVE calcular e exibir o valor total a pagar em cada fatura mensal de cada
+- **FR-011**: O sistema DEVE calcular e exibir o valor total a pagar em cada fatura mensal de cada
   cartão, somando todas as parcelas e compras à vista que se enquadram naquele mês de referência.
-- **FR-011**: O sistema DEVE sugerir, a partir da data atual, qual cartão é mais vantajoso para uma
+- **FR-012**: O sistema DEVE sugerir, a partir da data atual, qual cartão é mais vantajoso para uma
   nova compra, priorizando o cartão cuja fatura correspondente (considerando o próximo fechamento e
   o vencimento daquele cartão) resulta no maior prazo total até o pagamento.
-- **FR-012**: O sistema DEVE permitir configurar um valor de renda/salário mensal, que pode ser
+- **FR-013**: O sistema DEVE permitir configurar um valor de renda/salário mensal, que pode ser
   atualizado pelo usuário a qualquer momento, sem apagar o valor que esteve vigente em meses
   anteriores.
-- **FR-013**: O sistema DEVE permitir registrar entradas avulsas de dinheiro no saldo do mês
+- **FR-014**: O sistema DEVE permitir registrar entradas avulsas de dinheiro no saldo do mês
   corrente a qualquer momento (ex.: um valor recebido de um trabalho extra).
-- **FR-014**: O sistema DEVE calcular o saldo do mês considerando a renda mensal vigente, as
+- **FR-015**: O sistema DEVE calcular o saldo do mês considerando a renda mensal vigente, as
   entradas avulsas do mês, as compras via Pix realizadas no mês, e o valor das faturas de cartão
   que vencem naquele mês.
-- **FR-015**: O sistema DEVE permitir cadastrar assinaturas recorrentes com nome, valor, forma de
+- **FR-016**: O sistema DEVE permitir cadastrar assinaturas recorrentes com nome, valor, forma de
   pagamento (Pix ou Cartão) e dia do mês de cobrança.
-- **FR-016**: Assinaturas DEVEM se comportar como uma compra normal (aceitando tags e
+- **FR-017**: Assinaturas DEVEM se comportar como uma compra normal (aceitando tags e
   comentários) e o sistema DEVE gerar automaticamente uma nova cobrança todo mês, na data
   configurada, sem exigir ação manual do usuário.
-- **FR-017**: O sistema DEVE exibir uma tela com todas as assinaturas ativas e o valor total
+- **FR-018**: O sistema DEVE exibir uma tela com todas as assinaturas ativas e o valor total
   mensal somado delas.
-- **FR-018**: O sistema DEVE permitir cadastrar uma ou mais reservas de dinheiro guardado, cada
+- **FR-019**: O sistema DEVE permitir cadastrar uma ou mais reservas de dinheiro guardado, cada
   uma com nome e saldo acumulado próprio.
-- **FR-019**: O sistema DEVE permitir registrar lançamentos manuais de rendimento em uma reserva
+- **FR-020**: O sistema DEVE permitir registrar lançamentos manuais de rendimento em uma reserva
   (valor e data informados pelo usuário), somando-os ao saldo acumulado da reserva.
-- **FR-020**: O sistema DEVE permitir configurar uma taxa de rendimento mensal (percentual) por
+- **FR-021**: O sistema DEVE permitir configurar uma taxa de rendimento mensal (percentual) por
   reserva; a aplicação automática dessa taxa mês a mês está fora do escopo desta versão inicial
   (ver Assumptions) — apenas o cadastro da taxa é obrigatório agora.
-- **FR-021**: O sistema DEVE funcionar inteiramente offline, sem exigir login, cadastro de usuário
+- **FR-022**: O sistema DEVE funcionar inteiramente offline, sem exigir login, cadastro de usuário
   ou qualquer conexão com a internet para qualquer funcionalidade.
-- **FR-022**: O sistema DEVE permitir exportar todos os dados do usuário (cartões, faturas,
+- **FR-023**: O sistema DEVE permitir exportar todos os dados do usuário (cartões, faturas,
   compras, parcelas, tags, assinaturas, reservas e configuração de renda) para um arquivo de
   backup local.
-- **FR-023**: O sistema DEVE permitir importar um arquivo de backup previamente exportado; ao
+- **FR-024**: O sistema DEVE permitir importar um arquivo de backup previamente exportado; ao
   importar, os dados atuais do dispositivo são substituídos integralmente pelo conteúdo do backup
   (restauração completa, não mesclagem).
-- **FR-024**: O sistema DEVE permitir arquivar/cancelar um cartão sem apagar seu histórico de
+- **FR-025**: O sistema DEVE permitir arquivar/cancelar um cartão sem apagar seu histórico de
   faturas e compras passadas; um cartão arquivado com parcelas ainda ativas DEVE continuar gerando
   e exibindo suas faturas mensais até a última parcela pendente ser quitada, mas DEVE deixar de
   aparecer como opção para novas compras ou na sugestão de melhor cartão.
-- **FR-025**: O sistema DEVE ignorar e reportar ao usuário, sem interromper a importação, qualquer
+- **FR-026**: O sistema DEVE ignorar e reportar ao usuário, sem interromper a importação, qualquer
   linha de um arquivo CSV importado que esteja incompleta ou inválida (ex.: sem data ou sem
   valor).
 
@@ -294,12 +321,16 @@ como estava.
 - **Fatura**: representa o ciclo mensal de cobrança de um cartão específico — mês/ano de
   referência, data de fechamento, data de vencimento e o valor total resultante da soma de suas
   parcelas/compras.
-- **Compra**: representa uma transação financeira única — descrição, valor total, data, forma de
-  pagamento (Pix ou Cartão), cartão associado (quando aplicável), tags, comentário e origem
-  (lançamento manual, importação de CSV ou geração automática por assinatura).
+- **Compra**: representa uma transação financeira única — descrição, valor total original, data,
+  forma de pagamento (Pix ou Cartão), cartão associado (quando aplicável), quantidade total de
+  parcelas, parcela atual informada no cadastro (para compras cujo parcelamento já estava em
+  andamento; 1 por padrão), tags, comentário e origem (lançamento manual, importação de CSV ou
+  geração automática por assinatura).
 - **Parcela**: representa a fração de uma Compra feita no cartão que recai sobre uma Fatura
-  específica; toda Compra no cartão gera ao menos uma Parcela (mesmo compras à vista), e herda as
-  tags/comentário da Compra original.
+  específica; toda Compra no cartão gera ao menos uma Parcela (mesmo compras à vista), identificada
+  por um número dentro do total de parcelas da Compra (ex.: parcela 5 de 12) — esse número pode
+  começar diferente de 1 quando o parcelamento já estava em andamento antes do cadastro no app — e
+  herda as tags/comentário da Compra original.
 - **Tag**: rótulo criado pelo usuário para categorizar compras; uma Compra pode ter várias tags.
 - **Assinatura**: representa uma cobrança recorrente mensal — nome, valor, forma de pagamento, dia
   de cobrança e se está ativa; gera automaticamente uma nova Compra a cada mês.
@@ -320,8 +351,9 @@ como estava.
 
 - **SC-001**: Um novo usuário consegue cadastrar um cartão (nome, fechamento e vencimento) em
   menos de 1 minuto.
-- **SC-002**: Ao registrar uma compra parcelada, o sistema exibe corretamente em quais meses/
-  faturas cada parcela vai aparecer, sem que o usuário precise fazer qualquer cálculo manual.
+- **SC-002**: Ao registrar uma compra parcelada — inclusive uma cujo parcelamento já está em
+  andamento, informando a parcela atual — o sistema exibe corretamente em quais meses/faturas cada
+  parcela restante vai aparecer, sem que o usuário precise fazer qualquer cálculo manual.
 - **SC-003**: O valor total de uma fatura mensal exibido pelo sistema corresponde exatamente à
   soma de todas as parcelas e compras à vista daquele mês, sem divergência, em 100% dos casos de
   teste realizados.
@@ -342,8 +374,13 @@ como estava.
   múltiplos usuários, perfis ou permissões de acesso.
 - É usada uma única moeda (Real – BRL); não há suporte a múltiplas moedas nesta versão.
 - Compras parceladas têm parcelas de valor igual (divisão simples do valor total pelo número de
-  parcelas); eventual diferença de arredondamento é absorvida pela primeira parcela.
-- A aplicação automática mensal da taxa de rendimento configurada em uma Reserva (FR-020) é uma
+  parcelas); eventual diferença de arredondamento é absorvida pela primeira parcela gerada (a
+  parcela atual, quando o parcelamento já está em andamento).
+- Ao cadastrar uma compra parcelada cujo parcelamento já está em andamento, o valor informado é
+  sempre o valor total ORIGINAL da compra (não apenas o valor restante a pagar); o sistema deriva
+  o valor de cada parcela dividindo esse total pela quantidade total de parcelas, e usa a parcela
+  atual informada apenas para saber a partir de qual parcela deve alocar nas faturas seguintes.
+- A aplicação automática mensal da taxa de rendimento configurada em uma Reserva (FR-021) é uma
   evolução futura declarada, fora do escopo de implementação desta versão; apenas o cadastro da
   taxa e os lançamentos manuais de rendimento fazem parte do escopo atual.
 - O formato exato de colunas do CSV de exportação do Nubank será validado com um arquivo de

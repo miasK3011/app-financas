@@ -39,3 +39,6 @@
 - Pendência não bloqueante registrada em Assumptions: o formato exato do CSV do Nubank precisa
   ser validado com um arquivo de exemplo real do usuário antes de `/speckit-plan` detalhar o
   parser.
+- 2026-09-15: adicionado suporte a parcelamentos já em andamento (parcela atual informada no
+  cadastro, FR-004/FR-005/FR-006), cobrindo compras parceladas antes de o usuário adotar o app.
+  Checklist revalidado — todos os itens continuam passando.
