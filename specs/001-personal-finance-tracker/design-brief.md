@@ -53,28 +53,40 @@ copiado literalmente. Ao traduzir cada tela para o app, eu vou:
   para a busca opcional de logotipo de estabelecimento (que deve poder ser ignorada/falhar sem
   travar a tela — ver `spec.md`, FR-036).
 
-### 3.1 Identidade visual e tom (definido pelo usuário)
+### 3.1 Identidade visual e tom (aprovada em Claude Design — ver Seção 3.2)
 
 - **Tom geral**: neutro e minimalista — clareza acima de tudo. O usuário deve entender de relance
   o que está acontecendo em qualquer tela (saldo, fatura, gasto do mês), sem poluição visual.
 - **Inspiração**: linguagem de design de interfaces da Apple (iOS/macOS) — bastante espaço em
   branco, hierarquia tipográfica clara, cantos arredondados consistentes, poucos elementos
   decorativos, foco no conteúdo (números e nomes) em vez de ornamentos.
-- **Tipografia**: fonte moderna e legível, no mesmo espírito da SF Pro (usada pela Apple). Como a
-  SF Pro é proprietária da Apple e não está disponível via Google Fonts (única fonte de fontes
-  externas permitida no ambiente de design), usar uma alternativa geométrica/humanista próxima em
-  personalidade — ex.: **Inter** ou **Manrope** — como fonte de trabalho durante o design e a
-  implementação.
-- **Cor primária**: verde, em um tom **médio-escuro** — nunca um verde claro, pastel ou "menta".
-  Pensar em algo próximo de um verde floresta/esmeralda escurecido, transmitindo solidez e
-  confiança (comum em apps financeiros), mas sem parecer o verde neon padrão de dinheiro. O tom
-  exato (hex) e a paleta complementar (tons de apoio, cor de alerta/erro, cor de sucesso, tons de
-  cinza neutro para fundo/texto) devem ser fechados durante a sessão de Claude Design.
-- **Navegação**: barra de menu inferior (bottom tab bar) para as seções principais do app (ex.:
-  Início, Cartões, Assinaturas, Reservas, Mais), com abas internas (top tabs) dentro de cada
-  funcionalidade quando fizer sentido (ex.: dentro de "Cartão — Detalhe", alternar entre "Faturas"
-  e "Dados do cartão"). A estrutura exata de quais telas viram abas de nível superior vs. abas
-  internas deve ser validada durante o Claude Design.
+- **Tipografia (aprovada)**: par de fontes via Google Fonts — **Manrope** (sans-serif) para todo o
+  texto de interface (labels, navegação, corpo, listas), e **Lora** (serifada) reservada só para
+  títulos de tela/mês e valores monetários em destaque (saldo do mês, total do período, valor de
+  fatura) — não usar a serifada em textos densos/pequenos (listas de transação, categorias).
+  Rejeitamos a primeira tentativa (Inter) por ter "cara de IA"; Manrope + Lora ficou aprovado.
+- **Cartões/containers**: sem sombra (`box-shadow`) — cards se distinguem só por uma borda fina
+  (1px), sem elevação. Evitar reintroduzir sombra em qualquer novo componente do tipo card.
+- **Cor primária**: verde médio-escuro `#2E6F55` (com variante mais escura `#234F3E` para estados
+  pressionados/texto de destaque, e um tom claro `#E4F0EA` para fundos sutis/badges) — nunca um
+  verde claro, pastel ou "menta". Paleta complementar: sucesso `#3C8A5B`, erro `#C74A3C`, neutros
+  quentes `#FAFAF9`/`#FFFFFF`/`#E7E5E2` para fundo/superfície/borda, e `#1C1C1E`/`#6B6B6E`/`#9A9A9C`
+  para texto primário/secundário/terciário. Cores de categoria (ícones/avatares) são tons próprios
+  e mais variados — ver Seção 4.
+- **Navegação**: barra de menu inferior (bottom tab bar) para as seções principais do app (Início,
+  Cartões, Assinaturas, Reservas, Mais), com abas internas (top tabs) dentro de cada funcionalidade
+  quando fizer sentido (ex.: dentro de "Cartão — Detalhe", alternar entre "Faturas" e "Dados do
+  cartão"). Uma tela acessada por drill-down (ex.: Estatísticas, aberta a partir do gráfico em
+  Início) mantém a aba-pai destacada na barra inferior e usa um botão de voltar no cabeçalho, em
+  vez de virar uma aba própria — mesmo padrão de navegação da Apple. A árvore completa de quais
+  telas são abas de nível superior vs. abas internas ainda será detalhada conforme as próximas
+  telas forem desenhadas.
+
+### 3.2 Canvas de referência
+
+- [Início e Estatísticas](https://claude.ai/artifact/Nu5U8pt4CDwj1KeQXVuQKJ) — primeiro canvas
+  desenhado no Claude Design, usado para fechar a identidade visual acima (tipografia, cor, ausência
+  de sombra). Serve de referência de estilo para todos os próximos canvases/telas do brief.
 
 ## 4. Sistema de identificação visual (avatar/ícone) — resumo funcional
 
@@ -231,13 +243,13 @@ no `spec.md` — comece desenhando as telas P1.
 ## 6. Pontos em aberto para confirmar durante o design
 
 - Suporte a tema escuro (dark mode) além do claro — ainda não decidido na especificação funcional.
-- Tom exato (hex) do verde principal e da paleta complementar (tons de apoio, alerta, sucesso,
-  cinzas neutros) — direção já definida (verde médio-escuro, nunca claro/pastel; ver Seção 3.1),
-  falta fechar os valores exatos.
-- Quais telas/seções viram abas de nível superior na barra inferior vs. abas internas dentro de
-  uma funcionalidade — estrutura geral (barra inferior + abas internas) já confirmada pelo
-  usuário (ver Seção 3.1), falta detalhar a árvore de navegação completa.
-- Tipo de gráfico a usar no consumo mensal (linha, barras) e no detalhamento por categoria (barras
-  horizontais, pizza/donut) — a definir com base no que ficar mais limpo/legível no Claude Design.
-- Biblioteca/conjunto de ícones e emojis disponível para categorias e ícones de respaldo de
-  estabelecimento — a lista final de opções pode ser refinada durante o design.
+- Árvore de navegação completa (quais telas/seções viram abas de nível superior na barra inferior
+  vs. abas internas dentro de uma funcionalidade, quais são drill-downs com botão de voltar) —
+  padrão geral já confirmado (ver Seção 3.1), falta detalhar tela a tela conforme forem desenhadas.
+- Tipo de gráfico a usar no detalhamento por categoria da tela de Estatísticas (o canvas de
+  referência usou barras horizontais com ícone — validar se mantém esse padrão ou muda para
+  pizza/donut ao desenhar essa tela em detalhe).
+- Biblioteca/conjunto de ícones disponível para categorias e ícones de respaldo de estabelecimento
+  — o canvas de referência usa ícones em linha (stroke-based) desenhados especificamente para cada
+  categoria de exemplo; a lista final de opções pode ser expandida conforme novas categorias
+  personalizadas forem previstas.

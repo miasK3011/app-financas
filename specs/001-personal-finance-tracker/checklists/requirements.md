@@ -58,3 +58,11 @@
   visual definida pelo usuário (tom neutro/minimalista inspirado em interfaces Apple, tipografia
   tipo Inter/Manrope, verde médio-escuro como cor primária, navegação por barra inferior + abas
   internas). Checklist revalidado — todos os itens continuam passando.
+- 2026-09-15: primeiro canvas de Claude Design (Início + Estatísticas) desenhado, revisado e
+  aprovado pelo usuário em `design/inicio-estatisticas/` (fontes de trabalho `.dc.html` +
+  `canvas.json` versionadas; o payload seedado/publicado fica fora do git via `.gitignore`).
+  Identidade visual final registrada em `design-brief.md` §3.1/3.2: tipografia Manrope (sans) +
+  Lora (serifada, só em títulos/valores monetários) — Inter foi rejeitado por "cara de IA"; cor
+  primária `#2E6F55` com paleta completa fechada; cards sem sombra (só borda fina). Esse
+  documento não é normativo para requisitos funcionais (não altera checklist de conteúdo/spec),
+  mas fica registrado aqui para rastreabilidade da decisão de design.

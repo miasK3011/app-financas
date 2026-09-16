@@ -16,3 +16,7 @@ yarn-error.*
 
 # Agent folders (may contain local credentials/artifacts)
 .claude/settings.local.json
+
+# Claude Design: keep .dc.html sources + canvas.json, ignore the seeded/built payload
+design/**/*.html
+!design/**/*.dc.html

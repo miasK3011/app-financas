@@ -1,0 +1,7 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 412, "h": 915, "title": "Início" },
+    { "file": "Estatisticas.dc.html", "x": 492, "y": 0, "w": 412, "h": 915, "title": "Estatísticas" }
+  ],
+  "launch": { "view": "canvas" }
+}
