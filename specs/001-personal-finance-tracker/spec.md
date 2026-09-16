@@ -340,6 +340,52 @@ relação à meta de consumo ideal configurada (quando houver).
 
 ---
 
+### User Story 12 - Dividir compras com outras pessoas (Priority: P2)
+
+Como usuário, quero poder registrar que uma compra no cartão não é totalmente (ou nem um pouco)
+de minha responsabilidade — porque dividi a conta com alguém ou porque a compra foi de outra
+pessoa usando meu cartão — e ver claramente quanto é o total da fatura e quanto disso é
+realmente meu gasto, para acompanhar meu consumo pessoal com precisão mesmo dividindo o cartão
+com familiares.
+
+**Why this priority**: Não é necessário para o cálculo correto da fatura em si (que já funciona
+olhando o valor total de cada compra), mas é essencial para que as Estatísticas e o
+acompanhamento de gasto pessoal reflitam a realidade de quem compartilha cartão com outras
+pessoas; depende das compras e faturas (User Story 1, User Story 4) e das estatísticas (User
+Story 11) já existirem.
+
+**Independent Test**: Pode ser testado registrando uma compra de R$ 70, definindo manualmente que
+a responsabilidade do usuário é R$ 30 com um motivo, e conferindo que a fatura continua mostrando
+R$ 70 no total mas exibe R$ 30 como "sua responsabilidade", e que as Estatísticas contam R$ 30
+como gasto no lugar de R$ 70. Também testado registrando uma compra inteiramente de terceiros
+(responsabilidade R$ 0) e conferindo que ela deixa de contar como gasto pessoal nas Estatísticas
+mas continua aparecendo na fatura. E testado vinculando uma entrada avulsa de reembolso a uma
+compra e conferindo que a responsabilidade é recalculada automaticamente.
+
+**Acceptance Scenarios**:
+
+1. **Given** uma compra de R$ 70 (pizza) no cartão, **When** o usuário edita a compra e define
+   manualmente que sua responsabilidade é R$ 30 com o motivo "Dividido com Maria", **Then** a
+   fatura daquele mês continua somando os R$ 70 completos no total, mas a compra e a fatura
+   passam a exibir também "sua responsabilidade: R$ 30".
+2. **Given** uma compra de R$ 100 feita por outra pessoa usando o cartão do usuário, **When** o
+   usuário define a responsabilidade dessa compra como R$ 0 (com um responsável opcional, ex.:
+   "Meu irmão"), **Then** a fatura continua somando os R$ 100 no total, mas essa compra deixa de
+   contar como gasto pessoal do usuário nas Estatísticas (gasto por categoria, maiores gastos
+   etc.).
+3. **Given** a mesma compra de R$ 70 dividida, **When** a outra pessoa manda R$ 40 de volta via
+   Pix e o usuário registra essa entrada avulsa vinculando-a a essa compra, **Then** a
+   responsabilidade da compra é recalculada automaticamente para R$ 30 (R$ 70 − R$ 40), sem
+   precisar de edição manual, e a entrada de R$ 40 continua contando normalmente no saldo do mês.
+4. **Given** uma compra sem nenhuma divisão registrada, **When** o usuário a visualiza, **Then**
+   sua responsabilidade é igual ao valor total da compra (comportamento padrão, sem mudança para
+   quem não usa a feature).
+5. **Given** uma compra parcelada em 3x de R$ 90 (R$ 30 cada) com responsabilidade manual
+   definida como R$ 60 no total, **When** o usuário consulta cada fatura envolvida, **Then** cada
+   parcela exibe R$ 20 de responsabilidade (mesma proporção de 2/3 aplicada em cada uma).
+
+---
+
 ### Edge Cases
 
 - Compra registrada exatamente no dia do fechamento do cartão: entra na fatura que fecha nesse
@@ -381,6 +427,17 @@ relação à meta de consumo ideal configurada (quando houver).
 - Consultar a tela de estatísticas sem nenhuma renda mensal configurada: o sistema exibe
   normalmente o total gasto e a comparação com o período anterior, mas omite a seção de "consumo
   ideal" (que depende de uma renda configurada).
+- Tentativa de definir um valor de responsabilidade negativo ou maior que o valor total da
+  compra: o sistema impede e avisa o usuário do erro.
+- Uma compra tem tanto um valor de responsabilidade definido manualmente quanto uma ou mais
+  entradas avulsas vinculadas a ela: o valor calculado a partir das entradas vinculadas
+  prevalece sobre o valor manual, por ser baseado em dinheiro realmente recebido (ver
+  Assumptions).
+- Uma entrada avulsa vinculada a uma compra é desvinculada ou excluída pelo usuário: a
+  responsabilidade da compra é recalculada sem considerá-la (voltando ao valor manual definido,
+  se houver, ou ao valor total da compra, caso contrário).
+- Várias entradas avulsas vinculadas à mesma compra (ex.: duas pessoas reembolsando partes
+  diferentes): a soma de todas as entradas vinculadas é subtraída do valor total da compra.
 
 ## Requirements *(mandatory)*
 
@@ -518,6 +575,41 @@ relação à meta de consumo ideal configurada (quando houver).
 - **FR-045**: O sistema DEVE exibir, na tela de estatísticas, o percentual do gasto do período
   selecionado que corresponde a assinaturas recorrentes ativas, separando-o do restante do gasto
   variável.
+- **FR-046**: O sistema DEVE permitir, ao registrar ou editar uma compra, informar opcionalmente
+  um "valor de responsabilidade" diferente do valor total da compra — representando quanto dessa
+  compra é de fato um gasto pessoal do usuário, podendo ser menor que o total, inclusive zero,
+  quando a compra não é do usuário.
+- **FR-047**: O sistema DEVE permitir associar um "motivo" (texto livre, opcional) e um
+  "responsável" (texto livre, opcional — nome da pessoa responsável pela diferença) sempre que o
+  valor de responsabilidade for definido manualmente e for diferente do valor total.
+- **FR-048**: O sistema DEVE impedir que o valor de responsabilidade de uma compra seja negativo
+  ou maior que o valor total dessa compra.
+- **FR-049**: Quando nenhum valor de responsabilidade for definido manualmente e nenhuma entrada
+  avulsa estiver vinculada, o sistema DEVE considerar, por padrão, que a responsabilidade do
+  usuário é igual ao valor total da compra — comportamento inalterado para quem não usa esta
+  funcionalidade.
+- **FR-050**: O sistema DEVE permitir vincular uma ou mais entradas avulsas a uma compra
+  específica, para registrar reembolsos recebidos de terceiros referentes àquela compra.
+- **FR-051**: Quando uma ou mais entradas avulsas estiverem vinculadas a uma compra, o sistema
+  DEVE recalcular automaticamente o valor de responsabilidade dessa compra como o valor total
+  menos a soma das entradas vinculadas, sem exigir que o usuário digite esse valor manualmente;
+  esse valor calculado prevalece sobre qualquer valor de responsabilidade definido manualmente
+  para a mesma compra.
+- **FR-052**: O sistema DEVE continuar somando o valor TOTAL de cada compra — sem considerar
+  nenhuma divisão de responsabilidade — para calcular o valor a pagar em cada fatura mensal
+  (FR-011) e o saldo do mês (FR-015); a divisão de responsabilidade NÃO DEVE alterar quanto o
+  usuário precisa pagar ao emissor do cartão. Uma entrada avulsa vinculada a uma compra DEVE, por
+  outro lado, continuar contando normalmente no saldo do mês, como qualquer outra entrada avulsa.
+- **FR-053**: O sistema DEVE exibir, em toda tela onde o valor total de uma fatura é mostrado
+  (Fatura · Detalhe, Cartão · Faturas), tanto o valor total da fatura quanto a soma das
+  responsabilidades do usuário nas compras daquela fatura, sempre que houver ao menos uma compra
+  com responsabilidade diferente do valor total.
+- **FR-054**: As telas de Estatísticas (gasto por período, gasto por categoria, maiores gastos)
+  DEVEM considerar o valor de responsabilidade de cada compra — e não o valor total — para
+  refletir o gasto pessoal real do usuário.
+- **FR-055**: Quando uma compra parcelada tiver um valor de responsabilidade diferente do total,
+  o sistema DEVE aplicar a mesma proporção (responsabilidade ÷ total) a cada parcela
+  individualmente, refletindo-a na fatura correspondente a cada parcela.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -530,8 +622,10 @@ relação à meta de consumo ideal configurada (quando houver).
   forma de pagamento (Pix ou Cartão), cartão associado (quando aplicável), quantidade total de
   parcelas, parcela atual informada no cadastro (para compras cujo parcelamento já estava em
   andamento; 1 por padrão), tags, comentário, categoria associada (opcional), estabelecimento
-  associado (opcional, automático ou manual) e origem (lançamento manual, importação de CSV ou
-  geração automática por assinatura).
+  associado (opcional, automático ou manual), valor de responsabilidade (opcional; padrão = valor
+  total), motivo e responsável (opcionais, usados quando a responsabilidade é definida
+  manualmente), e origem (lançamento manual, importação de CSV ou geração automática por
+  assinatura).
 - **Parcela**: representa a fração de uma Compra feita no cartão que recai sobre uma Fatura
   específica; toda Compra no cartão gera ao menos uma Parcela (mesmo compras à vista), identificada
   por um número dentro do total de parcelas da Compra (ex.: parcela 5 de 12) — esse número pode
@@ -543,7 +637,8 @@ relação à meta de consumo ideal configurada (quando houver).
 - **Configuração de Renda**: representa o valor de renda/salário mensal vigente a partir de uma
   determinada data, preservando o histórico de valores anteriores.
 - **Entrada Avulsa**: representa um valor adicional recebido em um mês específico, fora da renda
-  mensal configurada.
+  mensal configurada; pode opcionalmente estar vinculada a uma Compra específica, quando representa
+  um reembolso recebido de terceiros por aquela compra.
 - **Reserva de Dinheiro Guardado**: representa um "cofre" de dinheiro guardado pelo usuário — nome
   e saldo acumulado.
 - **Lançamento de Reserva**: representa uma movimentação em uma Reserva — depósito, retirada ou
@@ -598,6 +693,11 @@ relação à meta de consumo ideal configurada (quando houver).
   máximo 2 toques a partir da tela inicial.
 - **SC-012**: Um usuário consegue identificar, sem cálculo manual, quais foram seus maiores gastos
   e em quais categorias mais gastou dentro de qualquer período selecionado.
+- **SC-013**: Um usuário que compartilha o cartão com familiares consegue ver, para qualquer
+  fatura, tanto o valor total quanto quanto disso é responsabilidade pessoal dele, sem precisar
+  calcular à mão.
+- **SC-014**: Ao vincular um reembolso recebido a uma compra específica, o usuário não precisa
+  fazer nenhum cálculo manual para saber quanto da compra ainda é responsabilidade dele.
 
 ## Assumptions
 
@@ -648,3 +748,19 @@ relação à meta de consumo ideal configurada (quando houver).
 - O percentual "comprometido com assinaturas" no período selecionado é calculado sobre o total
   gasto no próprio período (assinaturas ÷ total gasto), e não sobre a renda mensal, para refletir
   a composição real do gasto naquele período.
+- A divisão de responsabilidade de uma compra (FR-046 a FR-055) nunca altera o valor total da
+  fatura nem o saldo do mês diretamente — confirmado com o usuário. O valor a pagar na fatura e o
+  saldo do mês sempre consideram o valor TOTAL de cada compra, porque é esse o valor
+  efetivamente cobrado pelo emissor do cartão; apenas entradas avulsas reais (vinculadas a uma
+  compra ou não) afetam o saldo do mês. O valor de responsabilidade é uma lente informativa
+  adicional, usada para refletir o gasto pessoal real do usuário nas Estatísticas e como
+  informação complementar ao lado do total da fatura — nunca em substituição a ele.
+- Quando uma compra tem tanto um valor de responsabilidade definido manualmente quanto uma ou
+  mais entradas avulsas vinculadas a ela, o valor calculado a partir das entradas vinculadas
+  prevalece sobre o valor manual, por ser baseado em dinheiro realmente recebido; o valor manual
+  só é considerado quando não há nenhuma entrada vinculada à compra.
+- O campo "responsável" de uma compra é um texto livre por compra (não há cadastro estruturado de
+  pessoas/contatos nesta versão); compras divididas entre mais de duas partes usam esse mesmo
+  campo livre para anotar quem mais está envolvido.
+- Compras parceladas com responsabilidade diferente do total dividem essa responsabilidade
+  proporcionalmente entre todas as parcelas (mesma fração aplicada em cada fatura).

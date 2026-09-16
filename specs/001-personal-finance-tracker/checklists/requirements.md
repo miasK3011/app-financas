@@ -66,3 +66,12 @@
   primária `#2E6F55` com paleta completa fechada; cards sem sombra (só borda fina). Esse
   documento não é normativo para requisitos funcionais (não altera checklist de conteúdo/spec),
   mas fica registrado aqui para rastreabilidade da decisão de design.
+- 2026-09-17: adicionada User Story 12 (dividir compras com outras pessoas — valor de
+  responsabilidade manual com motivo/responsável opcionais, ou automático via entrada avulsa
+  vinculada à compra), FR-046 a FR-055, campos novos na entidade Compra e um vínculo opcional em
+  Entrada Avulsa, e critérios SC-013/SC-014. Ambiguidade de negócio levantada (a divisão de
+  responsabilidade muda ou não o cálculo de saldo/fatura?) foi resolvida diretamente com o
+  usuário antes da redação: NÃO altera — fatura e saldo do mês sempre usam o valor total da
+  compra; a responsabilidade é só uma lente informativa/estatística, registrada em Assumptions.
+  Checklist revalidado — todos os itens continuam passando, nenhum `[NEEDS CLARIFICATION]`
+  restante.

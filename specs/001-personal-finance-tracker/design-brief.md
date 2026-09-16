@@ -170,30 +170,46 @@ no `spec.md` — comece desenhando as telas P1.
 - **Objetivo**: ver o histórico de faturas de um cartão específico (passadas, atual, futuras já
   com parcelas alocadas).
 - **Elementos**: linha do tempo de faturas por mês/ano, valor total de cada uma, status
-  (aberta/fechada/paga).
+  (aberta/fechada/paga). Quando houver ao menos uma compra com responsabilidade diferente do
+  total (US12), exibir também a soma das responsabilidades do usuário ao lado do valor total de
+  cada fatura afetada (`spec.md` FR-053) — nunca no lugar do total, sempre como informação
+  complementar.
 - **Ações**: abrir o detalhe de uma fatura específica; editar dados do cartão; importar CSV para
   este cartão.
 
-### 5.5 Fatura — Detalhe (P1 — US1, US4)
+### 5.5 Fatura — Detalhe (P1 — US1, US4, US12)
 - **Objetivo**: ver todas as compras/parcelas que compõem o valor de uma fatura mensal específica.
 - **Elementos**: lista de compras/parcelas daquele mês, cada uma com avatar, nome (do
   estabelecimento reconhecido ou descrição bruta), valor da parcela, indicador de parcelamento
-  (ex.: "3/12"), tags.
-- **Ações**: abrir uma compra para editar (tags, comentário, estabelecimento); marcar fatura como
-  paga.
+  (ex.: "3/12"), tags. No resumo da fatura, quando houver compras com responsabilidade diferente
+  do total, mostrar o valor total da fatura **e** a soma das responsabilidades do usuário
+  (`spec.md` FR-053); nas linhas de compras afetadas, indicar visualmente que o valor não é 100%
+  do usuário (ex.: um selo pequeno "dividido" ou "R$30 de R$70").
+- **Ações**: abrir uma compra para editar (tags, comentário, estabelecimento, divisão de
+  responsabilidade); marcar fatura como paga.
 
-### 5.6 Nova Compra / Editar Compra (P1 — US2, US4, US9, US10)
+### 5.6 Nova Compra / Editar Compra (P1 — US2, US4, US9, US10, US12)
 - **Objetivo**: formulário único para registrar ou editar uma compra, cobrindo Pix e Cartão.
 - **Elementos**: descrição, valor, data, forma de pagamento (Pix/Cartão), campos de parcelamento
   quando Cartão for selecionado — quantidade total de parcelas **e** campo opcional "parcela
   atual" (para compras cujo parcelamento já está em andamento, ver `spec.md` US4/FR-004), seletor
   de categoria (opcional), seletor/criação rápida de estabelecimento (opcional, com sugestão
-  automática se o texto bater com um padrão cadastrado), tags (múltiplas), comentário livre.
+  automática se o texto bater com um padrão cadastrado), tags (múltiplas), comentário livre, e uma
+  seção opcional de **divisão de responsabilidade** (US12): campo "valor de responsabilidade" —
+  pré-preenchido com o valor total, editável —, campo "motivo" (texto livre) e campo "responsável"
+  (texto livre), ambos só relevantes quando o valor de responsabilidade é alterado do total. Deve
+  também ser possível vincular uma ou mais entradas avulsas existentes a essa compra (ex.: um
+  reembolso já recebido), o que recalcula e trava o campo "valor de responsabilidade" (some/soma
+  automaticamente, deixando de ser editável manualmente — `spec.md` FR-051).
 - **Ações**: salvar; criar nova tag inline; criar novo estabelecimento inline (a partir do texto
-  já digitado); criar nova categoria inline.
+  já digitado); criar nova categoria inline; ajustar o valor de responsabilidade e motivo/
+  responsável; vincular/desvincular uma entrada avulsa a esta compra.
 - **Estados**: campo de parcelamento colapsado quando Pix é selecionado; aviso de validação
   quando "parcela atual" for maior que o total de parcelas (`spec.md` FR-005); indicação visual de
-  que um estabelecimento foi reconhecido automaticamente antes de o usuário salvar.
+  que um estabelecimento foi reconhecido automaticamente antes de o usuário salvar; aviso de
+  validação quando o valor de responsabilidade for negativo ou maior que o total (`spec.md`
+  FR-048); campo de responsabilidade "travado" (somente leitura, com indicação de que veio de
+  entrada(s) vinculada(s)) quando houver vínculo ativo.
 
 ### 5.7 Importar Fatura via CSV (P2 — US3)
 - **Objetivo**: fluxo de upload de um arquivo CSV de um cartão.
@@ -245,12 +261,16 @@ no `spec.md` — comece desenhando as telas P1.
 - **Estados**: sem conexão de internet (indicar sutilmente que o logotipo ainda não foi obtido,
   sem parecer um erro).
 
-### 5.14 Renda & Entradas Avulsas (P1 — US2)
+### 5.14 Renda & Entradas Avulsas (P1 — US2, US12)
 - **Objetivo**: configurar a renda mensal vigente e ver/adicionar entradas avulsas do mês.
 - **Elementos**: valor de renda mensal atual (com histórico de valores anteriores acessível);
-  lista de entradas avulsas do mês corrente.
+  lista de entradas avulsas do mês corrente. Quando uma entrada avulsa estiver vinculada a uma
+  compra (reembolso — US12), indicar isso na própria linha da entrada (ex.: "vinculada a Pizza —
+  Nubank") em vez de mostrá-la como uma entrada solta e sem contexto.
 - **Ações**: atualizar valor da renda (efetivo a partir de agora, sem reescrever meses passados —
-  `spec.md` FR-013); adicionar entrada avulsa (descrição + valor + data).
+  `spec.md` FR-013); adicionar entrada avulsa (descrição + valor + data), com a opção de já
+  vincular essa entrada a uma compra existente no momento do cadastro (alternativa a vincular a
+  partir da própria tela de edição da compra, ver Seção 5.6).
 
 ### 5.15 Backup — Exportar/Importar (P1 — US8)
 - **Objetivo**: gerar e restaurar backups locais completos.
