@@ -1,8 +1,11 @@
 <!--
 Sync Impact Report
-- Version change: (none) → 1.0.0
-- Modified principles: n/a (initial ratification)
-- Added sections: Core Principles (I-V), Technology Stack Constraints, Development Workflow, Governance
+- Version change: 1.0.0 → 1.1.0
+- Modified principles: I. Offline-First Absoluto → I. Offline-First (Núcleo Sempre Funcional Sem Rede)
+  — relaxa a proibição total de rede para permitir funcionalidades de enriquecimento opcionais e
+  não-bloqueantes (ex.: busca de logotipo de marca), desde que o app permaneça 100% utilizável
+  offline e nenhuma funcionalidade essencial dependa de conectividade.
+- Added sections: none (Technology Stack Constraints atualizado para refletir a exceção)
 - Removed sections: n/a
 - Follow-up TODOs: none
 -->
@@ -11,14 +14,28 @@ Sync Impact Report
 
 ## Core Principles
 
-### I. Offline-First Absoluto
-O app funciona 100% sem conexão de rede, para uso individual do dono do dispositivo.
-NÃO DEVE existir chamada de rede, backend remoto, servidor de sincronização, autenticação
-ou login em nenhuma feature, presente ou futura. Toda leitura e escrita de dados ocorre
-exclusivamente no armazenamento local do próprio dispositivo. Qualquer proposta de feature
-que dependa de conectividade (ex.: sincronização multi-dispositivo, integração bancária
-online) é rejeitada por padrão, a menos que uma emenda futura a esta constituição
-reavalie explicitamente este princípio.
+### I. Offline-First (Núcleo Sempre Funcional Sem Rede)
+O app é utilizável 100% sem conexão de rede, para uso individual do dono do dispositivo. Toda
+funcionalidade essencial — registrar compras, calcular faturas, acompanhar saldo do mês,
+assinaturas, reservas e o backup/restauração local — DEVE continuar funcionando integralmente
+sem internet. NÃO DEVE existir, em nenhuma feature, presente ou futura: backend remoto próprio,
+servidor de sincronização, autenticação ou login. Toda leitura e escrita de dados do usuário
+ocorre exclusivamente no armazenamento local do próprio dispositivo.
+
+Funcionalidades pontuais de enriquecimento OPCIONAL podem fazer chamadas de rede best-effort a
+serviços externos (ex.: buscar o logotipo oficial de uma marca), desde que cumpram todas as
+regras abaixo:
+
+- NUNCA bloqueiem, atrasem perceptivelmente, ou sejam pré-requisito para qualquer outra
+  funcionalidade do app — o app permanece 100% operável sem elas;
+- O resultado obtido é armazenado em cache local para reuso imediato quando offline;
+- A ausência de conexão ou uma falha na chamada sempre resulta em um fallback funcional local
+  (ex.: um ícone escolhido manualmente), nunca em erro ou tela bloqueada;
+- Não introduzem login, conta de usuário ou qualquer identidade vinculada a um serviço externo.
+
+Qualquer proposta de feature que dependa de conectividade para funcionar (não apenas para se
+enriquecer) — ex.: sincronização multi-dispositivo, integração bancária online — é rejeitada por
+padrão, a menos que uma emenda futura a esta constituição reavalie explicitamente este princípio.
 
 ### II. Stack Tecnológica Fixa
 A stack do projeto é: React Native com Expo (managed workflow), Tamagui como biblioteca
@@ -61,8 +78,12 @@ construída quando a feature for formalmente especificada e priorizada.
   tokens/temas do Tamagui em vez de estilos ad-hoc dispersos.
 - Persistência: Drizzle ORM + `expo-sqlite`. Migrations são geradas via `drizzle-kit` e
   aplicadas no boot do app antes de renderizar a navegação principal.
-- Nenhuma dependência de serviço externo (analytics, crash reporting remoto, feature
-  flags remotos, etc.) pode ser adicionada, pois violaria o Princípio I.
+- Nenhuma dependência de serviço externo para telemetria, analytics, crash reporting remoto ou
+  feature flags remotos pode ser adicionada — isso violaria o Princípio I.
+- Integrações de rede só são permitidas para enriquecimento opcional de dados já existentes
+  localmente (ex.: busca de logotipo de marca), nunca como pré-requisito de uma funcionalidade;
+  devem seguir as regras de cache/fallback do Princípio I e ser justificadas no plano técnico
+  (`plan.md`) da feature correspondente antes de serem implementadas.
 
 ## Development Workflow
 
@@ -86,4 +107,4 @@ com os princípios aqui definidos; qualquer inconsistência descoberta durante
 `/speckit-analyze` deve ser resolvida atualizando a spec/plano ou emendando esta
 constituição, nunca ignorada silenciosamente.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-15 | **Last Amended**: 2026-09-15
+**Version**: 1.1.0 | **Ratified**: 2026-09-15 | **Last Amended**: 2026-09-15

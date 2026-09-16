@@ -215,6 +215,80 @@ como estava.
 
 ---
 
+### User Story 9 - Categorizar transações com ícones (Priority: P2)
+
+Como usuário, quero que cada transação possa ter uma categoria (ex.: Compras, Transporte,
+Alimentação), escolhida entre categorias já prontas ou criadas por mim, para identificar
+visualmente o tipo de gasto mesmo quando não sei ou não cadastrei o estabelecimento exato.
+
+**Why this priority**: Fornece o ícone de identificação visual usado em toda listagem de
+transações, servindo de base para o refinamento por estabelecimento (User Story 10).
+
+**Independent Test**: Pode ser testado criando uma transação sem estabelecimento associado,
+atribuindo uma categoria a ela e conferindo que o ícone da categoria aparece na listagem; e
+criando uma categoria personalizada e usando-a da mesma forma.
+
+**Acceptance Scenarios**:
+
+1. **Given** um conjunto de categorias pré-definidas (ex.: Compras, Transporte, Alimentação),
+   **When** o usuário registra uma nova compra, **Then** ele pode escolher uma dessas categorias
+   para a transação.
+2. **Given** que nenhuma categoria pré-definida atende sua necessidade, **When** o usuário cria
+   uma categoria personalizada com nome e ícone próprios, **Then** essa categoria passa a estar
+   disponível para uso em qualquer transação.
+3. **Given** uma transação sem estabelecimento associado, **When** o usuário a categoriza como
+   "Transporte", **Then** o ícone de "Transporte" é exibido ao lado dela na listagem.
+4. **Given** uma transação sem estabelecimento e sem categoria definida, **When** exibida na
+   listagem, **Then** o sistema mostra um ícone padrão genérico ("Outros").
+
+---
+
+### User Story 10 - Mapear estabelecimentos conhecidos com avatar (Priority: P3)
+
+Como usuário, quero cadastrar estabelecimentos (com nome amigável, um ícone de respaldo e,
+opcionalmente, o domínio do site) e um ou mais padrões de texto que costumam aparecer nas
+faturas, para que o app substitua automaticamente aquele texto confuso da fatura (ex.:
+"SHPEE*38220SP") pelo nome de exibição do estabelecimento (ex.: "Shopee"), com um avatar visual
+reconhecível — inclusive buscando o logotipo oficial da marca quando houver internet disponível.
+
+**Why this priority**: Melhora a legibilidade das faturas e transações importadas, mas depende do
+sistema de categorias (User Story 9) já existir como respaldo visual e do fluxo de importação de
+CSV (User Story 3) já funcionar.
+
+**Independent Test**: Pode ser testado cadastrando um estabelecimento com um padrão (ex.:
+"UBER"), registrando ou importando transações cuja descrição contenha esse padrão, e conferindo
+que elas passam a exibir o nome e avatar do estabelecimento automaticamente — com e sem conexão
+de internet disponível.
+
+**Acceptance Scenarios**:
+
+1. **Given** um estabelecimento cadastrado com nome "Shopee" e o padrão "SHPEE", **When** uma
+   transação com descrição "SHPEE*38220SP" é registrada ou importada, **Then** ela é
+   automaticamente associada ao estabelecimento "Shopee" e exibida com esse nome e avatar.
+2. **Given** um estabelecimento "Uber" cadastrado com o padrão "UBER" (que já cobre tanto
+   "Uber*pending" quanto "Uber*ride" por conter esse texto em comum), **When** transações com
+   essas duas descrições são registradas, **Then** ambas são associadas ao mesmo estabelecimento
+   "Uber".
+3. **Given** uma transação já registrada que ainda não bateu com nenhum padrão, **When** o
+   usuário abre a edição dessa transação e cria um novo estabelecimento diretamente por ali (com
+   um padrão inicial sugerido a partir do texto da própria transação), **Then** o estabelecimento
+   é criado e a transação atual passa a exibi-lo.
+4. **Given** um estabelecimento com domínio informado (ex.: "shopee.com.br") e conexão com a
+   internet disponível, **When** o sistema tenta obter automaticamente um logotipo oficial para
+   esse domínio, **Then** o logotipo obtido é salvo localmente (em cache) e passa a ser usado como
+   avatar daquele estabelecimento nas próximas exibições, inclusive offline.
+5. **Given** o mesmo estabelecimento sem conexão de internet disponível (ou sem logotipo
+   encontrado/em cache), **When** suas transações são exibidas, **Then** o ícone de respaldo
+   escolhido manualmente pelo usuário é exibido no lugar do logotipo, sem qualquer travamento ou
+   atraso perceptível na tela.
+6. **Given** um estabelecimento existente, **When** o usuário adiciona um novo padrão a ele (ex.:
+   adicionar "UBER EATS" ao estabelecimento "Uber"), **Then** todas as transações já registradas
+   anteriormente cujo texto corresponda a esse novo padrão, e que ainda não tinham um
+   estabelecimento atribuído manualmente, passam a ser associadas automaticamente a esse
+   estabelecimento.
+
+---
+
 ### Edge Cases
 
 - Compra registrada exatamente no dia do fechamento do cartão: entra na fatura que fecha nesse
@@ -239,6 +313,17 @@ como estava.
   cadastro retroativo das parcelas já pagas.
 - Tentativa de informar uma parcela atual maior que a quantidade total de parcelas (ou menor que
   1): o sistema impede o cadastro e avisa o usuário do erro.
+- Uma transação já associada manualmente a um estabelecimento (seja por reconhecimento automático
+  confirmado, seja por correção manual do usuário) NÃO é sobrescrita automaticamente quando um
+  novo padrão de outro estabelecimento passar a coincidir com seu texto.
+- Ausência de conexão com a internet ao tentar obter o logotipo de um estabelecimento: o cadastro
+  do estabelecimento e a exibição de suas transações continuam funcionando normalmente, usando o
+  ícone de respaldo, sem travar nem atrasar a tela.
+- Dois estabelecimentos diferentes com padrões que coincidem com o texto de uma mesma transação:
+  o sistema aplica um critério determinístico de desempate (ver Assumptions) em vez de associar
+  arbitrariamente ou deixar ambíguo.
+- Exclusão de uma categoria personalizada que já está em uso por transações existentes: essas
+  transações passam a exibir o ícone padrão genérico ("Outros"), sem perder nenhum outro dado.
 
 ## Requirements *(mandatory)*
 
@@ -313,6 +398,46 @@ como estava.
 - **FR-026**: O sistema DEVE ignorar e reportar ao usuário, sem interromper a importação, qualquer
   linha de um arquivo CSV importado que esteja incompleta ou inválida (ex.: sem data ou sem
   valor).
+- **FR-027**: O sistema DEVE disponibilizar um conjunto de categorias de transação pré-definidas
+  (ex.: Compras, Transporte, Alimentação, Assinaturas, Saúde, Lazer, Outros), cada uma com um
+  ícone padrão associado.
+- **FR-028**: O sistema DEVE permitir ao usuário criar categorias personalizadas, informando nome
+  e escolhendo um ícone entre os disponíveis no app.
+- **FR-029**: O sistema DEVE permitir associar uma categoria (pré-definida ou personalizada) a
+  qualquer transação; esse campo é opcional.
+- **FR-030**: O sistema DEVE exibir, em toda listagem de transações, um avatar/ícone ao lado de
+  cada uma, seguindo esta ordem de prioridade: (1) o avatar do estabelecimento associado, quando
+  houver; (2) o ícone da categoria associada, quando não houver estabelecimento; (3) um ícone
+  padrão genérico ("Outros"), quando não houver nem estabelecimento nem categoria.
+- **FR-031**: O sistema DEVE permitir cadastrar estabelecimentos com nome de exibição, um ícone de
+  respaldo (obrigatório, escolhido pelo usuário entre os disponíveis no app), opcionalmente um
+  domínio de site, e um ou mais padrões de reconhecimento (textos) associados a cada
+  estabelecimento.
+- **FR-032**: O cadastro de um estabelecimento DEVE poder ser feito tanto em uma tela dedicada de
+  gerenciamento de estabelecimentos quanto diretamente a partir da tela de edição de uma
+  transação — nesse caso, o sistema DEVE sugerir automaticamente um padrão inicial com base no
+  texto da transação atual.
+- **FR-033**: Ao registrar ou importar uma transação, o sistema DEVE verificar se a descrição da
+  transação contém — sem diferenciar maiúsculas de minúsculas — algum padrão cadastrado de algum
+  estabelecimento e, em caso positivo, associar automaticamente a transação a esse estabelecimento,
+  substituindo a exibição do texto bruto pelo nome de exibição do estabelecimento.
+- **FR-034**: O sistema DEVE permitir ao usuário associar ou remover manualmente o estabelecimento
+  de qualquer transação, mesmo quando nenhum padrão automático tiver sido reconhecido, ou para
+  corrigir uma associação automática incorreta; uma associação feita ou corrigida manualmente pelo
+  usuário NÃO DEVE ser sobrescrita automaticamente por futuras atualizações de padrões.
+- **FR-035**: Quando um novo padrão for adicionado a um estabelecimento (ou um novo estabelecimento
+  for criado), o sistema DEVE reavaliar as transações já existentes que ainda não têm um
+  estabelecimento atribuído manualmente, associando automaticamente aquelas cuja descrição
+  corresponda ao novo padrão.
+- **FR-036**: Quando o dispositivo tiver conexão com a internet disponível, o sistema PODE tentar
+  obter automaticamente um logotipo oficial de um estabelecimento a partir do domínio de site
+  informado, armazenando o resultado localmente para uso futuro offline; essa busca NÃO DEVE
+  bloquear, atrasar perceptivelmente, ou ser pré-requisito para nenhuma outra funcionalidade do
+  app, e sua ausência ou falha DEVE sempre resultar no uso do ícone de respaldo escolhido
+  manualmente pelo usuário.
+- **FR-037**: O sistema DEVE permitir excluir uma categoria personalizada; transações que a
+  utilizavam DEVEM passar a exibir o ícone padrão genérico ("Outros"), sem perda de nenhum outro
+  dado da transação.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -324,7 +449,8 @@ como estava.
 - **Compra**: representa uma transação financeira única — descrição, valor total original, data,
   forma de pagamento (Pix ou Cartão), cartão associado (quando aplicável), quantidade total de
   parcelas, parcela atual informada no cadastro (para compras cujo parcelamento já estava em
-  andamento; 1 por padrão), tags, comentário e origem (lançamento manual, importação de CSV ou
+  andamento; 1 por padrão), tags, comentário, categoria associada (opcional), estabelecimento
+  associado (opcional, automático ou manual) e origem (lançamento manual, importação de CSV ou
   geração automática por assinatura).
 - **Parcela**: representa a fração de uma Compra feita no cartão que recai sobre uma Fatura
   específica; toda Compra no cartão gera ao menos uma Parcela (mesmo compras à vista), identificada
@@ -344,6 +470,18 @@ como estava.
   rendimento (manual ou, futuramente, automático a partir de uma taxa configurada).
 - **Lote de Importação**: representa uma operação de importação de arquivo CSV — cartão de
   destino, formato utilizado, e quantas transações foram importadas ou ignoradas.
+- **Categoria**: representa um tipo de gasto (ex.: Compras, Transporte, Alimentação) — nome,
+  ícone e se é pré-definida ou personalizada pelo usuário. Diferente de Tag: uma transação tem no
+  máximo uma Categoria (usada para o ícone de fallback), mas pode ter várias Tags.
+  Categorias personalizadas podem ser excluídas; categorias pré-definidas não.
+  A categoria genérica "Outros" sempre existe e serve de ícone final de fallback.
+- **Estabelecimento**: representa um comerciante conhecido pelo usuário — nome de exibição, ícone
+  de respaldo (obrigatório), domínio do site (opcional, usado para busca de logotipo), logotipo em
+  cache (opcional, obtido quando há internet disponível) e uma ou mais Padrões de Reconhecimento
+  associados.
+- **Padrão de Reconhecimento**: representa um texto (slug) associado a um Estabelecimento, usado
+  para reconhecer automaticamente transações cuja descrição o contenha (ex.: "UBER" associado ao
+  Estabelecimento "Uber").
 
 ## Success Criteria *(mandatory)*
 
@@ -365,8 +503,14 @@ como estava.
   clara de qual cartão usar hoje, sem precisar calcular prazos manualmente.
 - **SC-007**: Um usuário consegue exportar um backup completo dos dados e restaurá-lo,
   recuperando 100% das informações previamente salvas.
-- **SC-008**: O aplicativo abre e todas as suas funcionalidades continuam operando normalmente sem
-  qualquer conexão de rede disponível.
+- **SC-008**: O aplicativo abre e todas as suas funcionalidades essenciais continuam operando
+  normalmente sem qualquer conexão de rede disponível.
+- **SC-009**: Depois de cadastrar um estabelecimento com um padrão que cobre variações já vistas
+  em transações anteriores, todas elas passam a exibir automaticamente o nome e avatar corretos,
+  sem exigir edição manual uma a uma.
+- **SC-010**: Um usuário consegue identificar visualmente, sem precisar ler o texto bruto da
+  transação, a maioria das compras mais frequentes (via avatar do estabelecimento ou ícone da
+  categoria).
 
 ## Assumptions
 
@@ -393,3 +537,19 @@ como estava.
   até a quitação total, mas deixa de aparecer como opção para novas compras.
 - Importar um arquivo de backup substitui integralmente os dados existentes no dispositivo
   (restauração completa), em vez de mesclar com os dados atuais.
+- A correspondência de padrão (slug) de estabelecimento é feita por "contém" (substring), sem
+  diferenciar maiúsculas de minúsculas, comparando o padrão cadastrado contra a descrição bruta da
+  transação.
+- Quando dois ou mais estabelecimentos têm padrões que coincidem com a mesma descrição de
+  transação, o padrão mais longo (mais específico) tem prioridade; em caso de empate de tamanho,
+  vale o padrão do estabelecimento cadastrado há mais tempo.
+- Categoria é um campo opcional por transação, de valor único (diferente de Tag, que é
+  multivalorada e não carrega ícone); quando não definida, o ícone de fallback exibido é o da
+  categoria genérica "Outros", que sempre existe e não pode ser excluída.
+- O ícone de respaldo de um estabelecimento é obrigatório no cadastro (garante que sempre haja um
+  avatar, mesmo offline ou sem logotipo encontrado) e vem de uma biblioteca de ícones/emojis já
+  disponível no app — sem necessidade de upload de imagem própria nesta versão.
+- A busca de logotipo oficial de um estabelecimento a partir do domínio informado é uma
+  funcionalidade de enriquecimento best-effort que depende de conexão com a internet; o app
+  permanece 100% utilizável sem ela, conforme o Princípio I (emendado) da constituição do
+  projeto — o ícone de respaldo manual nunca deixa de funcionar como avatar.

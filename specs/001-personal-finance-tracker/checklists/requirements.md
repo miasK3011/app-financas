@@ -42,3 +42,10 @@
 - 2026-09-15: adicionado suporte a parcelamentos já em andamento (parcela atual informada no
   cadastro, FR-004/FR-005/FR-006), cobrindo compras parceladas antes de o usuário adotar o app.
   Checklist revalidado — todos os itens continuam passando.
+- 2026-09-15: adicionadas User Stories 9 (Categorias) e 10 (Estabelecimentos com avatar/logotipo),
+  FR-027 a FR-037, novas entidades (Categoria, Estabelecimento, Padrão de Reconhecimento) e
+  critérios de sucesso SC-009/SC-010. A constituição foi emendada (v1.0.0 → v1.1.0) para permitir
+  explicitamente enriquecimento de dados via rede opcional e não-bloqueante (busca de logotipo de
+  marca), mantendo o núcleo do app 100% funcional offline. Checklist revalidado — todos os itens
+  continuam passando. Criado também `design-brief.md` com a lista de telas para a sessão de
+  Claude Design e o processo de handoff dos mockups para implementação em Tamagui.
