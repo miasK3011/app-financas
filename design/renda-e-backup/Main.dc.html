@@ -1,0 +1,195 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --color-primary: #2E6F55;
+      --color-primary-dark: #234F3E;
+      --color-primary-light: #E4F0EA;
+      --color-success: #3C8A5B;
+      --color-success-dark: #306E49;
+      --color-success-bg: #E7F4EC;
+      --color-error: #C74A3C;
+      --color-error-bg: #FBEAE7;
+      --color-neutral-fill: #B9B7B2;
+      --color-bg: #FAFAF9;
+      --color-surface: #FFFFFF;
+      --color-border: #E7E5E2;
+      --color-text: #1C1C1E;
+      --color-text-secondary: #5B5B5E;
+      --color-text-tertiary: #6C6C6D;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+    body { margin: 0; }
+    a { color: var(--color-primary); text-decoration: none; }
+    a:hover { color: var(--color-primary-dark); }
+    .screen {
+      position: relative;
+      width: 412px;
+      height: 915px;
+      overflow: hidden;
+      background: var(--color-bg);
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--color-text);
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+    .icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; display: block; }
+    .content { flex: 1 1 auto; overflow-y: auto; display: flex; flex-direction: column; gap: 22px; padding: 28px 20px 110px; }
+    .section-title-row { display: flex; align-items: center; justify-content: space-between; }
+    .section-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+
+    .top-header-row { display: flex; align-items: center; gap: 12px; }
+    .icon-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--color-surface); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; color: var(--color-text); flex: 0 0 auto; }
+    .icon-btn .icon { width: 18px; height: 18px; }
+    .header-title { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 19px; font-weight: 600; }
+
+    .income-card { padding: 22px; display: flex; flex-direction: column; gap: 6px; }
+    .income-label { font-size: 13px; color: var(--color-text-secondary); font-weight: 500; }
+    .income-value { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 36px; font-weight: 600; letter-spacing: -0.02em; color: var(--color-primary); }
+    .income-sub { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 12px; }
+    .pill-btn { align-self: flex-start; display: flex; align-items: center; gap: 6px; background: var(--color-primary-light); color: var(--color-primary-dark); border: none; border-radius: 999px; padding: 10px 16px; font-size: 13px; font-weight: 600; font-family: inherit; }
+    .pill-btn .icon { width: 15px; height: 15px; }
+
+    .list-card { display: flex; flex-direction: column; }
+    .list-row { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--color-border); }
+    .list-row:last-child { border-bottom: none; }
+    .list-icon-wrap { width: 38px; height: 38px; border-radius: 50%; background: var(--color-primary-light); color: var(--color-primary-dark); display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+    .list-icon-wrap .icon { width: 18px; height: 18px; }
+    .list-info { flex: 1; min-width: 0; }
+    .list-title-row { display: flex; align-items: center; gap: 8px; }
+    .list-name { font-size: 14.5px; font-weight: 600; }
+    .list-sub { font-size: 12.5px; color: var(--color-text-tertiary); margin-top: 2px; }
+    .list-value { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+
+    .badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--color-success-bg); color: var(--color-success-dark); }
+
+    .fab { position: absolute; right: 20px; bottom: 96px; width: 56px; height: 56px; border-radius: 50%; background: var(--color-primary); color: #fff; border: none; box-shadow: 0 6px 16px rgba(46,111,85,0.35); display: flex; align-items: center; justify-content: center; }
+    .fab .icon { width: 26px; height: 26px; stroke-width: 2.2; }
+
+    .bottom-tabs { position: absolute; left: 0; right: 0; bottom: 0; height: 78px; background: var(--color-surface); border-top: 1px solid var(--color-border); display: flex; align-items: flex-start; padding-top: 10px; }
+    .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--color-text-tertiary); font-size: 11px; font-weight: 500; }
+    .tab.active { color: var(--color-primary); }
+    .tab .icon { width: 22px; height: 22px; }
+  </style>
+</helmet>
+
+<div class="screen">
+  <div class="content">
+
+    <div class="top-header-row">
+      <div class="icon-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg>
+      </div>
+      <div class="header-title">Renda &amp; Entradas</div>
+    </div>
+
+    <div class="card income-card">
+      <div class="income-label">Renda mensal atual</div>
+      <div class="income-value">R$ 6.200,00</div>
+      <div class="income-sub">Vigente desde 01/09/2026</div>
+      <button class="pill-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        Atualizar renda
+      </button>
+    </div>
+
+    <div>
+      <div class="section-title-row"><div class="section-title">Histórico de renda</div></div>
+      <div class="list-card" style="margin-top: 12px;">
+        <div class="list-row">
+          <div class="list-info">
+            <div class="list-title-row">
+              <span class="list-name">R$ 6.200,00</span>
+              <span class="badge">Atual</span>
+            </div>
+            <div class="list-sub">Desde 01/09/2026</div>
+          </div>
+        </div>
+        <div class="list-row">
+          <div class="list-info">
+            <div class="list-name">R$ 5.800,00</div>
+            <div class="list-sub">01/03/2026 – 31/08/2026</div>
+          </div>
+        </div>
+        <div class="list-row">
+          <div class="list-info">
+            <div class="list-name">R$ 5.200,00</div>
+            <div class="list-sub">até 28/02/2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title-row"><div class="section-title">Entradas avulsas · Setembro 2026</div></div>
+      <div class="list-card" style="margin-top: 12px;">
+        <div class="list-row">
+          <div class="list-icon-wrap">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <div class="list-info">
+            <div class="list-name">Freela de design</div>
+            <div class="list-sub">05/09/2026</div>
+          </div>
+          <div class="list-value">R$ 350,00</div>
+        </div>
+        <div class="list-row">
+          <div class="list-icon-wrap">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <div class="list-info">
+            <div class="list-name">Venda de usado</div>
+            <div class="list-sub">10/09/2026</div>
+          </div>
+          <div class="list-value">R$ 120,00</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <button class="fab">
+    <svg class="icon" viewBox="0 0 24 24" style="stroke:#fff;"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+
+  <nav class="bottom-tabs">
+    <div class="tab active">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg>
+      <span>Início</span>
+    </div>
+    <div class="tab">
+      <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>
+      <span>Cartões</span>
+    </div>
+    <div class="tab">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
+      <span>Assinaturas</span>
+    </div>
+    <div class="tab">
+      <svg class="icon" viewBox="0 0 24 24"><path d="m12 3 9 4.5-9 4.5-9-4.5Z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span>Reservas</span>
+    </div>
+    <div class="tab">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>
+      <span>Mais</span>
+    </div>
+  </nav>
+</div>
+</x-dc>
+<script data-dc-script>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>

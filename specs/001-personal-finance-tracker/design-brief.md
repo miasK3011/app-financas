@@ -94,6 +94,9 @@ copiado literalmente. Ao traduzir cada tela para o app, eu vou:
   (lista), Cartão · Faturas (detalhe/timeline), Fatura · Detalhe, e Nova Compra (formulário
   completo, incluindo o campo de parcela atual para parcelamento em andamento e a sugestão
   automática de estabelecimento).
+- [Renda e Backup](https://claude.ai/artifact/2E8nDdTLtWmKvNpinHCRuR) — terceiro canvas: Renda &
+  Entradas Avulsas (renda mensal + histórico + entradas avulsas do mês) e Backup (exportar/importar
+  com tela de confirmação de restauração, ação destrutiva).
 
 ## 4. Sistema de identificação visual (avatar/ícone) — resumo funcional
 
