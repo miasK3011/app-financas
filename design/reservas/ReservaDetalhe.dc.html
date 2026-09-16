@@ -1,0 +1,175 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --color-primary: #2E6F55;
+      --color-primary-dark: #234F3E;
+      --color-primary-light: #E4F0EA;
+      --color-success: #3C8A5B;
+      --color-success-dark: #306E49;
+      --color-success-bg: #E7F4EC;
+      --color-error: #C74A3C;
+      --color-error-dark: #9E3A2F;
+      --color-error-bg: #FBEAE7;
+      --color-bg: #FAFAF9;
+      --color-surface: #FFFFFF;
+      --color-border: #E7E5E2;
+      --color-text: #1C1C1E;
+      --color-text-secondary: #5B5B5E;
+      --color-text-tertiary: #6C6C6D;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+    body { margin: 0; }
+    a { color: var(--color-primary); text-decoration: none; }
+    a:hover { color: var(--color-primary-dark); }
+    .screen {
+      position: relative;
+      width: 412px;
+      height: 915px;
+      overflow: hidden;
+      background: var(--color-bg);
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--color-text);
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+    .icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; display: block; }
+    .content { flex: 1 1 auto; overflow-y: auto; display: flex; flex-direction: column; gap: 22px; padding: 28px 20px 40px; }
+    .section-title-row { display: flex; align-items: center; justify-content: space-between; }
+    .section-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+
+    .top-header-row { display: flex; align-items: center; gap: 12px; }
+    .header-title { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 19px; font-weight: 600; }
+    .icon-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--color-surface); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; color: var(--color-text); flex: 0 0 auto; }
+    .icon-btn .icon { width: 18px; height: 18px; }
+
+    .balance-card { padding: 22px; display: flex; flex-direction: column; gap: 10px; }
+    .balance-card-top { display: flex; align-items: center; justify-content: space-between; }
+    .balance-label { font-size: 13px; color: var(--color-text-secondary); font-weight: 500; }
+    .balance-card .icon-btn { width: 32px; height: 32px; }
+    .balance-card .icon-btn .icon { width: 15px; height: 15px; }
+    .balance-value { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 36px; font-weight: 600; letter-spacing: -0.02em; color: var(--color-primary); }
+    .balance-rate-chip { align-self: flex-start; display: flex; align-items: center; gap: 6px; background: var(--color-primary-light); color: var(--color-primary-dark); border-radius: 999px; padding: 6px 12px; font-size: 12.5px; font-weight: 600; }
+    .balance-rate-chip .icon { width: 14px; height: 14px; }
+
+    .quick-actions { display: flex; gap: 10px; }
+    .quick-action { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 12px 8px; }
+    .quick-action-icon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .quick-action-icon .icon { width: 16px; height: 16px; }
+    .quick-action span { font-size: 11.5px; font-weight: 600; color: var(--color-text-secondary); }
+
+    .list-card { display: flex; flex-direction: column; }
+    .list-row { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--color-border); }
+    .list-row:last-child { border-bottom: none; }
+    .list-icon-wrap { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+    .list-icon-wrap .icon { width: 17px; height: 17px; }
+    .list-info { flex: 1; min-width: 0; }
+    .list-name { font-size: 14.5px; font-weight: 600; }
+    .list-sub { font-size: 12.5px; color: var(--color-text-tertiary); margin-top: 2px; }
+    .list-value { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .list-value.positive { color: var(--color-success-dark); }
+    .list-value.negative { color: var(--color-error-dark); }
+  </style>
+</helmet>
+
+<div class="screen">
+  <div class="content">
+
+    <div class="top-header-row">
+      <div class="icon-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg>
+      </div>
+      <div class="header-title">Reserva de emergência</div>
+    </div>
+
+    <div class="card balance-card">
+      <div class="balance-card-top">
+        <div class="balance-label">Saldo atual</div>
+        <button class="icon-btn">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </button>
+      </div>
+      <div class="balance-value">R$ 9.200,00</div>
+      <div class="balance-rate-chip">
+        <svg class="icon" viewBox="0 0 24 24"><path d="m5 19 14-14"/><circle cx="7" cy="7" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+        0,50% ao mês
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <div class="quick-action">
+        <div class="quick-action-icon" style="background:var(--color-success-bg); color:var(--color-success-dark);">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+        </div>
+        <span>Depósito</span>
+      </div>
+      <div class="quick-action">
+        <div class="quick-action-icon" style="background:var(--color-error-bg); color:var(--color-error-dark);">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 21V9"/><path d="m7 14 5 5 5-5"/><path d="M5 4h14"/></svg>
+        </div>
+        <span>Retirada</span>
+      </div>
+      <div class="quick-action">
+        <div class="quick-action-icon" style="background:var(--color-primary-light); color:var(--color-primary-dark);">
+          <svg class="icon" viewBox="0 0 24 24"><path d="m5 19 14-14"/><circle cx="7" cy="7" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+        </div>
+        <span>Rendimento</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title-row"><div class="section-title">Extrato</div></div>
+      <div class="card list-card" style="margin-top: 12px;">
+        <div class="list-row">
+          <div class="list-icon-wrap" style="background:var(--color-primary-light); color:var(--color-primary-dark);">
+            <svg class="icon" viewBox="0 0 24 24"><path d="m5 19 14-14"/><circle cx="7" cy="7" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+          </div>
+          <div class="list-info">
+            <div class="list-name">Rendimento (0,50% a.m.)</div>
+            <div class="list-sub">01/09/2026</div>
+          </div>
+          <div class="list-value positive">+ R$ 46,00</div>
+        </div>
+        <div class="list-row">
+          <div class="list-icon-wrap" style="background:var(--color-error-bg); color:var(--color-error-dark);">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 21V9"/><path d="m7 14 5 5 5-5"/><path d="M5 4h14"/></svg>
+          </div>
+          <div class="list-info">
+            <div class="list-name">Retirada</div>
+            <div class="list-sub">15/08/2026</div>
+          </div>
+          <div class="list-value negative">− R$ 200,00</div>
+        </div>
+        <div class="list-row">
+          <div class="list-icon-wrap" style="background:var(--color-success-bg); color:var(--color-success-dark);">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+          </div>
+          <div class="list-info">
+            <div class="list-name">Depósito inicial</div>
+            <div class="list-sub">01/06/2026</div>
+          </div>
+          <div class="list-value positive">+ R$ 5.000,00</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script data-dc-script>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>
