@@ -56,7 +56,11 @@
     .icon-btn .icon { width: 18px; height: 18px; }
     .icon-btn.primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
 
-    .list-card { display: flex; flex-direction: column; padding: 4px 18px; }
+    .summary-card { padding: 22px; display: flex; flex-direction: column; gap: 6px; }
+    .summary-label { font-size: 13px; color: var(--color-text-secondary); font-weight: 500; }
+    .summary-value { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 32px; font-weight: 600; letter-spacing: -0.02em; color: var(--color-primary); }
+
+    .list-card { display: flex; flex-direction: column; }
     .list-row { display: flex; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--color-border); }
     .list-row:last-child { border-bottom: none; }
     .list-row.muted { opacity: 0.55; }
@@ -73,6 +77,9 @@
     .badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
     .badge.archived { background: var(--color-border); color: var(--color-text-secondary); }
 
+    .fab { position: absolute; right: 20px; bottom: 96px; width: 56px; height: 56px; border-radius: 50%; background: var(--color-primary); color: #fff; border: none; box-shadow: 0 6px 16px rgba(46,111,85,0.35); display: flex; align-items: center; justify-content: center; }
+    .fab .icon { width: 26px; height: 26px; stroke-width: 2.2; }
+
     .bottom-tabs { position: absolute; left: 0; right: 0; bottom: 0; height: 78px; background: var(--color-surface); border-top: 1px solid var(--color-border); display: flex; align-items: flex-start; padding-top: 10px; }
     .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--color-text-tertiary); font-size: 11px; font-weight: 500; }
     .tab.active { color: var(--color-primary); }
@@ -85,12 +92,14 @@
 
     <div class="top-header-row">
       <div class="screen-title">Cartões</div>
-      <div class="icon-btn primary">
-        <svg class="icon" viewBox="0 0 24 24" style="stroke:#fff;"><path d="M12 5v14M5 12h14"/></svg>
-      </div>
     </div>
 
-    <div class="card list-card">
+    <div class="card summary-card">
+      <div class="summary-label">Total das faturas abertas</div>
+      <div class="summary-value">R$ 1.932,20</div>
+    </div>
+
+    <div class="list-card">
       <div class="list-row">
         <div class="list-icon-wrap">
           <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>
@@ -152,6 +161,10 @@
     </div>
 
   </div>
+
+  <button class="fab">
+    <svg class="icon" viewBox="0 0 24 24" style="stroke:#fff;"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
 
   <nav class="bottom-tabs">
     <div class="tab">
