@@ -65,13 +65,10 @@
     .list-card { display: flex; flex-direction: column; }
     .list-row { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--color-border); }
     .list-row:last-child { border-bottom: none; }
-    .list-icon-wrap { width: 38px; height: 38px; border-radius: 50%; background: var(--color-primary-light); color: var(--color-primary-dark); display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
-    .list-icon-wrap .icon { width: 18px; height: 18px; }
     .list-info { flex: 1; min-width: 0; }
     .list-title-row { display: flex; align-items: center; gap: 8px; }
     .list-name { font-size: 14.5px; font-weight: 600; }
     .list-sub { font-size: 12.5px; color: var(--color-text-tertiary); margin-top: 2px; }
-    .list-value { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
 
     .badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--color-success-bg); color: var(--color-success-dark); }
 
@@ -81,6 +78,10 @@
     .month-nav-label { font-size: 14.5px; font-weight: 700; min-width: 132px; text-align: center; }
     .month-subtotal { text-align: right; font-size: 12.5px; color: var(--color-text-secondary); margin-top: 10px; }
     .month-subtotal strong { color: var(--color-text); font-weight: 700; }
+
+    .empty-month { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 30px 16px; text-align: center; }
+    .empty-month .icon { width: 26px; height: 26px; color: var(--color-text-tertiary); }
+    .empty-month span { font-size: 13px; color: var(--color-text-tertiary); }
 
     .fab { position: absolute; right: 20px; bottom: 96px; width: 56px; height: 56px; border-radius: 50%; background: var(--color-primary); color: #fff; border: none; box-shadow: 0 6px 16px rgba(46,111,85,0.35); display: flex; align-items: center; justify-content: center; }
     .fab .icon { width: 26px; height: 26px; stroke-width: 2.2; }
@@ -145,34 +146,18 @@
         <button class="icon-btn">
           <svg class="icon" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg>
         </button>
-        <span class="month-nav-label">Setembro 2026</span>
+        <span class="month-nav-label">Julho 2026</span>
         <button class="icon-btn">
           <svg class="icon" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
         </button>
       </div>
-      <div class="list-card" style="margin-top: 12px;">
-        <div class="list-row">
-          <div class="list-icon-wrap">
-            <svg class="icon" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          </div>
-          <div class="list-info">
-            <div class="list-name">Freela de design</div>
-            <div class="list-sub">05/09/2026</div>
-          </div>
-          <div class="list-value">R$ 350,00</div>
-        </div>
-        <div class="list-row">
-          <div class="list-icon-wrap">
-            <svg class="icon" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          </div>
-          <div class="list-info">
-            <div class="list-name">Venda de usado</div>
-            <div class="list-sub">10/09/2026</div>
-          </div>
-          <div class="list-value">R$ 120,00</div>
+      <div class="card" style="margin-top: 12px;">
+        <div class="empty-month">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <span>Nenhuma entrada avulsa em julho de 2026</span>
         </div>
       </div>
-      <div class="month-subtotal">Total do mês: <strong>R$ 470,00</strong></div>
+      <div class="month-subtotal">Total do mês: <strong>R$ 0,00</strong></div>
     </div>
 
   </div>
