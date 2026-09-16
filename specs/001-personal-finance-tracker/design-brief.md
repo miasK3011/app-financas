@@ -34,8 +34,11 @@ copiado literalmente. Ao traduzir cada tela para o app, eu vou:
 - Recompor cada layout usando primitivos do Tamagui (`YStack`, `XStack`, `Card`, `Sheet`,
   `Avatar`, `Button` etc.) equivalentes ao que o design mostra, adaptado às limitações reais de
   React Native (sem CSS Grid/hover, gestos touch em vez de mouse, etc.).
-- Escolher um pacote de ícones compatível com Tamagui/React Native (ex.: `@tamagui/lucide-icons`)
-  para reproduzir os ícones usados no design.
+- Reproduzir os ícones desenhados à mão nos mockups (SVG inline, stroke-based) usando **Lucide para
+  React Native** — pacote `lucide-react-native` (peer dependency `react-native-svg`, v12–15),
+  decisão já confirmada. Cada ícone vira um componente (`import { Camera } from 'lucide-react-native'`)
+  com props `size`, `color` e `strokeWidth` — mapeando diretamente o que já usamos nos mockups
+  (`stroke-width: 1.8`, `currentColor`, tamanhos 16/18/20/22px conforme o contexto).
 - Seguir a lógica funcional do `spec.md`/`plan.md` sempre que o mockup for ambíguo sobre
   comportamento (o design manda no visual; a spec manda no comportamento).
 
@@ -253,7 +256,8 @@ no `spec.md` — comece desenhando as telas P1.
 - Tipo de gráfico a usar no detalhamento por categoria da tela de Estatísticas (o canvas de
   referência usou barras horizontais com ícone — validar se mantém esse padrão ou muda para
   pizza/donut ao desenhar essa tela em detalhe).
-- Biblioteca/conjunto de ícones disponível para categorias e ícones de respaldo de estabelecimento
-  — o canvas de referência usa ícones em linha (stroke-based) desenhados especificamente para cada
-  categoria de exemplo; a lista final de opções pode ser expandida conforme novas categorias
-  personalizadas forem previstas.
+- ~~Biblioteca de ícones~~ — **decidido**: Lucide para React Native (`lucide-react-native`, ver
+  Seção 2). Falta apenas mapear cada ícone desenhado à mão nos mockups para o nome do ícone
+  Lucide equivalente (ex.: o ícone de "Transporte" → `Car`), e definir a lista final de ícones
+  disponíveis para categorias personalizadas e ícones de respaldo de estabelecimento a partir do
+  catálogo do Lucide.
