@@ -49,3 +49,12 @@
   marca), mantendo o núcleo do app 100% funcional offline. Checklist revalidado — todos os itens
   continuam passando. Criado também `design-brief.md` com a lista de telas para a sessão de
   Claude Design e o processo de handoff dos mockups para implementação em Tamagui.
+- 2026-09-15: adicionada User Story 11 (painel de estatísticas de consumo: período ajustável,
+  comparação com período anterior, gasto por categoria, maiores gastos, % comprometido com
+  assinaturas, e meta de consumo ideal opcional vs. renda), FR-038 a FR-045, entidade "Meta de
+  Consumo Ideal" e critérios SC-011/SC-012. FR-022 ajustado para linguagem consistente com o
+  Princípio I emendado ("funcionalidades essenciais" em vez de "qualquer funcionalidade").
+  `design-brief.md` atualizado com a tela de Estatísticas, o gráfico na tela Início, e a direção
+  visual definida pelo usuário (tom neutro/minimalista inspirado em interfaces Apple, tipografia
+  tipo Inter/Manrope, verde médio-escuro como cor primária, navegação por barra inferior + abas
+  internas). Checklist revalidado — todos os itens continuam passando.

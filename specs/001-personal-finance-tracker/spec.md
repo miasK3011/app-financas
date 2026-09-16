@@ -289,6 +289,57 @@ de internet disponível.
 
 ---
 
+### User Story 11 - Painel de estatísticas e comparação de consumo (Priority: P2)
+
+Como usuário, quero ver na tela inicial um gráfico simples do meu consumo mensal e, ao tocar
+nele, abrir uma tela de estatísticas detalhada onde posso ajustar o período de análise (diário,
+semanal, mensal ou anual), ver quanto gastei nesse período, comparar com o período equivalente
+anterior, ver o quanto disso está comprometido com assinaturas fixas, quais foram meus maiores
+gastos, quanto gastei por categoria, e se meu gasto está dentro do que considero ideal para a
+renda que tenho configurada — para controlar meus gastos de forma mais precisa e visual.
+
+**Why this priority**: Não é necessário para o cálculo correto de faturas ou saldo do mês (que já
+são P1), mas é o principal recurso de acompanhamento e planejamento do app ao longo do tempo;
+depende dos dados de compras, categorias e renda já existentes (User Stories 1, 2 e 9) para ter
+conteúdo a exibir.
+
+**Independent Test**: Pode ser testado registrando compras em pelo menos dois meses diferentes,
+com categorias variadas e ao menos uma assinatura ativa, e verificando que o gráfico da tela
+inicial reflete o total de cada mês, e que a tela de estatísticas mostra corretamente o total do
+período selecionado, a comparação percentual com o período anterior, o detalhamento por
+categoria, os maiores gastos, o percentual comprometido com assinaturas, e a posição do gasto em
+relação à meta de consumo ideal configurada (quando houver).
+
+**Acceptance Scenarios**:
+
+1. **Given** compras registradas no mês corrente, **When** o usuário abre a tela inicial, **Then**
+   vê um gráfico com o consumo mensal, refletindo o total gasto nos últimos meses.
+2. **Given** esse gráfico na tela inicial, **When** o usuário toca nele, **Then** é levado à tela
+   de estatísticas detalhada.
+3. **Given** a tela de estatísticas aberta no período "Mensal" (padrão), **When** o usuário muda
+   para "Semanal", "Diário" ou "Anual", **Then** todos os valores exibidos (total gasto,
+   comparação, detalhamento por categoria, maiores gastos, % de assinaturas) são recalculados
+   para o novo período.
+4. **Given** o gasto do mês corrente e do mês anterior, **When** o usuário consulta a tela de
+   estatísticas, **Then** vê a variação percentual entre os dois (ex.: "30% menor que o mês
+   anterior").
+5. **Given** uma meta de consumo ideal configurada como um percentual da renda mensal, **When** o
+   gasto do período selecionado é maior ou menor que essa meta, **Then** o sistema indica
+   claramente se o usuário está dentro ou fora do ideal (ex.: "você já usou 85% da meta ideal
+   para este mês").
+6. **Given** nenhuma meta de consumo ideal configurada, **When** o usuário abre a tela de
+   estatísticas, **Then** vê o total gasto e a comparação com o período anterior, sem a seção de
+   ideal/meta (que é opcional).
+7. **Given** compras em múltiplas categorias no período selecionado, **When** o usuário consulta
+   as estatísticas, **Then** vê o valor gasto em cada categoria dentro daquele período.
+8. **Given** várias compras de valores distintos no período selecionado, **When** o usuário
+   consulta as estatísticas, **Then** vê uma lista dos maiores gastos individuais daquele período.
+9. **Given** assinaturas ativas e o total gasto no período, **When** o usuário consulta as
+   estatísticas, **Then** vê qual percentual do gasto (ou da renda) está comprometido com
+   assinaturas fixas, separando gasto fixo de gasto variável.
+
+---
+
 ### Edge Cases
 
 - Compra registrada exatamente no dia do fechamento do cartão: entra na fatura que fecha nesse
@@ -324,6 +375,12 @@ de internet disponível.
   arbitrariamente ou deixar ambíguo.
 - Exclusão de uma categoria personalizada que já está em uso por transações existentes: essas
   transações passam a exibir o ícone padrão genérico ("Outros"), sem perder nenhum outro dado.
+- Consultar a tela de estatísticas quando não há dado do período anterior para comparar (ex.:
+  primeiro mês de uso do app): o sistema indica a ausência de comparação, em vez de calcular ou
+  exibir uma variação percentual incorreta.
+- Consultar a tela de estatísticas sem nenhuma renda mensal configurada: o sistema exibe
+  normalmente o total gasto e a comparação com o período anterior, mas omite a seção de "consumo
+  ideal" (que depende de uma renda configurada).
 
 ## Requirements *(mandatory)*
 
@@ -383,8 +440,10 @@ de internet disponível.
 - **FR-021**: O sistema DEVE permitir configurar uma taxa de rendimento mensal (percentual) por
   reserva; a aplicação automática dessa taxa mês a mês está fora do escopo desta versão inicial
   (ver Assumptions) — apenas o cadastro da taxa é obrigatório agora.
-- **FR-022**: O sistema DEVE funcionar inteiramente offline, sem exigir login, cadastro de usuário
-  ou qualquer conexão com a internet para qualquer funcionalidade.
+- **FR-022**: O sistema DEVE funcionar inteiramente offline para todas as suas funcionalidades
+  essenciais, sem exigir login ou cadastro de usuário; nenhuma funcionalidade essencial pode
+  depender de conexão com a internet para funcionar (exceções pontuais de enriquecimento opcional,
+  como a busca de logotipo descrita em FR-036, nunca são pré-requisito de nenhuma funcionalidade).
 - **FR-023**: O sistema DEVE permitir exportar todos os dados do usuário (cartões, faturas,
   compras, parcelas, tags, assinaturas, reservas e configuração de renda) para um arquivo de
   backup local.
@@ -438,6 +497,27 @@ de internet disponível.
 - **FR-037**: O sistema DEVE permitir excluir uma categoria personalizada; transações que a
   utilizavam DEVEM passar a exibir o ícone padrão genérico ("Outros"), sem perda de nenhum outro
   dado da transação.
+- **FR-038**: O sistema DEVE exibir, na tela inicial, um gráfico do consumo mensal recente,
+  permitindo ao usuário tocar nele para abrir a tela de estatísticas detalhada.
+- **FR-039**: A tela de estatísticas DEVE permitir ao usuário alternar o período de análise entre
+  diário, semanal, mensal (padrão) e anual, recalculando todos os valores exibidos para o período
+  escolhido.
+- **FR-040**: O sistema DEVE calcular e exibir o valor total gasto no período selecionado,
+  considerando compras via Pix e parcelas de cartão cuja data se enquadra nesse período.
+- **FR-041**: O sistema DEVE comparar o valor gasto no período selecionado com o valor gasto no
+  período equivalente imediatamente anterior (ex.: mês atual vs. mês anterior), exibindo a
+  variação percentual entre eles; quando não houver dado do período anterior, o sistema DEVE
+  indicar a ausência de comparação em vez de calcular uma variação incorreta.
+- **FR-042**: O sistema DEVE permitir configurar opcionalmente uma meta de consumo ideal como um
+  percentual da renda mensal vigente, e comparar o gasto do período selecionado com essa meta
+  quando ela estiver configurada; quando não configurada, a seção de meta/ideal não é exibida.
+- **FR-043**: O sistema DEVE exibir, na tela de estatísticas, o valor gasto em cada categoria
+  dentro do período selecionado.
+- **FR-044**: O sistema DEVE exibir, na tela de estatísticas, uma lista das compras de maior valor
+  dentro do período selecionado.
+- **FR-045**: O sistema DEVE exibir, na tela de estatísticas, o percentual do gasto do período
+  selecionado que corresponde a assinaturas recorrentes ativas, separando-o do restante do gasto
+  variável.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -482,6 +562,9 @@ de internet disponível.
 - **Padrão de Reconhecimento**: representa um texto (slug) associado a um Estabelecimento, usado
   para reconhecer automaticamente transações cuja descrição o contenha (ex.: "UBER" associado ao
   Estabelecimento "Uber").
+- **Meta de Consumo Ideal**: representa um percentual da renda mensal vigente que o usuário
+  considera o gasto ideal; opcional — quando ausente, a tela de estatísticas não exibe comparação
+  de gasto contra meta.
 
 ## Success Criteria *(mandatory)*
 
@@ -511,6 +594,10 @@ de internet disponível.
 - **SC-010**: Um usuário consegue identificar visualmente, sem precisar ler o texto bruto da
   transação, a maioria das compras mais frequentes (via avatar do estabelecimento ou ícone da
   categoria).
+- **SC-011**: Um usuário consegue ver quanto gastou no mês atual comparado ao mês anterior em no
+  máximo 2 toques a partir da tela inicial.
+- **SC-012**: Um usuário consegue identificar, sem cálculo manual, quais foram seus maiores gastos
+  e em quais categorias mais gastou dentro de qualquer período selecionado.
 
 ## Assumptions
 
@@ -553,3 +640,11 @@ de internet disponível.
   funcionalidade de enriquecimento best-effort que depende de conexão com a internet; o app
   permanece 100% utilizável sem ela, conforme o Princípio I (emendado) da constituição do
   projeto — o ícone de respaldo manual nunca deixa de funcionar como avatar.
+- Os períodos selecionáveis na tela de estatísticas são Diário, Semanal, Mensal e Anual, com
+  "Mensal" como padrão ao abrir a tela a partir do gráfico da tela inicial.
+- A meta de consumo ideal é sempre definida como um percentual da renda mensal vigente (não um
+  valor fixo em R$); sua ausência apenas oculta a comparação correspondente, sem impedir o
+  restante da tela de estatísticas de funcionar.
+- O percentual "comprometido com assinaturas" no período selecionado é calculado sobre o total
+  gasto no próprio período (assinaturas ÷ total gasto), e não sobre a renda mensal, para refletir
+  a composição real do gasto naquele período.
