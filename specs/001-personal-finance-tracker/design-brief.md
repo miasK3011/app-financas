@@ -82,11 +82,15 @@ copiado literalmente. Ao traduzir cada tela para o app, eu vou:
   telas são abas de nível superior vs. abas internas ainda será detalhada conforme as próximas
   telas forem desenhadas.
 
-### 3.2 Canvas de referência
+### 3.2 Canvases de referência
 
 - [Início e Estatísticas](https://claude.ai/artifact/Nu5U8pt4CDwj1KeQXVuQKJ) — primeiro canvas
   desenhado no Claude Design, usado para fechar a identidade visual acima (tipografia, cor, ausência
   de sombra). Serve de referência de estilo para todos os próximos canvases/telas do brief.
+- [Cartões e Compra](https://claude.ai/artifact/KQBqtZmJq4UfuF6Maxcbab) — segundo canvas: Cartões
+  (lista), Cartão · Faturas (detalhe/timeline), Fatura · Detalhe, e Nova Compra (formulário
+  completo, incluindo o campo de parcela atual para parcelamento em andamento e a sugestão
+  automática de estabelecimento).
 
 ## 4. Sistema de identificação visual (avatar/ícone) — resumo funcional
 

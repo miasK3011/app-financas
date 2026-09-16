@@ -1,0 +1,168 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --color-primary: #2E6F55;
+      --color-primary-dark: #234F3E;
+      --color-primary-light: #E4F0EA;
+      --color-success: #3C8A5B;
+      --color-success-bg: #E7F4EC;
+      --color-error: #C74A3C;
+      --color-error-bg: #FBEAE7;
+      --color-neutral-fill: #B9B7B2;
+      --color-bg: #FAFAF9;
+      --color-surface: #FFFFFF;
+      --color-border: #E7E5E2;
+      --color-text: #1C1C1E;
+      --color-text-secondary: #6B6B6E;
+      --color-text-tertiary: #9A9A9C;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+    body { margin: 0; }
+    a { color: var(--color-primary); text-decoration: none; }
+    a:hover { color: var(--color-primary-dark); }
+    .screen {
+      position: relative;
+      width: 412px;
+      height: 915px;
+      overflow: hidden;
+      background: var(--color-bg);
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--color-text);
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+    .icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; display: block; }
+    .content { flex: 1 1 auto; overflow-y: auto; display: flex; flex-direction: column; gap: 22px; padding: 28px 20px 32px; }
+    .section-title-row { display: flex; align-items: center; justify-content: space-between; }
+    .section-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+
+    .top-header-row { display: flex; align-items: center; gap: 12px; }
+    .icon-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--color-surface); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; color: var(--color-text); flex: 0 0 auto; }
+    .icon-btn .icon { width: 18px; height: 18px; }
+    .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: var(--color-text-tertiary); text-transform: uppercase; }
+    .header-title { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 20px; font-weight: 600; margin-top: 1px; }
+
+    .summary-card { padding: 22px; display: flex; flex-direction: column; gap: 8px; }
+    .summary-value { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 32px; font-weight: 600; letter-spacing: -0.02em; }
+    .summary-sub { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--color-text-secondary); }
+    .badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--color-primary-light); color: var(--color-primary-dark); }
+
+    .list-card { display: flex; flex-direction: column; padding: 4px 18px; }
+    .list-row { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--color-border); }
+    .list-row:last-child { border-bottom: none; }
+    .avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+    .avatar .icon { width: 18px; height: 18px; }
+    .tx-info { flex: 1; min-width: 0; }
+    .tx-name-row { display: flex; align-items: center; gap: 6px; }
+    .tx-name { font-size: 14.5px; font-weight: 600; }
+    .tag-chip { font-size: 10.5px; font-weight: 700; color: var(--color-text-secondary); background: var(--color-border); border-radius: 999px; padding: 2px 7px; }
+    .installment-chip { font-size: 10.5px; font-weight: 700; color: var(--color-primary-dark); background: var(--color-primary-light); border-radius: 999px; padding: 2px 7px; }
+    .tx-cat { font-size: 12px; color: var(--color-text-tertiary); margin-top: 2px; }
+    .tx-value { font-size: 14.5px; font-weight: 600; }
+
+    .primary-btn { width: 100%; background: var(--color-primary); color: #fff; border: none; border-radius: 999px; padding: 15px; font-size: 15px; font-weight: 700; font-family: inherit; }
+  </style>
+</helmet>
+
+<div class="screen">
+  <div class="content">
+
+    <div class="top-header-row">
+      <div class="icon-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg>
+      </div>
+      <div>
+        <div class="eyebrow">Nubank</div>
+        <div class="header-title">Outubro 2026</div>
+      </div>
+    </div>
+
+    <div class="card summary-card">
+      <div class="summary-value">R$ 1.245,30</div>
+      <div class="summary-sub">
+        <span class="badge">Aberta</span>
+        <span>vence 17/10</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title-row"><div class="section-title">Compras desta fatura</div></div>
+      <div class="card list-card" style="margin-top: 12px;">
+        <div class="list-row">
+          <div class="avatar" style="background:#E3EAF7; color:#3E63A6;">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16h16"/><circle cx="7.5" cy="17.5" r="1.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="17.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <div class="tx-info">
+            <div class="tx-name-row"><span class="tx-name">Uber</span></div>
+            <div class="tx-cat">Transporte</div>
+          </div>
+          <div class="tx-value">R$ 32,90</div>
+        </div>
+
+        <div class="list-row">
+          <div class="avatar" style="background:#F1E7F7; color:#7A4FA0;">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+          </div>
+          <div class="tx-info">
+            <div class="tx-name-row">
+              <span class="tx-name">Shopee</span>
+              <span class="installment-chip">3/6</span>
+            </div>
+            <div class="tx-cat">Compras</div>
+          </div>
+          <div class="tx-value">R$ 83,17</div>
+        </div>
+
+        <div class="list-row">
+          <div class="avatar" style="background:#ECECEA; color:#6B6B6E;">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>
+          </div>
+          <div class="tx-info">
+            <div class="tx-name-row">
+              <span class="tx-name">APPLE STORE BR</span>
+              <span class="installment-chip">4/10</span>
+            </div>
+            <div class="tx-cat">Compras · não reconhecido</div>
+          </div>
+          <div class="tx-value">R$ 380,00</div>
+        </div>
+
+        <div class="list-row">
+          <div class="avatar" style="background:#FBE6E9; color:#B23A55;">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
+          </div>
+          <div class="tx-info">
+            <div class="tx-name-row">
+              <span class="tx-name">Netflix</span>
+              <span class="tag-chip">Assinatura</span>
+            </div>
+            <div class="tx-cat">Assinaturas</div>
+          </div>
+          <div class="tx-value">R$ 39,90</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="primary-btn">Marcar fatura como paga</button>
+
+  </div>
+</div>
+</x-dc>
+<script data-dc-script>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --color-primary: #2E6F55;
+      --color-primary-dark: #234F3E;
+      --color-primary-light: #E4F0EA;
+      --color-success: #3C8A5B;
+      --color-success-bg: #E7F4EC;
+      --color-error: #C74A3C;
+      --color-error-bg: #FBEAE7;
+      --color-neutral-fill: #B9B7B2;
+      --color-bg: #FAFAF9;
+      --color-surface: #FFFFFF;
+      --color-border: #E7E5E2;
+      --color-text: #1C1C1E;
+      --color-text-secondary: #6B6B6E;
+      --color-text-tertiary: #9A9A9C;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+    body { margin: 0; }
+    a { color: var(--color-primary); text-decoration: none; }
+    a:hover { color: var(--color-primary-dark); }
+    .screen {
+      position: relative;
+      width: 412px;
+      height: 915px;
+      overflow: hidden;
+      background: var(--color-bg);
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--color-text);
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+    .icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; display: block; }
+    .content { flex: 1 1 auto; overflow-y: auto; display: flex; flex-direction: column; gap: 22px; padding: 28px 20px 110px; }
+    .section-title-row { display: flex; align-items: center; justify-content: space-between; }
+    .section-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+
+    .top-header-row { display: flex; align-items: center; justify-content: space-between; }
+    .header-title { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 19px; font-weight: 600; }
+    .icon-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--color-surface); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; color: var(--color-text); flex: 0 0 auto; }
+    .icon-btn .icon { width: 18px; height: 18px; }
+
+    .info-card { padding: 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .info-text { font-size: 13px; color: var(--color-text-secondary); }
+    .pill-btn { display: flex; align-items: center; gap: 6px; background: var(--color-primary-light); color: var(--color-primary-dark); border: none; border-radius: 999px; padding: 9px 14px; font-size: 12.5px; font-weight: 600; font-family: inherit; flex: 0 0 auto; }
+    .pill-btn .icon { width: 15px; height: 15px; }
+
+    .list-card { display: flex; flex-direction: column; padding: 4px 18px; }
+    .list-row { display: flex; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--color-border); }
+    .list-row:last-child { border-bottom: none; }
+    .list-row.future { opacity: 0.6; }
+    .list-info { flex: 1; min-width: 0; }
+    .list-name { font-size: 15px; font-weight: 600; }
+    .list-sub { font-size: 12.5px; color: var(--color-text-tertiary); margin-top: 2px; }
+    .list-value { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+    .list-trailing { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+
+    .badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
+    .badge.open { background: var(--color-primary-light); color: var(--color-primary-dark); }
+    .badge.closed { background: var(--color-border); color: var(--color-text-secondary); }
+    .badge.paid { background: var(--color-success-bg); color: var(--color-success); }
+
+    .bottom-tabs { position: absolute; left: 0; right: 0; bottom: 0; height: 78px; background: var(--color-surface); border-top: 1px solid var(--color-border); display: flex; align-items: flex-start; padding-top: 10px; }
+    .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--color-text-tertiary); font-size: 11px; font-weight: 500; }
+    .tab.active { color: var(--color-primary); }
+    .tab .icon { width: 22px; height: 22px; }
+  </style>
+</helmet>
+
+<div class="screen">
+  <div class="content">
+
+    <div class="top-header-row">
+      <div class="icon-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg>
+      </div>
+      <div class="header-title">Nubank</div>
+      <div class="icon-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      </div>
+    </div>
+
+    <div class="card info-card">
+      <div class="info-text">Fecha dia 10 · Vence dia 17</div>
+      <button class="pill-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+        Importar CSV
+      </button>
+    </div>
+
+    <div>
+      <div class="section-title-row"><div class="section-title">Faturas</div></div>
+      <div class="card list-card" style="margin-top: 12px;">
+        <div class="list-row">
+          <div class="list-info">
+            <div class="list-name">Agosto 2026</div>
+          </div>
+          <div class="list-trailing">
+            <span class="badge paid">Paga</span>
+            <div class="list-value">R$ 980,20</div>
+          </div>
+        </div>
+        <div class="list-row">
+          <div class="list-info">
+            <div class="list-name">Setembro 2026</div>
+          </div>
+          <div class="list-trailing">
+            <span class="badge closed">Fechada</span>
+            <div class="list-value">R$ 1.180,00</div>
+          </div>
+        </div>
+        <div class="list-row">
+          <div class="list-info">
+            <div class="list-name">Outubro 2026</div>
+          </div>
+          <div class="list-trailing">
+            <span class="badge open">Aberta</span>
+            <div class="list-value" style="color: var(--color-primary);">R$ 1.245,30</div>
+          </div>
+        </div>
+        <div class="list-row future">
+          <div class="list-info">
+            <div class="list-name">Novembro 2026</div>
+            <div class="list-sub">Prevista · parcelas já alocadas</div>
+          </div>
+          <div class="list-trailing">
+            <div class="list-value">R$ 400,00</div>
+          </div>
+        </div>
+        <div class="list-row future">
+          <div class="list-info">
+            <div class="list-name">Dezembro 2026</div>
+            <div class="list-sub">Prevista · parcelas já alocadas</div>
+          </div>
+          <div class="list-trailing">
+            <div class="list-value">R$ 400,00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="bottom-tabs">
+    <div class="tab">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg>
+      <span>Início</span>
+    </div>
+    <div class="tab active">
+      <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>
+      <span>Cartões</span>
+    </div>
+    <div class="tab">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
+      <span>Assinaturas</span>
+    </div>
+    <div class="tab">
+      <svg class="icon" viewBox="0 0 24 24"><path d="m12 3 9 4.5-9 4.5-9-4.5Z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span>Reservas</span>
+    </div>
+    <div class="tab">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>
+      <span>Mais</span>
+    </div>
+  </nav>
+</div>
+</x-dc>
+<script data-dc-script>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>
