@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --color-primary: #2E6F55;
+      --color-primary-dark: #234F3E;
+      --color-primary-light: #E4F0EA;
+      --color-bg: #FAFAF9;
+      --color-surface: #FFFFFF;
+      --color-border: #E7E5E2;
+      --color-text: #1C1C1E;
+      --color-text-secondary: #5B5B5E;
+      --color-text-tertiary: #6C6C6D;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+    body { margin: 0; }
+    a { color: var(--color-primary); text-decoration: none; }
+    a:hover { color: var(--color-primary-dark); }
+    .screen {
+      position: relative;
+      width: 412px;
+      height: 915px;
+      overflow: hidden;
+      background: var(--color-bg);
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--color-text);
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+    .icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; display: block; }
+    .content { flex: 1 1 auto; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; padding: 24px 20px 36px; }
+    .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+    .card-title { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+
+    .top-header-row { display: flex; align-items: center; justify-content: space-between; }
+    .header-title { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 18px; font-weight: 600; }
+    .icon-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--color-surface); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; color: var(--color-text); flex: 0 0 auto; }
+    .icon-btn .icon { width: 16px; height: 16px; }
+    .save-btn { border: none; background: none; color: var(--color-primary); font-family: inherit; font-size: 15px; font-weight: 700; padding: 0; }
+
+    .hero-card { align-items: center; text-align: center; }
+    .hero-avatar { width: 68px; height: 68px; border-radius: 50%; background: #E3EAF7; color: #3E63A6; display: flex; align-items: center; justify-content: center; }
+    .hero-avatar .icon { width: 32px; height: 32px; }
+    .hero-name { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 20px; font-weight: 600; }
+    .hero-status { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--color-text-tertiary); }
+    .hero-status .icon { width: 14px; height: 14px; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field-label { font-size: 12.5px; font-weight: 600; color: var(--color-text-secondary); }
+    .field-input { width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 11px 13px; font-size: 14.5px; font-family: inherit; color: var(--color-text); background: var(--color-bg); }
+
+    .tag-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-chip { display: flex; align-items: center; gap: 6px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 999px; padding: 7px 10px 7px 12px; font-size: 12.5px; font-weight: 600; color: var(--color-text); }
+    .tag-chip .icon { width: 13px; height: 13px; color: var(--color-text-tertiary); }
+    .tag-chip.add { color: var(--color-primary); border-style: dashed; }
+
+    .icon-option-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .icon-option { width: 42px; height: 42px; border-radius: 12px; border: 2px solid transparent; display: flex; align-items: center; justify-content: center; }
+    .icon-option.selected { border-color: var(--color-primary); }
+    .icon-option .icon { width: 19px; height: 19px; }
+  </style>
+</helmet>
+
+<div class="screen">
+  <div class="content">
+
+    <div class="top-header-row">
+      <div class="icon-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg>
+      </div>
+      <div class="header-title">Estabelecimento</div>
+      <button class="save-btn">Salvar</button>
+    </div>
+
+    <div class="card hero-card">
+      <div class="hero-avatar">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16h16"/><circle cx="7.5" cy="17.5" r="1.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="17.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+      </div>
+      <div class="hero-name">Uber</div>
+      <div class="hero-status">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M1 1l22 22"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><path d="M12 20h.01"/></svg>
+        Sem conexão agora — usando ícone de respaldo
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Domínio do site</div>
+      <div class="field">
+        <input class="field-input" value="uber.com">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Padrões de reconhecimento</div>
+      <div class="tag-row">
+        <div class="tag-chip">UBER <svg class="icon" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></div>
+        <div class="tag-chip">UBER EATS <svg class="icon" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></div>
+        <div class="tag-chip add">+ Adicionar padrão</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Ícone de respaldo</div>
+      <div class="icon-option-row">
+        <button class="icon-option selected" style="background:#E3EAF7; color:#3E63A6;">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16h16"/></svg>
+        </button>
+        <button class="icon-option" style="background:#FDEDE3; color:#C9702C;">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M6 3v6a2 2 0 0 0 4 0V3"/><path d="M8 9v12"/></svg>
+        </button>
+        <button class="icon-option" style="background:#F1E7F7; color:#7A4FA0;">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+        </button>
+        <button class="icon-option" style="background:#ECECEA; color:#6B6B6E;">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 3h5a2 2 0 0 1 2 2v5a2 2 0 0 1-.6 1.4l-8 8a2 2 0 0 1-2.8 0l-5-5a2 2 0 0 1 0-2.8l8-8A2 2 0 0 1 12 3Z"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script data-dc-script>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>
