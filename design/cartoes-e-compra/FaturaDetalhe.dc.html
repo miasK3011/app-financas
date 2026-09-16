@@ -20,13 +20,14 @@
       --color-error-bg: #FBEAE7;
       --color-neutral-fill: #B9B7B2;
       --color-info: #2F6FB0;
+      --color-info-dark: #285E96;
       --color-info-bg: #E5EEF7;
       --color-bg: #FAFAF9;
       --color-surface: #FFFFFF;
       --color-border: #E7E5E2;
       --color-text: #1C1C1E;
-      --color-text-secondary: #6B6B6E;
-      --color-text-tertiary: #9A9A9C;
+      --color-text-secondary: #5B5B5E;
+      --color-text-tertiary: #6C6C6D;
       --radius-lg: 20px;
       --radius-md: 14px;
     }
@@ -60,7 +61,8 @@
     .summary-card { padding: 22px; display: flex; flex-direction: column; gap: 8px; }
     .summary-value { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 32px; font-weight: 600; letter-spacing: -0.02em; }
     .summary-sub { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--color-text-secondary); }
-    .badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--color-info-bg); color: var(--color-info); }
+    .badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--color-info-bg); color: var(--color-info-dark); }
+    .list-row .chevron { width: 16px; height: 16px; color: var(--color-text-tertiary); flex: 0 0 auto; }
 
     .list-card { display: flex; flex-direction: column; }
     .list-row { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--color-border); }
@@ -108,10 +110,14 @@
             <svg class="icon" viewBox="0 0 24 24"><path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16h16"/><circle cx="7.5" cy="17.5" r="1.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="17.5" r="1.5" fill="currentColor" stroke="none"/></svg>
           </div>
           <div class="tx-info">
-            <div class="tx-name-row"><span class="tx-name">Uber</span></div>
+            <div class="tx-name-row">
+              <span class="tx-name">Uber</span>
+              <span class="tag-chip">Trabalho</span>
+            </div>
             <div class="tx-cat">Transporte</div>
           </div>
           <div class="tx-value">R$ 32,90</div>
+          <svg class="icon chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
         </div>
 
         <div class="list-row">
@@ -122,10 +128,12 @@
             <div class="tx-name-row">
               <span class="tx-name">Shopee</span>
               <span class="installment-chip">3/6</span>
+              <span class="tag-chip">Presente</span>
             </div>
             <div class="tx-cat">Compras</div>
           </div>
           <div class="tx-value">R$ 83,17</div>
+          <svg class="icon chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
         </div>
 
         <div class="list-row">
@@ -140,6 +148,7 @@
             <div class="tx-cat">Compras · não reconhecido</div>
           </div>
           <div class="tx-value">R$ 380,00</div>
+          <svg class="icon chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
         </div>
 
         <div class="list-row">
@@ -147,13 +156,11 @@
             <svg class="icon" viewBox="0 0 24 24"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
           </div>
           <div class="tx-info">
-            <div class="tx-name-row">
-              <span class="tx-name">Netflix</span>
-              <span class="tag-chip">Assinatura</span>
-            </div>
+            <div class="tx-name-row"><span class="tx-name">Netflix</span></div>
             <div class="tx-cat">Assinaturas</div>
           </div>
           <div class="tx-value">R$ 39,90</div>
+          <svg class="icon chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
         </div>
       </div>
     </div>

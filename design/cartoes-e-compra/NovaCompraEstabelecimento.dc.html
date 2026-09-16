@@ -66,21 +66,33 @@
     .segment { flex: 1; text-align: center; font-size: 13px; font-weight: 600; color: var(--color-text-secondary); padding: 9px 0; border-radius: 999px; }
     .segment.active { background: var(--color-primary); color: #fff; }
 
-    .select-field { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 9px 13px; font-family: inherit; background: var(--color-bg); color: var(--color-text); }
+    .select-field { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1.5px solid var(--color-primary); border-radius: var(--radius-md); padding: 9px 13px; font-family: inherit; background: var(--color-bg); color: var(--color-text); }
     .select-field-left { display: flex; align-items: center; gap: 10px; font-size: 14.5px; font-weight: 600; }
     .select-icon-wrap { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
     .select-icon-wrap .icon { width: 15px; height: 15px; }
-    .select-field .chevron { width: 17px; height: 17px; color: var(--color-text-tertiary); flex: 0 0 auto; }
+    .select-field .chevron { width: 17px; height: 17px; color: var(--color-primary); flex: 0 0 auto; }
 
-    .suggestion-banner { display: flex; align-items: center; gap: 10px; background: var(--color-primary-light); border-radius: var(--radius-md); padding: 10px 12px; }
-    .suggestion-banner .icon { width: 18px; height: 18px; color: var(--color-primary-dark); flex: 0 0 auto; }
-    .suggestion-text { flex: 1; font-size: 12.5px; color: var(--color-primary-dark); }
-    .suggestion-use { border: none; background: var(--color-primary); color: #fff; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; font-family: inherit; flex: 0 0 auto; }
+    .no-match-banner { display: flex; align-items: center; gap: 10px; background: var(--color-bg); border: 1.5px dashed var(--color-border); border-radius: var(--radius-md); padding: 10px 12px; }
+    .no-match-banner .icon { width: 18px; height: 18px; color: var(--color-text-secondary); flex: 0 0 auto; }
+    .no-match-text { flex: 1; font-size: 12.5px; color: var(--color-text-secondary); }
+    .no-match-create { border: none; background: var(--color-primary); color: #fff; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; font-family: inherit; flex: 0 0 auto; white-space: nowrap; }
 
     .tag-row { display: flex; flex-wrap: wrap; gap: 8px; }
     .tag-chip { display: flex; align-items: center; gap: 6px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 999px; padding: 7px 10px 7px 12px; font-size: 12.5px; font-weight: 600; color: var(--color-text); }
     .tag-chip .icon { width: 13px; height: 13px; color: var(--color-text-tertiary); }
     .tag-chip.add { color: var(--color-primary); border-style: dashed; }
+
+    .scrim { position: absolute; inset: 0; background: rgba(28,28,30,0.45); }
+    .drawer { position: absolute; left: 0; right: 0; bottom: 0; max-height: 78%; background: var(--color-surface); border-radius: 24px 24px 0 0; padding: 12px 20px 26px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; box-sizing: border-box; }
+    .drawer-handle { width: 40px; height: 4px; border-radius: 999px; background: var(--color-border); align-self: center; margin-bottom: 2px; }
+    .drawer-title { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 17px; font-weight: 600; }
+
+    .icon-option-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .icon-option { width: 42px; height: 42px; border-radius: 12px; border: 2px solid transparent; display: flex; align-items: center; justify-content: center; }
+    .icon-option.selected { border-color: var(--color-primary); }
+    .icon-option .icon { width: 19px; height: 19px; }
+
+    .primary-btn { width: 100%; background: var(--color-primary); color: #fff; border: none; border-radius: 999px; padding: 15px; font-size: 15px; font-weight: 700; font-family: inherit; }
   </style>
 </helmet>
 
@@ -99,12 +111,12 @@
       <div class="card-title">Detalhes</div>
       <div class="field">
         <span class="field-label">Descrição</span>
-        <input class="field-input" value="Corrida Uber">
+        <input class="field-input" value="Compra Mercado Livre">
       </div>
       <div class="field-row">
         <div class="field">
           <span class="field-label">Valor</span>
-          <input class="field-input" value="R$ 32,90">
+          <input class="field-input" value="R$ 214,90">
         </div>
         <div class="field">
           <span class="field-label">Data</span>
@@ -126,11 +138,11 @@
       <div class="field-row">
         <div class="field">
           <span class="field-label">Parcelas</span>
-          <input class="field-input" value="6">
+          <input class="field-input" value="1">
         </div>
         <div class="field">
           <span class="field-label">Parcela atual</span>
-          <input class="field-input" value="3">
+          <input class="field-input" placeholder="—">
           <span class="field-hint">Deixe em branco se for uma compra nova</span>
         </div>
       </div>
@@ -142,28 +154,26 @@
         <span class="field-label">Categoria</span>
         <button class="select-field">
           <span class="select-field-left">
-            <span class="select-icon-wrap" style="background:#E3EAF7; color:#3E63A6;">
-              <svg class="icon" viewBox="0 0 24 24"><path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16h16"/><circle cx="7.5" cy="17.5" r="1.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="17.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+            <span class="select-icon-wrap" style="background:#F1E7F7; color:#7A4FA0;">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
             </span>
-            Transporte
+            Compras
           </span>
           <svg class="icon chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
         </button>
       </div>
       <div class="field">
         <span class="field-label">Estabelecimento</span>
-        <input class="field-input" value="UBER">
+        <input class="field-input" value="MERCADOLIVRE*PARC12X">
       </div>
-      <div class="suggestion-banner">
-        <svg class="icon" viewBox="0 0 24 24"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
-        <span class="suggestion-text">Reconhecemos "UBER" — associar a <strong>Uber</strong>?</span>
-        <button class="suggestion-use">Usar</button>
+      <div class="no-match-banner">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16" r=".6" fill="currentColor" stroke="none"/></svg>
+        <span class="no-match-text">Nenhum estabelecimento reconhecido para "MERCADOLIVRE*PARC12X".</span>
+        <button class="no-match-create">Criar estabelecimento</button>
       </div>
       <div class="field">
         <span class="field-label">Tags</span>
         <div class="tag-row">
-          <div class="tag-chip">Trabalho <svg class="icon" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></div>
-          <div class="tag-chip">Recorrente <svg class="icon" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></div>
           <div class="tag-chip add">+ Nova tag</div>
         </div>
       </div>
@@ -174,6 +184,50 @@
       <textarea class="field-input" placeholder="Adicionar um comentário (opcional)"></textarea>
     </div>
 
+  </div>
+
+  <div class="scrim"></div>
+  <div class="drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-title">Novo estabelecimento</div>
+
+    <div class="field">
+      <span class="field-label">Nome</span>
+      <input class="field-input" value="Mercado Livre">
+    </div>
+
+    <div class="field">
+      <span class="field-label">Padrões de reconhecimento</span>
+      <div class="tag-row">
+        <div class="tag-chip">MERCADOLIVRE <svg class="icon" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></div>
+        <div class="tag-chip add">+ Adicionar padrão</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field-label">Ícone de respaldo</span>
+      <div class="icon-option-row">
+        <button class="icon-option selected" style="background:#F1E7F7; color:#7A4FA0;">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+        </button>
+        <button class="icon-option" style="background:#E3EAF7; color:#3E63A6;">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16h16"/></svg>
+        </button>
+        <button class="icon-option" style="background:#FDEDE3; color:#C9702C;">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M6 3v6a2 2 0 0 0 4 0V3"/><path d="M8 9v12"/></svg>
+        </button>
+        <button class="icon-option" style="background:#ECECEA; color:#6B6B6E;">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 3h5a2 2 0 0 1 2 2v5a2 2 0 0 1-.6 1.4l-8 8a2 2 0 0 1-2.8 0l-5-5a2 2 0 0 1 0-2.8l8-8A2 2 0 0 1 12 3Z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field-label">Domínio do site (opcional)</span>
+      <input class="field-input" placeholder="ex: mercadolivre.com.br">
+    </div>
+
+    <button class="primary-btn">Criar estabelecimento</button>
   </div>
 </div>
 </x-dc>

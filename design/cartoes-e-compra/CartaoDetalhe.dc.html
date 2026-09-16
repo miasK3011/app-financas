@@ -20,13 +20,15 @@
       --color-error-bg: #FBEAE7;
       --color-neutral-fill: #B9B7B2;
       --color-info: #2F6FB0;
+      --color-info-dark: #285E96;
       --color-info-bg: #E5EEF7;
+      --color-success-dark: #306E49;
       --color-bg: #FAFAF9;
       --color-surface: #FFFFFF;
       --color-border: #E7E5E2;
       --color-text: #1C1C1E;
-      --color-text-secondary: #6B6B6E;
-      --color-text-tertiary: #9A9A9C;
+      --color-text-secondary: #5B5B5E;
+      --color-text-tertiary: #6C6C6D;
       --radius-lg: 20px;
       --radius-md: 14px;
     }
@@ -53,6 +55,7 @@
 
     .top-header-row { display: flex; align-items: center; justify-content: space-between; }
     .header-title { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 19px; font-weight: 600; }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
     .icon-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--color-surface); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; color: var(--color-text); flex: 0 0 auto; }
     .icon-btn .icon { width: 18px; height: 18px; }
 
@@ -64,17 +67,19 @@
     .list-card { display: flex; flex-direction: column; }
     .list-row { display: flex; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--color-border); }
     .list-row:last-child { border-bottom: none; }
-    .list-row.future { opacity: 0.6; }
     .list-info { flex: 1; min-width: 0; }
     .list-name { font-size: 15px; font-weight: 600; }
+    .list-row.future .list-name { color: var(--color-text-secondary); font-weight: 500; }
     .list-sub { font-size: 12.5px; color: var(--color-text-tertiary); margin-top: 2px; }
     .list-value { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+    .list-row.future .list-value { color: var(--color-text-secondary); }
     .list-trailing { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .list-row .chevron { width: 16px; height: 16px; color: var(--color-text-tertiary); flex: 0 0 auto; }
 
     .badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
-    .badge.open { background: var(--color-info-bg); color: var(--color-info); }
+    .badge.open { background: var(--color-info-bg); color: var(--color-info-dark); }
     .badge.closed { background: var(--color-border); color: var(--color-text-secondary); }
-    .badge.paid { background: var(--color-success-bg); color: var(--color-success); }
+    .badge.paid { background: var(--color-success-bg); color: var(--color-success-dark); }
 
     .bottom-tabs { position: absolute; left: 0; right: 0; bottom: 0; height: 78px; background: var(--color-surface); border-top: 1px solid var(--color-border); display: flex; align-items: flex-start; padding-top: 10px; }
     .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--color-text-tertiary); font-size: 11px; font-weight: 500; }
@@ -91,8 +96,13 @@
         <svg class="icon" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg>
       </div>
       <div class="header-title">Nubank</div>
-      <div class="icon-btn">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      <div class="header-actions">
+        <div class="icon-btn">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </div>
+        <div class="icon-btn">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="5" rx="1.5"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>
+        </div>
       </div>
     </div>
 
@@ -115,6 +125,7 @@
             <span class="badge paid">Paga</span>
             <div class="list-value">R$ 980,20</div>
           </div>
+          <svg class="icon chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
         </div>
         <div class="list-row">
           <div class="list-info">
@@ -124,6 +135,7 @@
             <span class="badge closed">Fechada</span>
             <div class="list-value">R$ 1.180,00</div>
           </div>
+          <svg class="icon chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
         </div>
         <div class="list-row">
           <div class="list-info">
@@ -133,6 +145,7 @@
             <span class="badge open">Aberta</span>
             <div class="list-value" style="color: var(--color-info);">R$ 1.245,30</div>
           </div>
+          <svg class="icon chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
         </div>
         <div class="list-row future">
           <div class="list-info">
@@ -142,6 +155,7 @@
           <div class="list-trailing">
             <div class="list-value">R$ 400,00</div>
           </div>
+          <svg class="icon chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
         </div>
         <div class="list-row future">
           <div class="list-info">
@@ -151,6 +165,7 @@
           <div class="list-trailing">
             <div class="list-value">R$ 400,00</div>
           </div>
+          <svg class="icon chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
         </div>
       </div>
     </div>
