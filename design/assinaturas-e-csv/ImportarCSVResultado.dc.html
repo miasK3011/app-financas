@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --color-primary: #2E6F55;
+      --color-primary-dark: #234F3E;
+      --color-primary-light: #E4F0EA;
+      --color-success: #3C8A5B;
+      --color-success-dark: #306E49;
+      --color-success-bg: #E7F4EC;
+      --color-error: #C74A3C;
+      --color-error-dark: #9E3A2F;
+      --color-error-bg: #FBEAE7;
+      --color-neutral-fill: #B9B7B2;
+      --color-bg: #FAFAF9;
+      --color-surface: #FFFFFF;
+      --color-border: #E7E5E2;
+      --color-text: #1C1C1E;
+      --color-text-secondary: #5B5B5E;
+      --color-text-tertiary: #6C6C6D;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+    body { margin: 0; }
+    a { color: var(--color-primary); text-decoration: none; }
+    a:hover { color: var(--color-primary-dark); }
+    .screen {
+      position: relative;
+      width: 412px;
+      height: 915px;
+      overflow: hidden;
+      background: var(--color-bg);
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--color-text);
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+    .icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; display: block; }
+    .content { flex: 1 1 auto; overflow-y: auto; display: flex; flex-direction: column; gap: 22px; padding: 28px 20px 36px; }
+    .section-title-row { display: flex; align-items: center; justify-content: space-between; }
+    .section-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+
+    .top-header-row { display: flex; align-items: center; gap: 12px; }
+    .header-title { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 19px; font-weight: 600; }
+
+    .result-card { padding: 24px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; }
+    .result-icon-wrap { width: 52px; height: 52px; border-radius: 50%; background: var(--color-success-bg); color: var(--color-success-dark); display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
+    .result-icon-wrap .icon { width: 26px; height: 26px; }
+    .result-value { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 30px; font-weight: 600; letter-spacing: -0.01em; }
+    .result-sub { font-size: 13px; color: var(--color-text-secondary); }
+
+    .list-card { display: flex; flex-direction: column; }
+    .list-row { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--color-border); }
+    .list-row:last-child { border-bottom: none; }
+    .list-icon-wrap { width: 34px; height: 34px; border-radius: 50%; background: var(--color-error-bg); color: var(--color-error-dark); display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+    .list-icon-wrap .icon { width: 16px; height: 16px; }
+    .list-info { flex: 1; min-width: 0; }
+    .list-name { font-size: 14px; font-weight: 600; }
+    .list-sub { font-size: 12.5px; color: var(--color-text-tertiary); margin-top: 2px; }
+
+    .primary-btn { width: 100%; background: var(--color-primary); color: #fff; border: none; border-radius: 999px; padding: 15px; font-size: 15px; font-weight: 700; font-family: inherit; }
+  </style>
+</helmet>
+
+<div class="screen">
+  <div class="content">
+
+    <div class="top-header-row">
+      <div class="header-title">Importar Fatura</div>
+    </div>
+
+    <div class="card result-card">
+      <div class="result-icon-wrap">
+        <svg class="icon" viewBox="0 0 24 24"><path d="m5 13 4 4L19 7"/></svg>
+      </div>
+      <div class="result-value">23 transações importadas</div>
+      <div class="result-sub">Nubank · fatura_setembro.csv</div>
+    </div>
+
+    <div>
+      <div class="section-title-row"><div class="section-title">3 linhas ignoradas</div></div>
+      <div class="card list-card" style="margin-top: 12px;">
+        <div class="list-row">
+          <div class="list-icon-wrap">
+            <svg class="icon" viewBox="0 0 24 24"><path d="m10.29 3.86-8.18 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.89-3.14l-8.18-14a2 2 0 0 0-3.44 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          </div>
+          <div class="list-info">
+            <div class="list-name">Linha 5</div>
+            <div class="list-sub">Sem valor informado</div>
+          </div>
+        </div>
+        <div class="list-row">
+          <div class="list-icon-wrap">
+            <svg class="icon" viewBox="0 0 24 24"><path d="m10.29 3.86-8.18 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.89-3.14l-8.18-14a2 2 0 0 0-3.44 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          </div>
+          <div class="list-info">
+            <div class="list-name">Linha 12</div>
+            <div class="list-sub">Sem data informada</div>
+          </div>
+        </div>
+        <div class="list-row">
+          <div class="list-icon-wrap">
+            <svg class="icon" viewBox="0 0 24 24"><path d="m10.29 3.86-8.18 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.89-3.14l-8.18-14a2 2 0 0 0-3.44 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          </div>
+          <div class="list-info">
+            <div class="list-name">Linha 18</div>
+            <div class="list-sub">Formato de valor inválido</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="primary-btn">Concluir</button>
+
+  </div>
+</div>
+</x-dc>
+<script data-dc-script>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>

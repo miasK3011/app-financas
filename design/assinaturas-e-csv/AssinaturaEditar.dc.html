@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --color-primary: #2E6F55;
+      --color-primary-dark: #234F3E;
+      --color-primary-light: #E4F0EA;
+      --color-success: #3C8A5B;
+      --color-success-bg: #E7F4EC;
+      --color-error: #C74A3C;
+      --color-error-dark: #9E3A2F;
+      --color-error-bg: #FBEAE7;
+      --color-neutral-fill: #B9B7B2;
+      --color-bg: #FAFAF9;
+      --color-surface: #FFFFFF;
+      --color-border: #E7E5E2;
+      --color-text: #1C1C1E;
+      --color-text-secondary: #5B5B5E;
+      --color-text-tertiary: #6C6C6D;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+    body { margin: 0; }
+    a { color: var(--color-primary); text-decoration: none; }
+    a:hover { color: var(--color-primary-dark); }
+    .screen {
+      position: relative;
+      width: 412px;
+      height: 915px;
+      overflow: hidden;
+      background: var(--color-bg);
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--color-text);
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+    .icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; display: block; }
+    .content { flex: 1 1 auto; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; padding: 24px 20px 36px; }
+    .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+    .card-title { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+
+    .top-header-row { display: flex; align-items: center; justify-content: space-between; }
+    .header-title { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 18px; font-weight: 600; }
+    .icon-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--color-surface); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; color: var(--color-text); flex: 0 0 auto; }
+    .icon-btn .icon { width: 16px; height: 16px; }
+    .save-btn { border: none; background: none; color: var(--color-primary); font-family: inherit; font-size: 15px; font-weight: 700; padding: 0; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .field-row { display: flex; gap: 12px; }
+    .field-row .field { flex: 1; min-width: 0; }
+    .field-label { font-size: 12.5px; font-weight: 600; color: var(--color-text-secondary); }
+    .field-input { width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 11px 13px; font-size: 14.5px; font-family: inherit; color: var(--color-text); background: var(--color-bg); }
+
+    .segmented { display: flex; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 999px; padding: 4px; gap: 4px; }
+    .segment { flex: 1; text-align: center; font-size: 13px; font-weight: 600; color: var(--color-text-secondary); padding: 9px 0; border-radius: 999px; }
+    .segment.active { background: var(--color-primary); color: #fff; }
+
+    .select-field { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 9px 13px; font-family: inherit; background: var(--color-bg); color: var(--color-text); }
+    .select-field-left { display: flex; align-items: center; gap: 10px; font-size: 14.5px; font-weight: 600; }
+    .select-icon-wrap { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+    .select-icon-wrap .icon { width: 15px; height: 15px; }
+    .select-field .chevron { width: 17px; height: 17px; color: var(--color-text-tertiary); flex: 0 0 auto; }
+
+    .tag-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-chip { display: flex; align-items: center; gap: 6px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 999px; padding: 7px 10px 7px 12px; font-size: 11px; font-weight: 600; color: var(--color-text); }
+    .tag-chip .icon { width: 13px; height: 13px; color: var(--color-text-tertiary); }
+    .tag-chip.add { color: var(--color-primary); border-style: dashed; }
+
+    .outline-btn-danger { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; color: var(--color-error-dark); border: 1.5px solid var(--color-error-dark); border-radius: 999px; padding: 13px; font-size: 14.5px; font-weight: 700; font-family: inherit; }
+    .outline-btn-danger .icon { width: 17px; height: 17px; }
+  </style>
+</helmet>
+
+<div class="screen">
+  <div class="content">
+
+    <div class="top-header-row">
+      <div class="icon-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg>
+      </div>
+      <div class="header-title">Editar assinatura</div>
+      <button class="save-btn">Salvar</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Detalhes</div>
+      <div class="field">
+        <span class="field-label">Nome</span>
+        <input class="field-input" value="Netflix">
+      </div>
+      <div class="field">
+        <span class="field-label">Valor</span>
+        <input class="field-input" value="R$ 39,90">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cobrança</div>
+      <div class="segmented">
+        <div class="segment">Pix</div>
+        <div class="segment active">Cartão</div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <span class="field-label">Cartão</span>
+          <input class="field-input" value="Nubank">
+        </div>
+        <div class="field">
+          <span class="field-label">Dia de cobrança</span>
+          <input class="field-input" value="15">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Organização</div>
+      <div class="field">
+        <span class="field-label">Categoria</span>
+        <button class="select-field">
+          <span class="select-field-left">
+            <span class="select-icon-wrap" style="background:#FBE6E9; color:#B23A55;">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
+            </span>
+            Assinaturas
+          </span>
+          <svg class="icon chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+      </div>
+      <div class="field">
+        <span class="field-label">Estabelecimento</span>
+        <input class="field-input" value="Netflix">
+      </div>
+      <div class="field">
+        <span class="field-label">Tags</span>
+        <div class="tag-row">
+          <div class="tag-chip">Entretenimento <svg class="icon" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></div>
+          <div class="tag-chip add">+ Nova tag</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="outline-btn-danger">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg>
+      Cancelar assinatura
+    </button>
+
+  </div>
+</div>
+</x-dc>
+<script data-dc-script>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>
