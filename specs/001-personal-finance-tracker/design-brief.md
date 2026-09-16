@@ -97,6 +97,16 @@ copiado literalmente. Ao traduzir cada tela para o app, eu vou:
 - [Renda e Backup](https://claude.ai/artifact/2E8nDdTLtWmKvNpinHCRuR) — terceiro canvas: Renda &
   Entradas Avulsas (renda mensal + histórico + entradas avulsas do mês) e Backup (exportar/importar
   com tela de confirmação de restauração, ação destrutiva).
+- [Assinaturas e Importação CSV](https://claude.ai/artifact/PRM1EzBjb1McbnJK1A8pxx) — quarto
+  canvas: Assinaturas (total mensal + lista), Editar Assinatura (formulário completo + cancelar
+  assinatura), e o fluxo de Importar CSV (seleção de cartão/formato/arquivo + tela de resultado
+  com linhas ignoradas).
+- [Categorias e Estabelecimentos](https://claude.ai/artifact/XThXzxfQw2VUNYwutMqDYv) — quinto
+  canvas: Categorias (pré-definidas + personalizadas, com drawer de criação) e Estabelecimentos
+  (lista + detalhe com padrões, domínio e o estado "sem conexão, usando ícone de respaldo").
+- [Reservas](https://claude.ai/artifact/WvrkXWTjj2gKVDRD4M72fx) — sexto canvas: Reservas (total
+  guardado + lista com taxa de rendimento) e Reserva · Detalhe/Extrato (saldo, ações rápidas de
+  depósito/retirada/rendimento, extrato). Completa todas as telas listadas na Seção 5 deste brief.
 
 ## 4. Sistema de identificação visual (avatar/ícone) — resumo funcional
 
