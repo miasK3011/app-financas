@@ -1,0 +1,137 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --color-primary: #2E6F55;
+      --color-primary-dark: #234F3E;
+      --color-success: #3C8A5B;
+      --color-success-dark: #306E49;
+      --color-success-bg: #E7F4EC;
+      --color-bg: #FAFAF9;
+      --color-surface: #FFFFFF;
+      --color-border: #E7E5E2;
+      --color-text: #1C1C1E;
+      --color-text-secondary: #5B5B5E;
+      --color-text-tertiary: #6C6C6D;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+    body { margin: 0; }
+    a { color: var(--color-primary); text-decoration: none; }
+    a:hover { color: var(--color-primary-dark); }
+    .screen {
+      position: relative;
+      width: 412px;
+      height: 915px;
+      overflow: hidden;
+      background: var(--color-bg);
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--color-text);
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+    .icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; display: block; }
+    .content { flex: 1 1 auto; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; padding: 24px 20px 36px; }
+    .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+    .card-title { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-tertiary); }
+
+    .top-header-row { display: flex; align-items: center; justify-content: space-between; }
+    .header-title { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 18px; font-weight: 600; }
+    .icon-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--color-surface); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; color: var(--color-text); flex: 0 0 auto; }
+    .icon-btn .icon { width: 16px; height: 16px; }
+    .save-btn { border: none; background: none; color: var(--color-primary); font-family: inherit; font-size: 15px; font-weight: 700; padding: 0; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .field-row { display: flex; gap: 12px; }
+    .field-row .field { flex: 1; min-width: 0; }
+    .field-label { font-size: 12.5px; font-weight: 600; color: var(--color-text-secondary); }
+    .field-input { width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 11px 13px; font-size: 14.5px; font-family: inherit; color: var(--color-text); background: var(--color-bg); }
+
+    .linked-entrada-chip { display: flex; align-items: center; gap: 12px; background: var(--color-success-bg); border-radius: var(--radius-md); padding: 12px; }
+    .linked-entrada-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--color-success-dark); color: #fff; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+    .linked-entrada-icon .icon { width: 18px; height: 18px; }
+    .linked-entrada-info { flex: 1; min-width: 0; }
+    .linked-entrada-name { font-size: 13.5px; font-weight: 700; color: var(--color-success-dark); }
+    .linked-entrada-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 1px; }
+    .linked-entrada-chip .icon-btn { width: 30px; height: 30px; background: var(--color-surface); }
+    .linked-entrada-chip .icon-btn .icon { width: 14px; height: 14px; }
+
+    .computed-row { display: flex; flex-direction: column; gap: 6px; }
+    .computed-value-box { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 11px 13px; background: var(--color-border); display: flex; align-items: baseline; gap: 8px; }
+    .computed-value { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 17px; font-weight: 600; }
+    .computed-formula { font-family: 'Manrope', sans-serif; font-size: 12.5px; color: var(--color-text-tertiary); }
+  </style>
+</helmet>
+
+<div class="screen">
+  <div class="content">
+
+    <div class="top-header-row">
+      <div class="icon-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </div>
+      <div class="header-title">Editar compra</div>
+      <button class="save-btn">Salvar</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Detalhes</div>
+      <div class="field">
+        <span class="field-label">Descrição</span>
+        <input class="field-input" value="Pizzaria Napoli">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <span class="field-label">Valor</span>
+          <input class="field-input" value="R$ 70,00">
+        </div>
+        <div class="field">
+          <span class="field-label">Data</span>
+          <input class="field-input" value="12/09/2026">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Divisão de responsabilidade</div>
+
+      <div class="linked-entrada-chip">
+        <div class="linked-entrada-icon">
+          <svg class="icon" viewBox="0 0 24 24"><path d="m5 13 4 4L19 7"/></svg>
+        </div>
+        <div class="linked-entrada-info">
+          <div class="linked-entrada-name">Reembolso de Maria</div>
+          <div class="linked-entrada-sub">Entrada avulsa · 12/09/2026 · R$ 40,00</div>
+        </div>
+        <button class="icon-btn">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="computed-row">
+        <span class="field-label">Valor de responsabilidade (calculado)</span>
+        <div class="computed-value-box">
+          <span class="computed-value">R$ 30,00</span>
+          <span class="computed-formula">= R$ 70,00 − R$ 40,00</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script data-dc-script>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>

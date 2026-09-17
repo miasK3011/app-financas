@@ -82,6 +82,12 @@
     .tag-chip .icon { width: 13px; height: 13px; color: var(--color-text-tertiary); }
     .tag-chip.add { color: var(--color-primary); border-style: dashed; }
 
+    .split-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .split-label { font-size: 12.5px; font-weight: 600; color: var(--color-text-secondary); display: block; margin-bottom: 2px; }
+    .split-value { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 18px; font-weight: 600; }
+    .split-percent { font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 500; color: var(--color-text-tertiary); }
+    .split-toggle { border: 1px solid var(--color-border); background: var(--color-bg); color: var(--color-primary); border-radius: 999px; padding: 9px 14px; font-size: 12.5px; font-weight: 700; font-family: inherit; white-space: nowrap; flex: 0 0 auto; }
+
     .scrim { position: absolute; inset: 0; background: rgba(28,28,30,0.45); }
     .drawer { position: absolute; left: 0; right: 0; bottom: 0; max-height: 78%; background: var(--color-surface); border-radius: 24px 24px 0 0; padding: 12px 20px 26px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; box-sizing: border-box; }
     .drawer-handle { width: 40px; height: 4px; border-radius: 999px; background: var(--color-border); align-self: center; margin-bottom: 2px; }
@@ -145,6 +151,17 @@
           <input class="field-input" placeholder="—">
           <span class="field-hint">Deixe em branco se for uma compra nova</span>
         </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Divisão de responsabilidade</div>
+      <div class="split-summary">
+        <div>
+          <span class="split-label">Sua responsabilidade</span>
+          <span class="split-value">R$ 214,90 <span class="split-percent">(100% do valor)</span></span>
+        </div>
+        <button class="split-toggle">Dividir compra</button>
       </div>
     </div>
 

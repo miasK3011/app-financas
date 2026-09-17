@@ -62,6 +62,8 @@
     .summary-value { font-family: 'Lora', Georgia, 'Times New Roman', serif; font-size: 32px; font-weight: 600; letter-spacing: -0.02em; }
     .summary-sub { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--color-text-secondary); }
     .badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--color-info-bg); color: var(--color-info-dark); }
+    .summary-split { font-size: 13px; color: var(--color-text-secondary); padding-top: 8px; border-top: 1px solid var(--color-border); }
+    .summary-split strong { color: var(--color-text); font-weight: 700; }
     .list-row .chevron { width: 16px; height: 16px; color: var(--color-text-tertiary); flex: 0 0 auto; }
 
     .list-card { display: flex; flex-direction: column; }
@@ -74,7 +76,10 @@
     .tx-name { font-size: 14.5px; font-weight: 600; }
     .tag-chip { font-size: 11px; font-weight: 700; color: var(--color-text-secondary); background: var(--color-border); border-radius: 999px; padding: 2px 7px; }
     .installment-chip { font-size: 11px; font-weight: 700; color: var(--color-primary-dark); background: var(--color-primary-light); border-radius: 999px; padding: 2px 7px; }
+    .split-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: var(--color-text-secondary); background: var(--color-border); border-radius: 999px; padding: 2px 7px; }
+    .split-chip .icon { width: 11px; height: 11px; }
     .tx-cat { font-size: 12px; color: var(--color-text-tertiary); margin-top: 2px; }
+    .tx-split-note { font-size: 12px; color: var(--color-text-tertiary); margin-top: 2px; }
     .tx-value { font-size: 14.5px; font-weight: 600; }
 
     .primary-btn { width: 100%; background: var(--color-primary); color: #fff; border: none; border-radius: 999px; padding: 15px; font-size: 15px; font-weight: 700; font-family: inherit; }
@@ -100,6 +105,7 @@
         <span class="badge">Aberta</span>
         <span>vence 17/10</span>
       </div>
+      <div class="summary-split">Sua responsabilidade: <strong>R$ 1.105,30</strong></div>
     </div>
 
     <div>
@@ -148,6 +154,44 @@
             <div class="tx-cat">Compras · não reconhecido</div>
           </div>
           <div class="tx-value">R$ 380,00</div>
+          <svg class="icon chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+        </div>
+
+        <div class="list-row">
+          <div class="avatar" style="background:#FDEDE3; color:#C9702C;">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M6 3v6a2 2 0 0 0 4 0V3"/><path d="M8 9v12"/><path d="M17 3c-1.1 0-2 1.3-2 4.5S15.9 12 17 12s2-1.3 2-4.5S18.1 3 17 3Z"/><path d="M17 12v9"/></svg>
+          </div>
+          <div class="tx-info">
+            <div class="tx-name-row">
+              <span class="tx-name">Pizzaria Napoli</span>
+              <span class="split-chip">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Dividido
+              </span>
+            </div>
+            <div class="tx-cat">Alimentação</div>
+            <div class="tx-split-note">Sua parte: R$ 30,00 de R$ 70,00 · Dividido com Maria</div>
+          </div>
+          <div class="tx-value">R$ 70,00</div>
+          <svg class="icon chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+        </div>
+
+        <div class="list-row">
+          <div class="avatar" style="background:#F1E7F7; color:#7A4FA0;">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+          </div>
+          <div class="tx-info">
+            <div class="tx-name-row">
+              <span class="tx-name">Presente de aniversário</span>
+              <span class="split-chip">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Não é seu
+              </span>
+            </div>
+            <div class="tx-cat">Compras</div>
+            <div class="tx-split-note">Sua parte: R$ 0,00 de R$ 100,00 · Responsável: Meu irmão</div>
+          </div>
+          <div class="tx-value">R$ 100,00</div>
           <svg class="icon chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
         </div>
 

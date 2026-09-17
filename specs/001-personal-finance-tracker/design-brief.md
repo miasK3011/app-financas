@@ -91,12 +91,16 @@ copiado literalmente. Ao traduzir cada tela para o app, eu vou:
   desenhado no Claude Design, usado para fechar a identidade visual acima (tipografia, cor, ausência
   de sombra). Serve de referência de estilo para todos os próximos canvases/telas do brief.
 - [Cartões e Compra](https://claude.ai/artifact/KQBqtZmJq4UfuF6Maxcbab) — segundo canvas: Cartões
-  (lista), Cartão · Faturas (detalhe/timeline), Fatura · Detalhe, e Nova Compra (formulário
-  completo, incluindo o campo de parcela atual para parcelamento em andamento e a sugestão
-  automática de estabelecimento).
+  (lista), Cartão · Faturas (detalhe/timeline, com a responsabilidade do usuário ao lado do total
+  quando aplicável), Fatura · Detalhe (idem, com exemplos de compra dividida e de compra 100% de
+  terceiros), Nova Compra (formulário completo, incluindo parcela atual para parcelamento em
+  andamento e sugestão automática de estabelecimento), e dois artboards de Editar Compra
+  mostrando a divisão de responsabilidade (US12) — manual (valor + motivo + responsável) e via
+  entrada avulsa vinculada (valor calculado, somente leitura).
 - [Renda e Backup](https://claude.ai/artifact/2E8nDdTLtWmKvNpinHCRuR) — terceiro canvas: Renda &
-  Entradas Avulsas (renda mensal + histórico + entradas avulsas do mês) e Backup (exportar/importar
-  com tela de confirmação de restauração, ação destrutiva).
+  Entradas Avulsas (renda mensal + histórico + entradas avulsas do mês, incluindo uma entrada
+  vinculada a uma compra — US12), Nova Entrada Avulsa (com a opção de vincular a uma compra), e
+  Backup (exportar/importar com tela de confirmação de restauração, ação destrutiva).
 - [Assinaturas e Importação CSV](https://claude.ai/artifact/PRM1EzBjb1McbnJK1A8pxx) — quarto
   canvas: Assinaturas (total mensal + lista), Editar Assinatura (formulário completo + cancelar
   assinatura), e o fluxo de Importar CSV (seleção de cartão/formato/arquivo + tela de resultado
