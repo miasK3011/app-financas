@@ -9,7 +9,7 @@ description: "Task list for Controle Financeiro Pessoal — Núcleo"
 
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/, quickstart.md (all present)
 
-**Tests**: Incluídas para toda a lógica de `app/domain/**`, conforme a estratégia de testes definida
+**Tests**: Incluídas para toda a lógica de `src/domain/**`, conforme a estratégia de testes definida
 em `research.md` (Decisão: Estratégia de testes sem backend/API) — não são testes de UI/e2e, que
 ficam cobertos pela validação manual de `quickstart.md`.
 
@@ -29,8 +29,9 @@ respeitando as dependências entre stories declaradas na própria spec ("Why thi
 
 ## Path Conventions
 
-Projeto Expo único (mobile, sem backend separado — ver `plan.md`): `app/` (rotas `expo-router` +
-`domain/` + `db/` + `repositories/` + `hooks/` + `components/` + `theme/`), `tests/` na raiz.
+Projeto Expo único (mobile, sem backend separado — ver `plan.md`): `src/app/` (rotas `expo-router`),
+com `src/domain/` + `src/db/` + `src/repositories/` + `src/hooks/` + `src/components/` +
+`src/theme/` como pastas irmãs dentro de `src/`, fora do alcance do roteador; `tests/` na raiz.
 
 ---
 
@@ -38,25 +39,28 @@ Projeto Expo único (mobile, sem backend separado — ver `plan.md`): `app/` (ro
 
 **Purpose**: Inicialização do projeto Expo e ferramentas compartilhadas.
 
-- [ ] T001 Inicializar projeto Expo (TypeScript) na raiz do repositório, criando as pastas `app/`
-      e `tests/` conforme `plan.md` → Project Structure, sem sobrescrever `specs/`, `design/` ou
-      `.specify/` já existentes
+- [ ] T001 Inicializar projeto Expo (TypeScript, template `default` do `create-expo-app`, que já
+      gera `src/app/` com `expo-router`) na raiz do repositório, mesclando o scaffold com o
+      repositório existente sem sobrescrever `specs/`, `design/`, `.specify/`, `.gitignore` ou
+      `.claude/` já existentes; criar `tests/` conforme `plan.md` → Project Structure
 - [ ] T002 [P] Instalar e configurar Tamagui (`tamagui`, `@tamagui/core`, `@tamagui/config`);
-      criar `app/theme/tamagui.config.ts` com os tokens de `design-brief.md` §3.1 (cores
+      criar `src/theme/tamagui.config.ts` com os tokens de `design-brief.md` §3.1 (cores
       `--color-primary #2E6F55`, `--color-error #C74A3C`, `--color-info #2F6FB0`, raios `20px`/`14px`,
       fontes Manrope + Lora via Google Fonts)
 - [ ] T003 [P] Instalar Drizzle ORM (`drizzle-orm`, `drizzle-kit`, `expo-sqlite`); criar
-      `drizzle.config.ts` na raiz (dialect `sqlite`, schema `app/db/schema.ts`,
-      out `app/db/migrations`)
+      `drizzle.config.ts` na raiz (dialect `sqlite`, schema `src/db/schema.ts`,
+      out `src/db/migrations`)
 - [ ] T004 [P] Instalar as demais dependências de `research.md` → Resumo de dependências:
       `lucide-react-native`, `react-native-svg`, `date-fns`, `react-hook-form`, `zod`, `papaparse`,
       `expo-file-system`, `expo-sharing`, `expo-document-picker`, `expo-crypto`
 - [ ] T005 [P] Configurar ESLint + Prettier + `tsconfig.json` em modo `strict: true`
 - [ ] T006 [P] Configurar Jest (`jest-expo` preset) + `@testing-library/react-native`; criar
       `tests/unit/`, `tests/integration/`; adicionar script `npm test`
-- [ ] T007 Criar o esqueleto de rotas `expo-router`: `app/_layout.tsx` (stack raiz) e
-      `app/(tabs)/_layout.tsx` (tab layout), com uma tela placeholder vazia para cada uma das 19
-      rotas listadas em `plan.md` → Project Structure
+- [ ] T007 Criar o esqueleto de rotas `expo-router` conforme a árvore corrigida em `plan.md` →
+      Project Structure: `src/app/_layout.tsx` (stack raiz) e `src/app/(tabs)/_layout.tsx` (Tabs
+      navigator com as 5 abas da barra inferior: **inicio, cartoes, assinaturas, reservas, mais**),
+      cada aba com seu próprio `_layout.tsx` (Stack) e uma tela placeholder vazia para cada uma das
+      19 rotas de tela do design-brief.md + a tela de menu `mais/index.tsx`
 
 ---
 
@@ -67,53 +71,53 @@ User Stories.
 
 **⚠️ CRITICAL**: Nenhuma User Story pode começar antes desta fase estar completa.
 
-- [ ] T008 [P] Implementar `app/domain/shared/money.ts`: conversão reais↔centavos e
+- [ ] T008 [P] Implementar `src/domain/shared/money.ts`: conversão reais↔centavos e
       `formatBRL(cents: number): string`
-- [ ] T009 [P] Implementar `app/domain/shared/dateClamp.ts`: `clampDayToMonth(day, year, month):
+- [ ] T009 [P] Implementar `src/domain/shared/dateClamp.ts`: `clampDayToMonth(day, year, month):
       Date`, cobrindo o Edge Case "dia de fechamento/vencimento/cobrança configurado além do
       último dia de um mês mais curto ajusta automaticamente para o último dia válido daquele mês"
-- [ ] T010 Definir a tabela `Cartão` em `app/db/schema.ts`: `id` (text PK, uuid), `nome` (text not
+- [ ] T010 Definir a tabela `Cartão` em `src/db/schema.ts`: `id` (text PK, uuid), `nome` (text not
       null), `diaFechamento`/`diaVencimento` (integer not null, **1–31**), `arquivadoEm` (integer
       nullable — `NULL` = ativo), `criadoEm` (integer not null), conforme `data-model.md`
-- [ ] T011 [P] Definir a tabela `Fatura` em `app/db/schema.ts`: campos conforme `data-model.md`,
+- [ ] T011 [P] Definir a tabela `Fatura` em `src/db/schema.ts`: campos conforme `data-model.md`,
       **único por `(cartaoId, referenciaAno, referenciaMes)`**, `status` enum
       `ABERTA | FECHADA | PAGA`
-- [ ] T012 [P] Definir a tabela `Compra` em `app/db/schema.ts` com todos os campos de
+- [ ] T012 [P] Definir a tabela `Compra` em `src/db/schema.ts` com todos os campos de
       `data-model.md`, incluindo `valorResponsabilidade` (integer nullable), `motivo`/`responsavel`
       (text nullable), `estabelecimentoManual` (boolean not null default false), `origem` enum
       `MANUAL | CSV_IMPORT | ASSINATURA`, e a validação **`1 ≤ parcelaAtual ≤ parcelasTotal`**
-      expressa como schema `zod` companion em `app/domain/shared/purchaseSchema.ts`
-- [ ] T013 [P] Definir a tabela `Parcela` em `app/db/schema.ts`: `faturaId` (text FK **nullable** —
+      expressa como schema `zod` companion em `src/domain/shared/purchaseSchema.ts`
+- [ ] T013 [P] Definir a tabela `Parcela` em `src/db/schema.ts`: `faturaId` (text FK **nullable** —
       `NULL` quando a Compra é PIX), `numero`, `valor`, `valorResponsabilidade`, conforme
       `data-model.md`
 - [ ] T014 [P] Definir as tabelas `Tag` (nome **UNIQUE**) e `CompraTag` (PK composta
-      `compraId`+`tagId`) em `app/db/schema.ts`
-- [ ] T015 [P] Definir as tabelas `Assinatura` e `AssinaturaTag` em `app/db/schema.ts` conforme
+      `compraId`+`tagId`) em `src/db/schema.ts`
+- [ ] T015 [P] Definir as tabelas `Assinatura` e `AssinaturaTag` em `src/db/schema.ts` conforme
       `data-model.md`
-- [ ] T016 [P] Definir a tabela `ConfiguracaoRenda` em `app/db/schema.ts` (histórico por
+- [ ] T016 [P] Definir a tabela `ConfiguracaoRenda` em `src/db/schema.ts` (histórico por
       `vigenteDesde`, nunca reescrito)
-- [ ] T017 [P] Definir a tabela `EntradaAvulsa` em `app/db/schema.ts`, com `compraVinculadaId`
+- [ ] T017 [P] Definir a tabela `EntradaAvulsa` em `src/db/schema.ts`, com `compraVinculadaId`
       (text FK nullable → Compra)
-- [ ] T018 [P] Definir as tabelas `Reserva` e `LancamentoReserva` em `app/db/schema.ts` —
+- [ ] T018 [P] Definir as tabelas `Reserva` e `LancamentoReserva` em `src/db/schema.ts` —
       `LancamentoReserva.tipo` enum `DEPOSITO | RETIRADA | RENDIMENTO_MANUAL |
       RENDIMENTO_AUTOMATICO` (o último reservado para a feature futura; nenhum código o gera ainda)
-- [ ] T019 [P] Definir a tabela `LoteImportacao` em `app/db/schema.ts`
-- [ ] T020 [P] Definir a tabela `Categoria` em `app/db/schema.ts` (`predefinida` boolean not null)
-- [ ] T021 [P] Definir as tabelas `Estabelecimento` e `PadraoReconhecimento` em `app/db/schema.ts`
-- [ ] T022 [P] Definir a tabela singleton `MetaConsumoIdeal` em `app/db/schema.ts`
+- [ ] T019 [P] Definir a tabela `LoteImportacao` em `src/db/schema.ts`
+- [ ] T020 [P] Definir a tabela `Categoria` em `src/db/schema.ts` (`predefinida` boolean not null)
+- [ ] T021 [P] Definir as tabelas `Estabelecimento` e `PadraoReconhecimento` em `src/db/schema.ts`
+- [ ] T022 [P] Definir a tabela singleton `MetaConsumoIdeal` em `src/db/schema.ts`
       (`percentualDaRenda` real not null)
 - [ ] T023 Rodar `npx drizzle-kit generate` para produzir a migration inicial em
-      `app/db/migrations/`; conferir as 15 tabelas geradas contra `data-model.md`
-- [ ] T024 Implementar `app/db/client.ts`: abrir o banco `expo-sqlite`, envolver com `drizzle()`,
+      `src/db/migrations/`; conferir as 15 tabelas geradas contra `data-model.md`
+- [ ] T024 Implementar `src/db/client.ts`: abrir o banco `expo-sqlite`, envolver com `drizzle()`,
       exportar a instância `db` tipada
-- [ ] T025 Implementar o gate de migration no boot em `app/_layout.tsx` usando `useMigrations` de
+- [ ] T025 Implementar o gate de migration no boot em `src/app/_layout.tsx` usando `useMigrations` de
       `drizzle-orm/expo-sqlite/migrator`, exibindo uma tela de loading até concluir — nenhuma
       navegação é montada antes disso (`research.md` → Decisão: Migrations no boot)
 - [ ] T026 Implementar o seed das Categorias pré-definidas (Compras, Transporte, Alimentação,
       Assinaturas, Saúde, Lazer, **Outros**) rodando uma vez após as migrations, se a tabela
       `Categoria` estiver vazia; `Outros` sempre com `predefinida = true` e nunca excluível
 - [ ] T027 Aplicar os tokens do tema Tamagui no shell do app (`TamaguiProvider` em
-      `app/_layout.tsx`), carregando Manrope + Lora via `expo-font`
+      `src/app/_layout.tsx`), carregando Manrope + Lora via `expo-font`
 
 **Checkpoint**: Fundação pronta — as User Stories podem começar.
 
@@ -137,31 +141,31 @@ compra cai (FR-001, FR-002, FR-011).
 
 ### Implementation for User Story 1
 
-- [ ] T030 [US1] Implementar `app/domain/invoices/resolveInvoicePeriod.ts` conforme
+- [ ] T030 [US1] Implementar `src/domain/invoices/resolveInvoicePeriod.ts` conforme
       `contracts/invoices.md`
-- [ ] T031 [US1] Implementar `app/domain/invoices/ensureInvoice.ts` (upsert idempotente por
+- [ ] T031 [US1] Implementar `src/domain/invoices/ensureInvoice.ts` (upsert idempotente por
       `(cardId, year, month)`) conforme `contracts/invoices.md`
-- [ ] T032 [US1] Implementar `app/domain/invoices/computeInvoiceStatus.ts` e
-      `app/domain/invoices/computeInvoiceTotals.ts` conforme `contracts/invoices.md` (FR-011)
-- [ ] T033 [P] [US1] Implementar `app/repositories/cardsRepository.ts`: criar/listar/arquivar
+- [ ] T032 [US1] Implementar `src/domain/invoices/computeInvoiceStatus.ts` e
+      `src/domain/invoices/computeInvoiceTotals.ts` conforme `contracts/invoices.md` (FR-011)
+- [ ] T033 [P] [US1] Implementar `src/repositories/cardsRepository.ts`: criar/listar/arquivar
       Cartão, validando `diaFechamento`/`diaVencimento` entre 1 e 31
-- [ ] T034 [US1] Implementar `app/repositories/invoicesRepository.ts`: `getOrCreateInvoice`,
+- [ ] T034 [US1] Implementar `src/repositories/invoicesRepository.ts`: `getOrCreateInvoice`,
       `listInvoicesForCard`, `markInvoiceAsPaid`, agregando totais via `computeInvoiceTotals`
-- [ ] T035 [US1] Implementar `app/repositories/purchasesRepository.ts` (versão mínima): criar uma
+- [ ] T035 [US1] Implementar `src/repositories/purchasesRepository.ts` (versão mínima): criar uma
       Compra à vista no cartão (1 parcela, sem parcelamento — estendido na US4), associando-a à
       fatura correta via `resolveInvoicePeriod` + `ensureInvoice`
-- [ ] T036 [P] [US1] Implementar os hooks `app/hooks/useCards.ts` e `app/hooks/useInvoice.ts`
-- [ ] T037 [US1] Construir `app/(tabs)/cartoes/index.tsx` (Cartões · Main) conforme
+- [ ] T036 [P] [US1] Implementar os hooks `src/hooks/useCards.ts` e `src/hooks/useInvoice.ts`
+- [ ] T037 [US1] Construir `src/app/(tabs)/cartoes/index.tsx` (Cartões · Main) conforme
       `design-brief.md` §5 e `design/cartoes-e-compra/Main.dc.html`: lista de cartões, card
       "Total das faturas abertas", FAB "+" para novo cartão
 - [ ] T038 [US1] Construir o formulário de novo cartão (`react-hook-form` + `zod`): nome,
       diaFechamento (1–31), diaVencimento (1–31)
-- [ ] T039 [US1] Construir `app/(tabs)/cartoes/[cardId]/index.tsx` (Cartão · Faturas) conforme
+- [ ] T039 [US1] Construir `src/app/(tabs)/cartoes/[cardId]/index.tsx` (Cartão · Faturas) conforme
       `CartaoDetalhe.dc.html`: lista de faturas com badge de status distinto para "Aberta"
       (`--color-info`/`--color-info-dark`); incluir a ação **"Arquivar cartão"** (com confirmação),
       chamando `cardsRepository.archiveCard` — o cartão some das opções de nova compra e da
       sugestão de melhor cartão, mas continua exibindo suas faturas (FR-025)
-- [ ] T040 [US1] Construir `app/(tabs)/cartoes/[cardId]/fatura/[invoiceId].tsx` (Fatura · Detalhe)
+- [ ] T040 [US1] Construir `src/app/(tabs)/cartoes/[cardId]/fatura/[invoiceId].tsx` (Fatura · Detalhe)
       conforme `FaturaDetalhe.dc.html`: valor total, lista de compras da fatura, botão "Marcar
       fatura como paga" chamando `markInvoiceAsPaid`
 
@@ -182,21 +186,21 @@ compra cai (FR-001, FR-002, FR-011).
 
 ### Implementation for User Story 2
 
-- [ ] T042 [P] [US2] Implementar `app/repositories/incomeConfigRepository.ts`:
+- [ ] T042 [P] [US2] Implementar `src/repositories/incomeConfigRepository.ts`:
       `setIncome(valor, vigenteDesde)`, `getIncomeForMonth(year, month)` (retorna o valor de maior
       `vigenteDesde` ≤ início do mês, sem reescrever histórico — FR-013)
-- [ ] T043 [P] [US2] Implementar `app/repositories/cashEntriesRepository.ts`: CRUD de EntradaAvulsa
-- [ ] T044 [US2] Estender `app/repositories/purchasesRepository.ts` para suportar forma de
+- [ ] T043 [P] [US2] Implementar `src/repositories/cashEntriesRepository.ts`: CRUD de EntradaAvulsa
+- [ ] T044 [US2] Estender `src/repositories/purchasesRepository.ts` para suportar forma de
       pagamento PIX (Parcela sem `faturaId`, contando pela `dataCompra` — nota de `data-model.md`)
-- [ ] T045 [US2] Implementar `app/domain/cashflow/computeMonthBalance.ts`: saldo = renda vigente +
+- [ ] T045 [US2] Implementar `src/domain/cashflow/computeMonthBalance.ts`: saldo = renda vigente +
       soma(EntradaAvulsa do mês) − soma(Parcela PIX do mês) − soma(Fatura que vence no mês) (FR-015)
-- [ ] T046 [P] [US2] Implementar os hooks `app/hooks/useIncome.ts` e `app/hooks/useMonthBalance.ts`
-- [ ] T047 [US2] Construir `app/(tabs)/renda/index.tsx` (Renda & Entradas · Main, incluindo o
+- [ ] T046 [P] [US2] Implementar os hooks `src/hooks/useIncome.ts` e `src/hooks/useMonthBalance.ts`
+- [ ] T047 [US2] Construir `src/app/(tabs)/mais/renda/index.tsx` (Renda & Entradas · Main, incluindo o
       estado vazio de `MainMesVazio.dc.html`): renda configurável, lista de entradas avulsas do
       mês, saldo do mês em destaque
-- [ ] T048 [US2] Construir `app/(tabs)/renda/nova-entrada.tsx` (EntradaAvulsaNova): formulário de
+- [ ] T048 [US2] Construir `src/app/(tabs)/mais/renda/nova-entrada.tsx` (EntradaAvulsaNova): formulário de
       nova entrada avulsa (descrição, valor, data)
-- [ ] T049 [US2] Construir `app/(tabs)/renda/historico.tsx` (aba Histórico, `MainHistorico.dc.html`)
+- [ ] T049 [US2] Construir `src/app/(tabs)/mais/renda/historico.tsx` (aba Histórico, `MainHistorico.dc.html`)
       com o histórico de valores de renda ao longo do tempo
 
 **Checkpoint**: User Stories 1 e 2 ambas funcionais e testáveis de forma independente.
@@ -222,27 +226,27 @@ estava em andamento antes da adoção do app (FR-004 a FR-006, FR-008).
 
 ### Implementation for User Story 4
 
-- [ ] T052 [US4] Implementar `app/domain/installments/splitInstallments.ts` conforme
+- [ ] T052 [US4] Implementar `src/domain/installments/splitInstallments.ts` conforme
       `contracts/installments.md`, incluindo `InvalidInstallmentError` para a validação FR-005
-- [ ] T053 [US4] Implementar `app/domain/installments/allocateInstallmentsToInvoices.ts` conforme
+- [ ] T053 [US4] Implementar `src/domain/installments/allocateInstallmentsToInvoices.ts` conforme
       `contracts/installments.md`
-- [ ] T054 [US4] Estender `app/repositories/purchasesRepository.ts`: ao criar uma Compra `CARTAO`
+- [ ] T054 [US4] Estender `src/repositories/purchasesRepository.ts`: ao criar uma Compra `CARTAO`
       com `parcelasTotal > 1`, chamar `splitInstallments` + `allocateInstallmentsToInvoices`,
       garantindo (via `ensureInvoice`) que cada Fatura futura necessária exista antes de inserir a
       Parcela correspondente
-- [ ] T055 [P] [US4] Implementar `app/repositories/tagsRepository.ts`: criar uma Tag (nome
+- [ ] T055 [P] [US4] Implementar `src/repositories/tagsRepository.ts`: criar uma Tag (nome
       **UNIQUE**, conforme `data-model.md`) e listar as Tags existentes — cobre FR-007 ("criar
       tags personalizadas"), capacidade distinta da simples persistência do vínculo `CompraTag`
       (T056)
 - [ ] T056 [US4] Implementar a persistência de tags/comentário compartilhados: `CompraTag` é
       gravado uma única vez por Compra, reaproveitando `tagsRepository` (T055) para resolver ou
       criar cada Tag pelo nome — todas as Parcelas herdam via `compraId`, nunca por parcela (FR-008)
-- [ ] T057 [US4] Construir `app/(tabs)/cartoes/nova-compra/index.tsx` (Nova Compra) conforme
+- [ ] T057 [US4] Construir `src/app/(tabs)/cartoes/nova-compra/index.tsx` (Nova Compra) conforme
       `NovaCompra.dc.html`: descrição, valor total, data, forma de pagamento, cartão,
       `parcelasTotal`, `parcelaAtual` (opcional, default 1), tags (com opção de criar uma nova tag
       inline via `tagsRepository` quando o texto digitado não corresponder a nenhuma existente),
       comentário — validação `zod` reaproveitando as regras de `splitInstallments`
-- [ ] T058 [US4] Construir `app/(tabs)/cartoes/nova-compra/categoria.tsx` (drawer de categoria)
+- [ ] T058 [US4] Construir `src/app/(tabs)/cartoes/nova-compra/categoria.tsx` (drawer de categoria)
       conforme `NovaCompraCategoria.dc.html`
 - [ ] T059 [US4] Implementar a regra "parcela já lançada em fatura fechada/paga fica congelada":
       em `purchasesRepository.updatePurchase`, bloquear a edição de `Parcela.valor` para parcelas
@@ -266,9 +270,9 @@ estava em andamento antes da adoção do app (FR-004 a FR-006, FR-008).
 
 ### Implementation for User Story 8
 
-- [ ] T061 [US8] Implementar `app/domain/backup/serializeBackup.ts` e
-      `app/domain/backup/validateBackupFile.ts` (schema `zod`) conforme `contracts/backup.md`
-- [ ] T062 [US8] Implementar `app/repositories/backupRepository.ts`: `exportAll()` lendo as 15
+- [ ] T061 [US8] Implementar `src/domain/backup/serializeBackup.ts` e
+      `src/domain/backup/validateBackupFile.ts` (schema `zod`) conforme `contracts/backup.md`
+- [ ] T062 [US8] Implementar `src/repositories/backupRepository.ts`: `exportAll()` lendo as 15
       tabelas por completo; `restoreAll(file)` executando **uma única `db.transaction`**
       (delete-all + insert-all respeitando a ordem de foreign keys) conforme `contracts/backup.md`
       — substituição integral, nunca mesclagem (FR-024)
@@ -276,9 +280,9 @@ estava em andamento antes da adoção do app (FR-004 a FR-006, FR-008).
       `expo-sharing` (compartilhar/salvar)
 - [ ] T064 [US8] Implementar o fluxo de importação com `expo-document-picker` (selecionar o
       `.json`) + `validateBackupFile` antes de qualquer escrita no banco
-- [ ] T065 [US8] Construir `app/(tabs)/backup/index.tsx` (Backup) conforme `Backup.dc.html`:
+- [ ] T065 [US8] Construir `src/app/(tabs)/mais/backup/index.tsx` (Backup) conforme `Backup.dc.html`:
       botões Exportar/Importar
-- [ ] T066 [US8] Construir `app/(tabs)/backup/confirmar-restauracao.tsx` (BackupConfirmar) conforme
+- [ ] T066 [US8] Construir `src/app/(tabs)/mais/backup/confirmar-restauracao.tsx` (BackupConfirmar) conforme
       `BackupConfirmar.dc.html`: aviso explícito de substituição integral e irreversível antes de
       chamar `restoreAll`
 
@@ -293,16 +297,16 @@ FR-037) — pré-requisito visual para US10 e US11.
 
 **Independent Test**: conforme spec.md → User Story 9.
 
-- [ ] T067 [P] [US9] Implementar `app/repositories/categoriesRepository.ts`: CRUD de Categoria
+- [ ] T067 [P] [US9] Implementar `src/repositories/categoriesRepository.ts`: CRUD de Categoria
       personalizada; `deleteCategory` atualiza em lote `Compra.categoriaId = NULL` para todas as
       compras que a usavam (FR-037); nunca permite excluir uma Categoria com `predefinida = true`
-- [ ] T068 [US9] Estender o formulário de Nova Compra (`app/(tabs)/cartoes/nova-compra/index.tsx`)
+- [ ] T068 [US9] Estender o formulário de Nova Compra (`src/app/(tabs)/cartoes/nova-compra/index.tsx`)
       para permitir escolher uma Categoria (predefinida ou personalizada) — campo opcional (FR-029)
-- [ ] T069 [US9] Construir `app/(tabs)/categorias/index.tsx` (Categorias · Main): lista de
+- [ ] T069 [US9] Construir `src/app/(tabs)/mais/categorias/index.tsx` (Categorias · Main): lista de
       predefinidas + personalizadas
-- [ ] T070 [US9] Construir `app/(tabs)/categorias/nova.tsx` (CategoriaCriar): nome + escolha de
+- [ ] T070 [US9] Construir `src/app/(tabs)/mais/categorias/nova.tsx` (CategoriaCriar): nome + escolha de
       ícone lucide entre os disponíveis (FR-028)
-- [ ] T071 [P] [US9] Implementar `app/components/TransactionAvatar.tsx` com a ordem de prioridade
+- [ ] T071 [P] [US9] Implementar `src/components/TransactionAvatar.tsx` com a ordem de prioridade
       **estabelecimento → categoria → ícone genérico "Outros"** (FR-030), para reuso em toda
       listagem de transações
 
@@ -329,19 +333,19 @@ FR-037) — pré-requisito visual para US10 e US11.
 
 ### Implementation for User Story 3
 
-- [ ] T074 [US3] Implementar `app/domain/csvImport/genericParser.ts` conforme
+- [ ] T074 [US3] Implementar `src/domain/csvImport/genericParser.ts` conforme
       `contracts/csv-import.md` (separador `;`, data `DD/MM/AAAA`, valor decimal com vírgula)
-- [ ] T075 [US3] Implementar `app/domain/csvImport/nubankParser.ts` conforme
+- [ ] T075 [US3] Implementar `src/domain/csvImport/nubankParser.ts` conforme
       `contracts/csv-import.md` e o formato confirmado em `research.md` (vírgula decimal,
       `"Pagamento recebido"` sempre excluído, créditos/estornos negativos importados como Compra de
       valor negativo)
-- [ ] T076 [US3] Implementar `app/repositories/csvImportRepository.ts`: recebe um
+- [ ] T076 [US3] Implementar `src/repositories/csvImportRepository.ts`: recebe um
       `CsvParseResult`, cria o `LoteImportacao`, persiste cada `CompraDraft` reaproveitando
       `purchasesRepository`/`splitInstallments` — sem caminho especial de persistência para dados
       importados
-- [ ] T077 [US3] Construir `app/(tabs)/importar-csv/index.tsx` (ImportarCSV): escolher cartão de
+- [ ] T077 [US3] Construir `src/app/(tabs)/cartoes/importar-csv/index.tsx` (ImportarCSV): escolher cartão de
       destino + formato + upload via `expo-document-picker`
-- [ ] T078 [US3] Construir `app/(tabs)/importar-csv/resultado.tsx` (ImportarCSVResultado):
+- [ ] T078 [US3] Construir `src/app/(tabs)/cartoes/importar-csv/resultado.tsx` (ImportarCSVResultado):
       contagem de linhas importadas/ignoradas com motivo (FR-026)
 - [ ] T079 [US3] Estender a tela de edição de transação para permitir adicionar tags e comentário a
       uma transação importada (FR-007)
@@ -359,10 +363,10 @@ FR-037) — pré-requisito visual para US10 e US11.
 - [ ] T080 [P] [US5] Testes unitários de `suggestBestCard` em `tests/unit/domain/bestCard.test.ts`:
       dois cartões com ciclos diferentes, cartão arquivado excluído do ranking (FR-025), empate
       exato resolvido por `criadoEm` mais antigo
-- [ ] T081 [US5] Implementar `app/domain/bestCard/suggestBestCard.ts` conforme
+- [ ] T081 [US5] Implementar `src/domain/bestCard/suggestBestCard.ts` conforme
       `contracts/best-card.md`
-- [ ] T082 [P] [US5] Implementar o hook `app/hooks/useBestCard.ts`
-- [ ] T083 [US5] Exibir a sugestão de melhor cartão na tela `app/(tabs)/index.tsx` (Início) e/ou no
+- [ ] T082 [P] [US5] Implementar o hook `src/hooks/useBestCard.ts`
+- [ ] T083 [US5] Exibir a sugestão de melhor cartão na tela `src/app/(tabs)/inicio/index.tsx` (Início) e/ou no
       fluxo de Nova Compra, conforme `design-brief.md`
 
 **Checkpoint**: US5 completa e testável de forma independente.
@@ -378,17 +382,17 @@ FR-037) — pré-requisito visual para US10 e US11.
 - [ ] T084 [P] [US6] Testes unitários de `pendingChargesFor` e `monthlySubscriptionsTotal` em
       `tests/unit/domain/subscriptions.test.ts`, incluindo o caso de idempotência (não gerar 2x no
       mesmo mês para a mesma assinatura)
-- [ ] T085 [US6] Implementar `app/domain/subscriptions/pendingChargesFor.ts` e
-      `app/domain/subscriptions/monthlySubscriptionsTotal.ts` conforme `contracts/subscriptions.md`
-- [ ] T086 [US6] Implementar `app/repositories/subscriptionsRepository.ts`: CRUD de Assinatura;
+- [ ] T085 [US6] Implementar `src/domain/subscriptions/pendingChargesFor.ts` e
+      `src/domain/subscriptions/monthlySubscriptionsTotal.ts` conforme `contracts/subscriptions.md`
+- [ ] T086 [US6] Implementar `src/repositories/subscriptionsRepository.ts`: CRUD de Assinatura;
       `generatePendingCharges()` cria a Compra (`origem = ASSINATURA`) + Parcela para cada
       `PendingCharge`, copiando forma de pagamento/cartão/categoria/tags **vigentes no momento da
       geração** (FR-017)
-- [ ] T087 [US6] Disparar `generatePendingCharges()` em `app/_layout.tsx` (após as migrations) ou
+- [ ] T087 [US6] Disparar `generatePendingCharges()` em `src/app/_layout.tsx` (após as migrations) ou
       ao entrar nas telas de Início/Assinaturas
-- [ ] T088 [US6] Construir `app/(tabs)/assinaturas/index.tsx` (Assinaturas · Main): lista de
+- [ ] T088 [US6] Construir `src/app/(tabs)/assinaturas/index.tsx` (Assinaturas · Main): lista de
       assinaturas ativas + total mensal somado (FR-018), com FAB "+" para nova assinatura
-- [ ] T089 [US6] Construir `app/(tabs)/assinaturas/[subscriptionId].tsx` (AssinaturaEditar) —
+- [ ] T089 [US6] Construir `src/app/(tabs)/assinaturas/[subscriptionId].tsx` (AssinaturaEditar) —
       reutilizada tanto para **criar uma nova Assinatura** (FR-016, acessada pelo FAB "+" de T088)
       quanto para editar uma existente: nome/valor/forma de pagamento/dia; mudança de forma de
       pagamento em uma assinatura já existente só afeta gerações futuras, nunca reescreve cobranças
@@ -418,18 +422,18 @@ a FR-045). Depende de US1, US2 e US9 já existirem.
 
 ### Implementation for User Story 11
 
-- [ ] T093 [US11] Implementar `app/domain/statistics/resolvePeriod.ts`,
-      `app/domain/statistics/totalSpent.ts`, `app/domain/statistics/compareToPrevious.ts`
+- [ ] T093 [US11] Implementar `src/domain/statistics/resolvePeriod.ts`,
+      `src/domain/statistics/totalSpent.ts`, `src/domain/statistics/compareToPrevious.ts`
       conforme `contracts/statistics.md`
-- [ ] T094 [US11] Implementar `app/domain/statistics/spendingByCategory.ts`,
-      `app/domain/statistics/topExpenses.ts`, `app/domain/statistics/subscriptionsShare.ts`,
-      `app/domain/statistics/idealSpendComparison.ts` conforme `contracts/statistics.md`
-- [ ] T095 [US11] Implementar `app/repositories/statisticsRepository.ts` e
-      `app/repositories/idealGoalRepository.ts` (CRUD da `MetaConsumoIdeal` singleton)
-- [ ] T096 [P] [US11] Implementar o hook `app/hooks/useStatistics.ts`
-- [ ] T097 [US11] Construir o gráfico de consumo mensal em `app/(tabs)/index.tsx` (Início)
+- [ ] T094 [US11] Implementar `src/domain/statistics/spendingByCategory.ts`,
+      `src/domain/statistics/topExpenses.ts`, `src/domain/statistics/subscriptionsShare.ts`,
+      `src/domain/statistics/idealSpendComparison.ts` conforme `contracts/statistics.md`
+- [ ] T095 [US11] Implementar `src/repositories/statisticsRepository.ts` e
+      `src/repositories/idealGoalRepository.ts` (CRUD da `MetaConsumoIdeal` singleton)
+- [ ] T096 [P] [US11] Implementar o hook `src/hooks/useStatistics.ts`
+- [ ] T097 [US11] Construir o gráfico de consumo mensal em `src/app/(tabs)/inicio/index.tsx` (Início)
       conforme `Main.dc.html`, tocável para abrir a tela de Estatísticas
-- [ ] T098 [US11] Construir `app/(tabs)/estatisticas.tsx` (Estatísticas) conforme
+- [ ] T098 [US11] Construir `src/app/(tabs)/inicio/estatisticas.tsx` (Estatísticas) conforme
       `Estatisticas.dc.html`: seletor de período (Diário/Semanal/Mensal/Anual), total + comparação,
       gasto por categoria, maiores gastos, % de assinaturas, seção de meta ideal (condicional a
       haver renda **e** meta configuradas)
@@ -465,31 +469,31 @@ FR-055). Depende de US1, US4 e US11 já existirem.
 
 ### Implementation for User Story 12
 
-- [ ] T103 [US12] Implementar `app/domain/expenseSplitting/resolveResponsibility.ts`: a função
+- [ ] T103 [US12] Implementar `src/domain/expenseSplitting/resolveResponsibility.ts`: a função
       `responsabilidadeEfetiva(compra, entradasVinculadas)` de `data-model.md`, com a precedência
       completa de 3 vias — **(1) soma de entradas vinculadas, se houver; (2)
       `valorResponsabilidade` manual; (3) `valorTotalOriginal`** — reunindo em um único ponto a
       lógica hoje distribuída entre `splitInstallments` e `recomputeSplitOnRefund`, para que
       nenhum repositório precise decidir essa precedência por conta própria
-- [ ] T104 [US12] Implementar `app/domain/expenseSplitting/validateManualResponsibility.ts`,
+- [ ] T104 [US12] Implementar `src/domain/expenseSplitting/validateManualResponsibility.ts`,
       `requiresMotivoResponsavelFields.ts`, `shouldShowResponsibilitySummary.ts` conforme
       `contracts/expense-splitting.md`
-- [ ] T105 [US12] Implementar `app/domain/installments/recomputeSplitOnRefund.ts` conforme
+- [ ] T105 [US12] Implementar `src/domain/installments/recomputeSplitOnRefund.ts` conforme
       `contracts/installments.md`, e integrá-la à proporção usada em `splitInstallments` — mesma
       fração de responsabilidade aplicada em cada parcela (FR-055)
-- [ ] T106 [US12] Estender `app/repositories/cashEntriesRepository.ts`: suportar
+- [ ] T106 [US12] Estender `src/repositories/cashEntriesRepository.ts`: suportar
       `compraVinculadaId` ao criar/editar/excluir uma EntradaAvulsa, chamando
       `resolveResponsibility` (T103) — que internamente usa `recomputeSplitOnRefund` quando há
       entradas vinculadas — e atualizando `Parcela.valorResponsabilidade` de todas as parcelas da
       Compra afetada (FR-051)
-- [ ] T107 [US12] Estender `app/repositories/purchasesRepository.ts`: suportar
+- [ ] T107 [US12] Estender `src/repositories/purchasesRepository.ts`: suportar
       `valorResponsabilidade`/`motivo`/`responsavel` na criação/edição de Compra, validando com
       `validateManualResponsibility` e sempre recalculando o valor efetivo via
       `resolveResponsibility` (T103) — nunca lendo `Compra.valorResponsabilidade` diretamente para
       exibição ou estatística
-- [ ] T108 [US12] Construir `app/(tabs)/cartoes/nova-compra/divisao-manual.tsx`
+- [ ] T108 [US12] Construir `src/app/(tabs)/cartoes/nova-compra/divisao-manual.tsx`
       (NovaCompraDivisaoManual) conforme `NovaCompraDivisaoManual.dc.html`
-- [ ] T109 [US12] Construir `app/(tabs)/cartoes/nova-compra/divisao-vinculada.tsx`
+- [ ] T109 [US12] Construir `src/app/(tabs)/cartoes/nova-compra/divisao-vinculada.tsx`
       (NovaCompraDivisaoVinculada) conforme `NovaCompraDivisaoVinculada.dc.html`
 - [ ] T110 [US12] Exibir o resumo "Você paga: R$ X" em `FaturaDetalhe.tsx` e `CartaoDetalhe.tsx`
       usando `shouldShowResponsibilitySummary` — **nunca altera o valor total exibido da fatura**
@@ -518,14 +522,14 @@ opcional de logotipo (FR-031 a FR-036). Depende de US9 e US3 já existirem.
 
 ### Implementation for User Story 10
 
-- [ ] T113 [US10] Implementar `app/domain/establishmentMatching/matchEstablishment.ts`,
+- [ ] T113 [US10] Implementar `src/domain/establishmentMatching/matchEstablishment.ts`,
       `reevaluateUnassignedTransactions.ts`, `suggestInitialPattern.ts` conforme
       `contracts/establishment-matching.md`
-- [ ] T114 [US10] Implementar `app/repositories/establishmentsRepository.ts`: CRUD de
+- [ ] T114 [US10] Implementar `src/repositories/establishmentsRepository.ts`: CRUD de
       Estabelecimento + PadraoReconhecimento; ao adicionar um padrão, chamar
       `reevaluateUnassignedTransactions` e atualizar as Compras retornadas — **nunca sobrescrevendo
       uma associação com `estabelecimentoManual = true`** (FR-034, FR-035)
-- [ ] T115 [US10] Estender `app/repositories/purchasesRepository.ts` e a tela de edição de Compra:
+- [ ] T115 [US10] Estender `src/repositories/purchasesRepository.ts` e a tela de edição de Compra:
       permitir associar ou remover manualmente o Estabelecimento de uma transação **já existente**
       (mesmo sem nenhum padrão reconhecido, ou para corrigir uma associação automática incorreta),
       sempre marcando `estabelecimentoManual = true` ao fazer isso — distinto de T118, que é a
@@ -536,14 +540,14 @@ opcional de logotipo (FR-031 a FR-036). Depende de US9 e US3 já existirem.
       (`https://cdn.brandfetch.io/{domain}`) + cache local via `expo-file-system`, salvando em
       `Estabelecimento.logoCachePath`; falha/timeout/offline **nunca bloqueia** e sempre recai no
       `iconeRespaldo` (FR-036, Princípio I)
-- [ ] T118 [US10] Construir `app/(tabs)/estabelecimentos/index.tsx` (EstabelecimentosLista), com
+- [ ] T118 [US10] Construir `src/app/(tabs)/mais/estabelecimentos/index.tsx` (EstabelecimentosLista), com
       FAB "+" para novo estabelecimento
-- [ ] T119 [US10] Construir `app/(tabs)/estabelecimentos/[establishmentId].tsx`
+- [ ] T119 [US10] Construir `src/app/(tabs)/mais/estabelecimentos/[establishmentId].tsx`
       (EstabelecimentoDetalhe) — reutilizada tanto para **criar um novo Estabelecimento** a partir
       do FAB "+" de T118 (FR-031) quanto para editar um existente: nome, ícone de respaldo
       (obrigatório), domínio opcional, lista de padrões
 - [ ] T120 [US10] Construir a criação de estabelecimento inline a partir da edição de uma
-      transação (`app/(tabs)/cartoes/nova-compra/estabelecimento.tsx`,
+      transação (`src/app/(tabs)/cartoes/nova-compra/estabelecimento.tsx`,
       `NovaCompraEstabelecimento.dc.html`), sugerindo o padrão inicial via `suggestInitialPattern`
       (FR-032)
 - [ ] T121 [US10] Atualizar `TransactionAvatar` (US9) para preferir `logoCachePath` >
@@ -560,15 +564,15 @@ cadastrada, sem aplicação automática (FR-019 a FR-021).
 
 **Independent Test**: conforme spec.md → User Story 7.
 
-- [ ] T122 [P] [US7] Implementar `app/repositories/reservesRepository.ts`: CRUD de Reserva
+- [ ] T122 [P] [US7] Implementar `src/repositories/reservesRepository.ts`: CRUD de Reserva
       (nome + taxa de rendimento mensal opcional); saldo **sempre derivado** como soma de
       `LancamentoReserva.valor` (nunca uma coluna própria)
-- [ ] T123 [US7] Implementar `app/repositories/reserveEntriesRepository.ts`: criar
+- [ ] T123 [US7] Implementar `src/repositories/reserveEntriesRepository.ts`: criar
       `LancamentoReserva` do tipo `DEPOSITO`, `RETIRADA` ou `RENDIMENTO_MANUAL`; **nenhum código
       gera `RENDIMENTO_AUTOMATICO` nesta versão** (Princípio V / Assumption)
-- [ ] T124 [US7] Construir `app/(tabs)/reservas/index.tsx` (Reservas · Main): lista de reservas +
+- [ ] T124 [US7] Construir `src/app/(tabs)/reservas/index.tsx` (Reservas · Main): lista de reservas +
       saldo de cada uma, com FAB "+" para nova reserva
-- [ ] T125 [US7] Construir `app/(tabs)/reservas/[reserveId].tsx` (ReservaDetalhe) — reutilizada
+- [ ] T125 [US7] Construir `src/app/(tabs)/reservas/[reserveId].tsx` (ReservaDetalhe) — reutilizada
       tanto para **criar uma nova Reserva** (nome + taxa de rendimento mensal opcional, a partir do
       FAB "+" de T124 — FR-019, FR-021) quanto para exibir uma existente: saldo, taxa configurada
       (exibida, **não aplicada automaticamente** — FR-021), histórico de lançamentos, formulário de
@@ -649,8 +653,8 @@ Task: "Testes unitários de resolveInvoicePeriod em tests/unit/domain/invoices.t
 Task: "Testes unitários de computeInvoiceStatus e computeInvoiceTotals em tests/unit/domain/invoices.test.ts"
 
 # Repositório + hooks de US1 em paralelo (depois do domínio pronto):
-Task: "Implementar app/repositories/cardsRepository.ts"
-Task: "Implementar os hooks app/hooks/useCards.ts e app/hooks/useInvoice.ts"
+Task: "Implementar src/repositories/cardsRepository.ts"
+Task: "Implementar os hooks src/hooks/useCards.ts e src/hooks/useInvoice.ts"
 ```
 
 ---

@@ -3,16 +3,33 @@ node_modules/
 .expo/
 dist/
 web-build/
+expo-env.d.ts
 *.log
 npm-debug.*
+yarn-debug.*
 yarn-error.*
+*.tsbuildinfo
+.metro-health-check*
+
+# Native (managed workflow — generated on prebuild, never committed)
+/ios
+/android
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
 
 # Env
 .env
 .env.local
+.env*.local
 
 # OS
 .DS_Store
+*.pem
 
 # Agent folders (may contain local credentials/artifacts)
 .claude/settings.local.json

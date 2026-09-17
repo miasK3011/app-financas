@@ -105,44 +105,73 @@ specs/001-personal-finance-tracker/
 Projeto Expo único (sem frontend/backend separados — não há API remota, ver Constitution Check
 Princípio I). Estrutura de pastas:
 
+> **Correção de implementação (2026-09-17)**: durante o início do `/speckit-implement`, o scaffold
+> oficial do Expo (SDK atual) mostrou que a convenção corrente do `expo-router` é `src/app/` (não
+> `app/` na raiz) — o `create-expo-app` já gera assim por padrão, com `@/*` apontando para `./src/*`
+> no `tsconfig.json`. Isso importa porque **todo arquivo dentro da pasta de rotas do expo-router
+> vira uma rota** (precisa de um `export default` de componente); colocar `domain/`, `db/`,
+> `repositories/` etc. dentro dela — como a primeira versão deste plano descrevia — quebraria o
+> roteamento. A árvore abaixo corrige isso: rotas ficam em `src/app/`, e `domain/db/repositories/
+> hooks/components/theme` são pastas irmãs dentro de `src/`, fora do alcance do roteador.
+>
+> Também corrigido aqui: o `design-brief.md` (§3.1) já registrava que a árvore completa de
+> navegação — quais telas são abas de nível superior na barra inferior vs. abas internas — "ainda
+> seria detalhada", com apenas a barra inferior decidida: **Início, Cartões, Assinaturas, Reservas,
+> Mais**. A árvore abaixo resolve isso: Renda, Categorias, Estabelecimentos e Backup ficam
+> agrupados dentro da aba "Mais" (um menu simples que leva a cada um via stack push), em vez de
+> serem abas próprias; Estatísticas é um drill-down dentro da aba Início (toque no gráfico), não
+> uma aba própria; Importar CSV fica dentro do fluxo de Cartões (import é sempre de uma fatura de
+> um cartão específico). `tasks.md` foi atualizado com os mesmos caminhos.
+
 ```text
-app/                          # expo-router — uma rota por tela do design-brief.md
-├── _layout.tsx                # boot: roda migrations do Drizzle antes de montar a navegação
-├── (tabs)/
-│   ├── index.tsx               # Início & Estatísticas · Main
-│   ├── estatisticas.tsx         # Início & Estatísticas · Estatisticas
-│   ├── cartoes/
-│   │   ├── index.tsx            # Cartões · Main
-│   │   ├── [cardId]/index.tsx    # Cartão · Faturas (CartaoDetalhe)
-│   │   ├── [cardId]/fatura/[invoiceId].tsx  # Fatura · Detalhe
-│   │   └── nova-compra/
-│   │       ├── index.tsx          # Nova Compra
-│   │       ├── categoria.tsx       # drawer de categoria
-│   │       ├── estabelecimento.tsx # criar estabelecimento inline
-│   │       ├── divisao-manual.tsx  # User Story 12 — divisão manual
-│   │       └── divisao-vinculada.tsx # User Story 12 — divisão por entrada vinculada
-│   ├── renda/
-│   │   ├── index.tsx             # Renda & Entradas · Main (+ MesVazio como estado vazio)
-│   │   ├── historico.tsx          # aba Histórico
-│   │   └── nova-entrada.tsx        # EntradaAvulsaNova
-│   ├── assinaturas/
-│   │   ├── index.tsx
-│   │   └── [subscriptionId].tsx    # AssinaturaEditar
-│   ├── importar-csv/
-│   │   ├── index.tsx
-│   │   └── resultado.tsx
-│   ├── categorias/
-│   │   ├── index.tsx
-│   │   └── nova.tsx
-│   ├── estabelecimentos/
-│   │   ├── index.tsx
-│   │   └── [establishmentId].tsx
-│   ├── reservas/
-│   │   ├── index.tsx
-│   │   └── [reserveId].tsx
-│   └── backup/
-│       ├── index.tsx
-│       └── confirmar-restauracao.tsx
+src/
+├── app/                        # expo-router — uma rota por tela do design-brief.md
+│   ├── _layout.tsx              # boot: roda migrations do Drizzle antes de montar a navegação
+│   └── (tabs)/
+│       ├── _layout.tsx           # Tabs navigator: inicio, cartoes, assinaturas, reservas, mais
+│       ├── inicio/
+│       │   ├── _layout.tsx        # Stack desta aba
+│       │   ├── index.tsx          # Início · Main (gráfico de consumo mensal)
+│       │   └── estatisticas.tsx   # Estatísticas (drill-down, botão de voltar, sem aba própria)
+│       ├── cartoes/
+│       │   ├── _layout.tsx
+│       │   ├── index.tsx          # Cartões · Main
+│       │   ├── [cardId]/
+│       │   │   ├── index.tsx       # Cartão · Faturas (CartaoDetalhe)
+│       │   │   └── fatura/[invoiceId].tsx  # Fatura · Detalhe
+│       │   ├── nova-compra/
+│       │   │   ├── index.tsx        # Nova Compra
+│       │   │   ├── categoria.tsx     # drawer de categoria
+│       │   │   ├── estabelecimento.tsx # criar estabelecimento inline
+│       │   │   ├── divisao-manual.tsx  # User Story 12 — divisão manual
+│       │   │   └── divisao-vinculada.tsx # User Story 12 — divisão por entrada vinculada
+│       │   └── importar-csv/
+│       │       ├── index.tsx
+│       │       └── resultado.tsx
+│       ├── assinaturas/
+│       │   ├── _layout.tsx
+│       │   ├── index.tsx
+│       │   └── [subscriptionId].tsx  # AssinaturaEditar (cria e edita)
+│       ├── reservas/
+│       │   ├── _layout.tsx
+│       │   ├── index.tsx
+│       │   └── [reserveId].tsx        # ReservaDetalhe (cria e edita)
+│       └── mais/
+│           ├── _layout.tsx
+│           ├── index.tsx              # menu: Renda, Categorias, Estabelecimentos, Backup
+│           ├── renda/
+│           │   ├── index.tsx           # Renda & Entradas · Main (+ MesVazio)
+│           │   ├── historico.tsx        # aba Histórico
+│           │   └── nova-entrada.tsx      # EntradaAvulsaNova
+│           ├── categorias/
+│           │   ├── index.tsx
+│           │   └── nova.tsx
+│           ├── estabelecimentos/
+│           │   ├── index.tsx
+│           │   └── [establishmentId].tsx  # cria e edita
+│           └── backup/
+│               ├── index.tsx
+│               └── confirmar-restauracao.tsx
 ├── db/
 │   ├── schema.ts                 # tabelas Drizzle (uma seção por Key Entity da spec)
 │   ├── client.ts                 # abre o expo-sqlite db + injeta o Drizzle
@@ -162,8 +191,9 @@ app/                          # expo-router — uma rota por tela do design-brie
 ├── repositories/                  # camada fina de queries Drizzle, 1 arquivo por Key Entity
 ├── hooks/                         # hooks React que combinam repositories + domain (ex.: useInvoice)
 ├── components/                    # componentes Tamagui reutilizáveis (avatar, chip de parcela, ...)
-├── theme/                         # tamagui.config.ts com os tokens definidos no design-brief.md
-└── assets/                        # fontes (Manrope/Lora), ícones de categoria/estabelecimento padrão
+└── theme/                         # tamagui.config.ts com os tokens definidos no design-brief.md
+
+assets/                          # fontes (Manrope/Lora), ícones/imagens do app shell (fora de src/)
 
 tests/
 ├── unit/                          # 1:1 com src/domain/** — sem device, sem SQLite real
@@ -171,11 +201,12 @@ tests/
 └── fixtures/                      # CSVs de exemplo (genérico e Nubank) usados nos parsers e no quickstart
 ```
 
-**Structure Decision**: Projeto Expo único (Option 1 adaptada para mobile — sem `src/` genérico
-porque `expo-router` exige a pasta `app/` na raiz para roteamento por arquivo). Toda regra de
-negócio fica em `domain/`, deliberadamente desacoplada de React Native e do Drizzle, para poder ser
-testada com Jest puro sem depender de um runtime SQLite real (ver `research.md`). `repositories/` é
-a única camada que conhece `expo-sqlite`/Drizzle; `hooks/` é a única camada que conhece React.
+**Structure Decision**: Projeto Expo único, convenção `src/` (a que o próprio `create-expo-app`
+gera hoje): rotas em `src/app/`, tudo o mais em pastas irmãs dentro de `src/`, fora do alcance do
+roteador. Toda regra de negócio fica em `src/domain/`, deliberadamente desacoplada de React Native
+e do Drizzle, para poder ser testada com Jest puro sem depender de um runtime SQLite real (ver
+`research.md`). `src/repositories/` é a única camada que conhece `expo-sqlite`/Drizzle;
+`src/hooks/` é a única camada que conhece React.
 
 ## Complexity Tracking
 
