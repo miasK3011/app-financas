@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Archive, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { Archive, ChevronLeft, ChevronRight, Plus } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
@@ -128,6 +128,22 @@ export default function CartaoFaturasScreen() {
           </YStack>
         )}
       </ScrollView>
+
+      {!card?.arquivadoEm && (
+        <Button
+          onPress={() =>
+            router.push({ pathname: '/cartoes/nova-compra', params: { cartaoId: cardId } })
+          }
+          position="absolute"
+          bottom={24}
+          right={20}
+          width={56}
+          height={56}
+          borderRadius={28}
+          backgroundColor="$primary"
+          icon={<Plus color="white" size={24} />}
+        />
+      )}
     </Screen>
   );
 }

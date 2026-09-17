@@ -125,6 +125,17 @@ export default function RendaScreen() {
           )}
         </YStack>
 
+        <Button
+          onPress={() => router.push({ pathname: '/cartoes/nova-compra', params: { formaPagamento: 'PIX' } })}
+          backgroundColor="$surface"
+          borderColor="$border"
+          borderWidth={1}
+          color="$primary"
+          fontWeight="700"
+        >
+          Registrar compra via Pix
+        </Button>
+
         <YStack gap="$2">
           <XStack justifyContent="space-between" alignItems="center">
             <Text fontSize={15} fontWeight="600" color="$text">

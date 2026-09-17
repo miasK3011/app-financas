@@ -217,39 +217,39 @@ estava em andamento antes da adoção do app (FR-004 a FR-006, FR-008).
 
 ### Tests for User Story 4
 
-- [ ] T050 [P] [US4] Testes unitários de `splitInstallments` em
+- [X] T050 [P] [US4] Testes unitários de `splitInstallments` em
       `tests/unit/domain/installments.test.ts`: split simples (R$300/3x), parcela atual > 1
       (gera só as parcelas restantes), erro quando **`parcelaAtual > parcelasTotal`** ou
       **`parcelaAtual < 1`** (FR-005), diferença de arredondamento absorvida pela primeira parcela
       gerada
-- [ ] T051 [P] [US4] Testes unitários de `allocateInstallmentsToInvoices` em
+- [X] T051 [P] [US4] Testes unitários de `allocateInstallmentsToInvoices` em
       `tests/unit/domain/installments.test.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T052 [US4] Implementar `src/domain/installments/splitInstallments.ts` conforme
+- [X] T052 [US4] Implementar `src/domain/installments/splitInstallments.ts` conforme
       `contracts/installments.md`, incluindo `InvalidInstallmentError` para a validação FR-005
-- [ ] T053 [US4] Implementar `src/domain/installments/allocateInstallmentsToInvoices.ts` conforme
+- [X] T053 [US4] Implementar `src/domain/installments/allocateInstallmentsToInvoices.ts` conforme
       `contracts/installments.md`
-- [ ] T054 [US4] Estender `src/repositories/purchasesRepository.ts`: ao criar uma Compra `CARTAO`
+- [X] T054 [US4] Estender `src/repositories/purchasesRepository.ts`: ao criar uma Compra `CARTAO`
       com `parcelasTotal > 1`, chamar `splitInstallments` + `allocateInstallmentsToInvoices`,
       garantindo (via `ensureInvoice`) que cada Fatura futura necessária exista antes de inserir a
       Parcela correspondente
-- [ ] T055 [P] [US4] Implementar `src/repositories/tagsRepository.ts`: criar uma Tag (nome
+- [X] T055 [P] [US4] Implementar `src/repositories/tagsRepository.ts`: criar uma Tag (nome
       **UNIQUE**, conforme `data-model.md`) e listar as Tags existentes — cobre FR-007 ("criar
       tags personalizadas"), capacidade distinta da simples persistência do vínculo `CompraTag`
       (T056)
-- [ ] T056 [US4] Implementar a persistência de tags/comentário compartilhados: `CompraTag` é
+- [X] T056 [US4] Implementar a persistência de tags/comentário compartilhados: `CompraTag` é
       gravado uma única vez por Compra, reaproveitando `tagsRepository` (T055) para resolver ou
       criar cada Tag pelo nome — todas as Parcelas herdam via `compraId`, nunca por parcela (FR-008)
-- [ ] T057 [US4] Construir `src/app/(tabs)/cartoes/nova-compra/index.tsx` (Nova Compra) conforme
+- [X] T057 [US4] Construir `src/app/(tabs)/cartoes/nova-compra/index.tsx` (Nova Compra) conforme
       `NovaCompra.dc.html`: descrição, valor total, data, forma de pagamento, cartão,
       `parcelasTotal`, `parcelaAtual` (opcional, default 1), tags (com opção de criar uma nova tag
       inline via `tagsRepository` quando o texto digitado não corresponder a nenhuma existente),
       comentário — validação `zod` reaproveitando as regras de `splitInstallments`
-- [ ] T058 [US4] Construir `src/app/(tabs)/cartoes/nova-compra/categoria.tsx` (drawer de categoria)
+- [X] T058 [US4] Construir `src/app/(tabs)/cartoes/nova-compra/categoria.tsx` (drawer de categoria)
       conforme `NovaCompraCategoria.dc.html`
-- [ ] T059 [US4] Implementar a regra "parcela já lançada em fatura fechada/paga fica congelada":
+- [X] T059 [US4] Implementar a regra "parcela já lançada em fatura fechada/paga fica congelada":
       em `purchasesRepository.updatePurchase`, bloquear a edição de `Parcela.valor` para parcelas
       cuja `Fatura.status` seja `FECHADA` ou `PAGA` (Edge Case)
 

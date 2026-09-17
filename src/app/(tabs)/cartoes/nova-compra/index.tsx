@@ -1,5 +1,398 @@
-import { PlaceholderScreen } from '@/components/PlaceholderScreen';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { Button, Input, ScrollView, Text, XStack, YStack } from 'tamagui';
+import { z } from 'zod';
+
+import { Screen } from '@/components/Screen';
+import { reaisToCents } from '@/domain/shared/money';
+import { useCards } from '@/hooks/useCards';
+import { createCardPurchase, createPixPurchase } from '@/repositories/purchasesRepository';
+
+const formSchema = z
+  .object({
+    descricao: z.string().min(1),
+    valorReais: z.number().positive(),
+    dataCompra: z.string().min(1),
+    formaPagamento: z.enum(['PIX', 'CARTAO']),
+    cartaoId: z.string().optional(),
+    parcelasTotal: z.number().int().min(1),
+    parcelaAtual: z.number().int().min(1),
+    tagsText: z.string().optional(),
+    comentario: z.string().optional(),
+  })
+  .refine((data) => data.formaPagamento !== 'CARTAO' || Boolean(data.cartaoId), {
+    message: 'Selecione um cartão',
+    path: ['cartaoId'],
+  })
+  .refine((data) => data.parcelaAtual <= data.parcelasTotal, {
+    message: 'A parcela atual não pode ser maior que o total de parcelas',
+    path: ['parcelaAtual'],
+  });
+
+type FormValues = z.infer<typeof formSchema>;
+
+function todayAsBR(): string {
+  const today = new Date();
+  return `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+}
+
+function parseBRDate(value: string): Date {
+  const [day, month, year] = value.split('/').map(Number);
+  return new Date(year, (month ?? 1) - 1, day ?? 1);
+}
 
 export default function NovaCompraScreen() {
-  return <PlaceholderScreen title="Nova Compra" />;
+  const router = useRouter();
+  const params = useLocalSearchParams<{
+    cartaoId?: string;
+    cartaoNome?: string;
+    formaPagamento?: 'PIX' | 'CARTAO';
+    categoriaId?: string;
+    categoriaNome?: string;
+  }>();
+  const { cards } = useCards();
+  const [categoriaId, setCategoriaId] = useState<string | undefined>(params.categoriaId);
+  const [categoriaNome, setCategoriaNome] = useState<string | undefined>(params.categoriaNome);
+
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      descricao: '',
+      valorReais: undefined,
+      dataCompra: todayAsBR(),
+      formaPagamento: params.formaPagamento ?? (params.cartaoId ? 'CARTAO' : 'PIX'),
+      cartaoId: params.cartaoId,
+      parcelasTotal: 1,
+      parcelaAtual: 1,
+      tagsText: '',
+      comentario: '',
+    },
+  });
+
+  // Voltando do drawer de categoria (T058) — a tela já está montada
+  // (router.dismissTo não a recria), então só sincronizamos os params.
+  useEffect(() => {
+    if (params.categoriaId) {
+      setCategoriaId(params.categoriaId);
+      setCategoriaNome(params.categoriaNome);
+    }
+  }, [params.categoriaId, params.categoriaNome]);
+
+  const formaPagamento = watch('formaPagamento');
+  const parcelasTotal = watch('parcelasTotal');
+  const selectedCartaoId = watch('cartaoId');
+
+  const onSubmit = handleSubmit(async (data) => {
+    const tagNomes = (data.tagsText ?? '')
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+
+    if (data.formaPagamento === 'CARTAO') {
+      await createCardPurchase({
+        descricao: data.descricao,
+        valorTotalOriginal: reaisToCents(data.valorReais),
+        dataCompra: parseBRDate(data.dataCompra),
+        cartaoId: data.cartaoId!,
+        parcelasTotal: data.parcelasTotal,
+        parcelaAtual: data.parcelaAtual,
+        categoriaId,
+        comentario: data.comentario || undefined,
+        tagNomes,
+      });
+    } else {
+      await createPixPurchase({
+        descricao: data.descricao,
+        valorTotalOriginal: reaisToCents(data.valorReais),
+        dataCompra: parseBRDate(data.dataCompra),
+        categoriaId,
+        comentario: data.comentario || undefined,
+        tagNomes,
+      });
+    }
+
+    router.back();
+  });
+
+  return (
+    <Screen edges={['top', 'left', 'right', 'bottom']}>
+      <XStack alignItems="center" gap="$3" padding={20} paddingBottom={0}>
+        <Button
+          onPress={() => router.back()}
+          circular
+          size="$3"
+          backgroundColor="$surface"
+          borderColor="$border"
+          borderWidth={1}
+          icon={<ChevronLeft size={18} />}
+        />
+        <Text fontFamily="$heading" fontSize={18} fontWeight="600" color="$text">
+          Nova compra
+        </Text>
+      </XStack>
+
+      <ScrollView contentContainerStyle={{ padding: 20, gap: 18 }}>
+        <YStack gap="$2">
+          <Text fontSize={13} color="$textSecondary">
+            Descrição
+          </Text>
+          <Controller
+            control={control}
+            name="descricao"
+            render={({ field }) => (
+              <Input
+                value={field.value}
+                onChangeText={field.onChange}
+                placeholder="Ex.: Pizzaria Napoli"
+                borderColor="$border"
+                borderRadius="$md"
+              />
+            )}
+          />
+          {errors.descricao && (
+            <Text fontSize={12} color="$error">
+              Informe uma descrição
+            </Text>
+          )}
+        </YStack>
+
+        <XStack gap="$3">
+          <YStack flex={1} gap="$2">
+            <Text fontSize={13} color="$textSecondary">
+              Valor (R$)
+            </Text>
+            <Controller
+              control={control}
+              name="valorReais"
+              render={({ field }) => (
+                <Input
+                  value={field.value === undefined ? '' : String(field.value)}
+                  onChangeText={(text) =>
+                    field.onChange(text === '' ? undefined : Number(text.replace(',', '.')))
+                  }
+                  placeholder="Ex.: 70"
+                  keyboardType="decimal-pad"
+                  borderColor="$border"
+                  borderRadius="$md"
+                />
+              )}
+            />
+            {errors.valorReais && (
+              <Text fontSize={12} color="$error">
+                Valor inválido
+              </Text>
+            )}
+          </YStack>
+
+          <YStack flex={1} gap="$2">
+            <Text fontSize={13} color="$textSecondary">
+              Data
+            </Text>
+            <Controller
+              control={control}
+              name="dataCompra"
+              render={({ field }) => (
+                <Input
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  placeholder="DD/MM/AAAA"
+                  borderColor="$border"
+                  borderRadius="$md"
+                />
+              )}
+            />
+          </YStack>
+        </XStack>
+
+        <YStack gap="$2">
+          <Text fontSize={13} color="$textSecondary">
+            Forma de pagamento
+          </Text>
+          <XStack gap="$2">
+            <Button
+              flex={1}
+              onPress={() => setValue('formaPagamento', 'PIX')}
+              backgroundColor={formaPagamento === 'PIX' ? '$primary' : '$surface'}
+              color={formaPagamento === 'PIX' ? 'white' : '$text'}
+              borderColor="$border"
+              borderWidth={1}
+              fontWeight="700"
+            >
+              Pix
+            </Button>
+            <Button
+              flex={1}
+              onPress={() => setValue('formaPagamento', 'CARTAO')}
+              backgroundColor={formaPagamento === 'CARTAO' ? '$primary' : '$surface'}
+              color={formaPagamento === 'CARTAO' ? 'white' : '$text'}
+              borderColor="$border"
+              borderWidth={1}
+              fontWeight="700"
+            >
+              Cartão
+            </Button>
+          </XStack>
+        </YStack>
+
+        {formaPagamento === 'CARTAO' && (
+          <>
+            <YStack gap="$2">
+              <Text fontSize={13} color="$textSecondary">
+                Cartão
+              </Text>
+              <XStack flexWrap="wrap" gap="$2">
+                {cards.map((card) => (
+                  <Button
+                    key={card.id}
+                    onPress={() => setValue('cartaoId', card.id)}
+                    size="$3"
+                    backgroundColor={selectedCartaoId === card.id ? '$primary' : '$surface'}
+                    color={selectedCartaoId === card.id ? 'white' : '$text'}
+                    borderColor="$border"
+                    borderWidth={1}
+                  >
+                    {card.nome}
+                  </Button>
+                ))}
+              </XStack>
+              {errors.cartaoId && (
+                <Text fontSize={12} color="$error">
+                  Selecione um cartão
+                </Text>
+              )}
+            </YStack>
+
+            <XStack gap="$3">
+              <YStack flex={1} gap="$2">
+                <Text fontSize={13} color="$textSecondary">
+                  Nº de parcelas
+                </Text>
+                <Controller
+                  control={control}
+                  name="parcelasTotal"
+                  render={({ field }) => (
+                    <Input
+                      value={String(field.value)}
+                      onChangeText={(text) => field.onChange(Number(text) || 1)}
+                      keyboardType="number-pad"
+                      borderColor="$border"
+                      borderRadius="$md"
+                    />
+                  )}
+                />
+              </YStack>
+
+              {parcelasTotal > 1 && (
+                <YStack flex={1} gap="$2">
+                  <Text fontSize={13} color="$textSecondary">
+                    Parcela atual
+                  </Text>
+                  <Controller
+                    control={control}
+                    name="parcelaAtual"
+                    render={({ field }) => (
+                      <Input
+                        value={String(field.value)}
+                        onChangeText={(text) => field.onChange(Number(text) || 1)}
+                        keyboardType="number-pad"
+                        borderColor="$border"
+                        borderRadius="$md"
+                      />
+                    )}
+                  />
+                  {errors.parcelaAtual && (
+                    <Text fontSize={12} color="$error">
+                      {errors.parcelaAtual.message}
+                    </Text>
+                  )}
+                </YStack>
+              )}
+            </XStack>
+          </>
+        )}
+
+        <XStack
+          justifyContent="space-between"
+          alignItems="center"
+          paddingVertical={14}
+          borderTopWidth={1}
+          borderColor="$border"
+          onPress={() =>
+            router.push({
+              pathname: '/cartoes/nova-compra/categoria',
+              params: { categoriaId, categoriaNome },
+            })
+          }
+        >
+          <Text fontSize={13} color="$textSecondary">
+            Categoria
+          </Text>
+          <XStack alignItems="center" gap="$2">
+            <Text fontSize={14.5} fontWeight="600" color="$text">
+              {categoriaNome ?? 'Nenhuma'}
+            </Text>
+            <ChevronRight size={16} color="#6C6C6D" />
+          </XStack>
+        </XStack>
+
+        <YStack gap="$2">
+          <Text fontSize={13} color="$textSecondary">
+            Tags (separadas por vírgula)
+          </Text>
+          <Controller
+            control={control}
+            name="tagsText"
+            render={({ field }) => (
+              <Input
+                value={field.value}
+                onChangeText={field.onChange}
+                placeholder="Ex.: Trabalho, Presente"
+                borderColor="$border"
+                borderRadius="$md"
+              />
+            )}
+          />
+        </YStack>
+
+        <YStack gap="$2">
+          <Text fontSize={13} color="$textSecondary">
+            Comentário
+          </Text>
+          <Controller
+            control={control}
+            name="comentario"
+            render={({ field }) => (
+              <Input
+                value={field.value}
+                onChangeText={field.onChange}
+                placeholder="Opcional"
+                borderColor="$border"
+                borderRadius="$md"
+              />
+            )}
+          />
+        </YStack>
+
+        <Button
+          onPress={onSubmit}
+          disabled={isSubmitting}
+          backgroundColor="$primary"
+          color="white"
+          fontWeight="700"
+          borderRadius={999}
+        >
+          Salvar compra
+        </Button>
+      </ScrollView>
+    </Screen>
+  );
 }

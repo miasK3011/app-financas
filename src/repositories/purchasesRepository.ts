@@ -2,13 +2,27 @@ import { and, eq, gte, lt } from 'drizzle-orm';
 import { randomUUID } from 'expo-crypto';
 
 import { db } from '@/db/client';
-import { cartoes, compras, parcelas } from '@/db/schema';
-import { resolveInvoicePeriod } from '@/domain/invoices/resolveInvoicePeriod';
+import { cartoes, compraTags, compras, faturas, parcelas } from '@/db/schema';
+import { allocateInstallmentsToInvoices } from '@/domain/installments/allocateInstallmentsToInvoices';
+import { splitInstallments } from '@/domain/installments/splitInstallments';
+import { computeInvoiceStatus } from '@/domain/invoices/computeInvoiceStatus';
 import { purchaseSchema } from '@/domain/shared/purchaseSchema';
 
 import { getOrCreateInvoice } from './invoicesRepository';
+import { findOrCreateTag } from './tagsRepository';
 
 export type Purchase = typeof compras.$inferSelect;
+
+/**
+ * FR-007/FR-008: resolve (criando se preciso, via `tagsRepository`)
+ * cada nome de tag e grava o vínculo `CompraTag` uma única vez por
+ * Compra — todas as Parcelas herdam via `compraId`, nunca por parcela.
+ */
+async function attachTagsToCompra(compraId: string, tagNomes: string[] | undefined): Promise<void> {
+  if (!tagNomes || tagNomes.length === 0) return;
+  const tags = await Promise.all(tagNomes.map((nome) => findOrCreateTag(nome)));
+  await db.insert(compraTags).values(tags.map((tag) => ({ compraId, tagId: tag.id })));
+}
 
 export type CreateCardPurchaseInput = {
   descricao: string;
@@ -16,14 +30,20 @@ export type CreateCardPurchaseInput = {
   dataCompra: Date;
   cartaoId: string;
   categoriaId?: string;
+  /** Total de parcelas (default 1 — compra à vista). */
+  parcelasTotal?: number;
+  /** Próxima parcela a vencer (default 1); >1 = parcelamento já em andamento (FR-004). */
+  parcelaAtual?: number;
+  comentario?: string;
+  tagNomes?: string[];
 };
 
 /**
- * Versão mínima (User Story 1): cria uma Compra à vista no cartão — 1
- * parcela, sem suporte a parcelamento ainda (estendido em `createCardPurchase`
- * pela User Story 4, T054, que reescreve a alocação de parcelas). A
- * fatura correta é resolvida via `resolveInvoicePeriod` +
- * `getOrCreateInvoice` (FR-002).
+ * FR-004..FR-006: cria uma Compra no cartão, dividindo automaticamente
+ * o valor entre as parcelas restantes (`splitInstallments`) e
+ * alocando cada uma na Fatura correta (`allocateInstallmentsToInvoices`
+ * + `getOrCreateInvoice`, que garante a Fatura existir antes de
+ * inserir a Parcela).
  */
 export async function createCardPurchase(input: CreateCardPurchaseInput): Promise<Purchase> {
   const parsed = purchaseSchema.parse({
@@ -32,8 +52,8 @@ export async function createCardPurchase(input: CreateCardPurchaseInput): Promis
     dataCompra: input.dataCompra,
     formaPagamento: 'CARTAO',
     cartaoId: input.cartaoId,
-    parcelasTotal: 1,
-    parcelaAtual: 1,
+    parcelasTotal: input.parcelasTotal ?? 1,
+    parcelaAtual: input.parcelaAtual ?? 1,
   });
 
   const [card] = await db.select().from(cartoes).where(eq(cartoes.id, parsed.cartaoId!));
@@ -41,8 +61,13 @@ export async function createCardPurchase(input: CreateCardPurchaseInput): Promis
     throw new Error(`Cartão ${input.cartaoId} não encontrado`);
   }
 
-  const { year, month } = resolveInvoicePeriod(card.diaFechamento, parsed.dataCompra);
-  const invoice = await getOrCreateInvoice(card.id, year, month);
+  const plan = splitInstallments({
+    valorTotalOriginal: parsed.valorTotalOriginal,
+    parcelasTotal: parsed.parcelasTotal,
+    parcelaAtual: parsed.parcelaAtual,
+    valorResponsabilidade: null,
+  });
+  const allocations = allocateInstallmentsToInvoices(plan, card, parsed.dataCompra);
 
   const compraId = randomUUID();
   const [purchase] = await db
@@ -54,8 +79,9 @@ export async function createCardPurchase(input: CreateCardPurchaseInput): Promis
       dataCompra: parsed.dataCompra,
       formaPagamento: 'CARTAO',
       cartaoId: card.id,
-      parcelasTotal: 1,
-      parcelaAtual: 1,
+      parcelasTotal: parsed.parcelasTotal,
+      parcelaAtual: parsed.parcelaAtual,
+      comentario: input.comentario,
       categoriaId: input.categoriaId,
       estabelecimentoManual: false,
       origem: 'MANUAL',
@@ -63,14 +89,20 @@ export async function createCardPurchase(input: CreateCardPurchaseInput): Promis
     })
     .returning();
 
-  await db.insert(parcelas).values({
-    id: randomUUID(),
-    compraId,
-    faturaId: invoice.id,
-    numero: 1,
-    valor: parsed.valorTotalOriginal,
-    valorResponsabilidade: parsed.valorTotalOriginal,
-  });
+  for (const [index, installment] of plan.entries()) {
+    const allocation = allocations[index];
+    const invoice = await getOrCreateInvoice(card.id, allocation.year, allocation.month);
+    await db.insert(parcelas).values({
+      id: randomUUID(),
+      compraId,
+      faturaId: invoice.id,
+      numero: installment.numero,
+      valor: installment.valor,
+      valorResponsabilidade: installment.valorResponsabilidade,
+    });
+  }
+
+  await attachTagsToCompra(compraId, input.tagNomes);
 
   return purchase;
 }
@@ -80,6 +112,8 @@ export type CreatePixPurchaseInput = {
   valorTotalOriginal: number;
   dataCompra: Date;
   categoriaId?: string;
+  comentario?: string;
+  tagNomes?: string[];
 };
 
 /**
@@ -110,6 +144,7 @@ export async function createPixPurchase(input: CreatePixPurchaseInput): Promise<
       cartaoId: null,
       parcelasTotal: 1,
       parcelaAtual: 1,
+      comentario: input.comentario,
       categoriaId: input.categoriaId,
       estabelecimentoManual: false,
       origem: 'MANUAL',
@@ -125,6 +160,8 @@ export async function createPixPurchase(input: CreatePixPurchaseInput): Promise<
     valor: parsed.valorTotalOriginal,
     valorResponsabilidade: parsed.valorTotalOriginal,
   });
+
+  await attachTagsToCompra(compraId, input.tagNomes);
 
   return purchase;
 }
@@ -172,4 +209,37 @@ export async function listPurchasesForInvoice(invoiceId: string): Promise<Invoic
     valorResponsabilidade: parcela.valorResponsabilidade,
     compra,
   }));
+}
+
+/**
+ * Edge Case: "parcela já lançada em fatura fechada/paga fica
+ * congelada" — verdadeiro se QUALQUER Parcela desta Compra pertence a
+ * uma Fatura cujo status de exibição (via `computeInvoiceStatus`, não
+ * a coluna crua) é `FECHADA` ou `PAGA`.
+ */
+export async function hasFrozenInstallments(compraId: string, today: Date = new Date()): Promise<boolean> {
+  const rows = await db
+    .select({ fatura: faturas })
+    .from(parcelas)
+    .innerJoin(faturas, eq(parcelas.faturaId, faturas.id))
+    .where(eq(parcelas.compraId, compraId));
+
+  return rows.some(({ fatura }) => computeInvoiceStatus(fatura, today) !== 'ABERTA');
+}
+
+export type UpdatePurchaseInput = {
+  descricao?: string;
+  categoriaId?: string | null;
+  comentario?: string | null;
+};
+
+/**
+ * Só atualiza campos que nunca afetam `Parcela.valor` (descrição,
+ * categoria, comentário) — por isso não precisa checar parcelas
+ * congeladas para eles. Uma futura tela de "editar valor/parcelamento"
+ * (nenhuma existe ainda) deve chamar `hasFrozenInstallments` antes de
+ * permitir essa edição mais sensível e bloquear se retornar `true`.
+ */
+export async function updatePurchase(compraId: string, updates: UpdatePurchaseInput): Promise<void> {
+  await db.update(compras).set(updates).where(eq(compras.id, compraId));
 }

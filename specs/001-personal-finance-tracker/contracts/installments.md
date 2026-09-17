@@ -22,7 +22,8 @@
   `invoices.resolveInvoicePeriod(card.diaFechamento, purchaseDate)`.
 - Cada entrada seguinte vai para o mês seguinte consecutivo (não pula meses).
 - Para cada `(year, month)` retornado, o chamador (repositório) deve chamar
-  `invoices.ensureInvoice(card.id, year, month)` antes de persistir a Parcela correspondente.
+  `invoicesRepository.getOrCreateInvoice(card.id, year, month)` antes de persistir a Parcela
+  correspondente (nome corrigido — ver `contracts/invoices.md`, Correção de implementação).
 
 ## `recomputeSplitOnRefund(compra: { valorTotalOriginal: number }, entradasVinculadas: { valor: number }[]): number`
 
