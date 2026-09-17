@@ -16,6 +16,11 @@ ficam cobertos pela validação manual de `quickstart.md`.
 **Organization**: Tarefas agrupadas por User Story (spec.md), em ordem de prioridade (P1 → P2 → P3),
 respeitando as dependências entre stories declaradas na própria spec ("Why this priority").
 
+> Revisado após `/speckit-analyze` (2026-09-17): 4 tarefas adicionadas e 5 reformulações de texto
+> para fechar lacunas de cobertura (criação de Tag — FR-007; dispatcher único da precedência de
+> responsabilidade — FR-046–055; fluxo de criação de Assinatura/Reserva/Estabelecimento; ação de
+> arquivar cartão na UI; associação manual de estabelecimento em transação existente — FR-034).
+
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Pode rodar em paralelo (arquivos diferentes, sem dependência de tarefa incompleta)
@@ -153,7 +158,9 @@ compra cai (FR-001, FR-002, FR-011).
       diaFechamento (1–31), diaVencimento (1–31)
 - [ ] T039 [US1] Construir `app/(tabs)/cartoes/[cardId]/index.tsx` (Cartão · Faturas) conforme
       `CartaoDetalhe.dc.html`: lista de faturas com badge de status distinto para "Aberta"
-      (`--color-info`/`--color-info-dark`)
+      (`--color-info`/`--color-info-dark`); incluir a ação **"Arquivar cartão"** (com confirmação),
+      chamando `cardsRepository.archiveCard` — o cartão some das opções de nova compra e da
+      sugestão de melhor cartão, mas continua exibindo suas faturas (FR-025)
 - [ ] T040 [US1] Construir `app/(tabs)/cartoes/[cardId]/fatura/[invoiceId].tsx` (Fatura · Detalhe)
       conforme `FaturaDetalhe.dc.html`: valor total, lista de compras da fatura, botão "Marcar
       fatura como paga" chamando `markInvoiceAsPaid`
@@ -223,16 +230,21 @@ estava em andamento antes da adoção do app (FR-004 a FR-006, FR-008).
       com `parcelasTotal > 1`, chamar `splitInstallments` + `allocateInstallmentsToInvoices`,
       garantindo (via `ensureInvoice`) que cada Fatura futura necessária exista antes de inserir a
       Parcela correspondente
-- [ ] T055 [US4] Implementar a persistência de tags/comentário compartilhados: `CompraTag` é
-      gravado uma única vez por Compra — todas as Parcelas herdam via `compraId`, nunca por parcela
-      (FR-008)
-- [ ] T056 [US4] Construir `app/(tabs)/cartoes/nova-compra/index.tsx` (Nova Compra) conforme
+- [ ] T055 [P] [US4] Implementar `app/repositories/tagsRepository.ts`: criar uma Tag (nome
+      **UNIQUE**, conforme `data-model.md`) e listar as Tags existentes — cobre FR-007 ("criar
+      tags personalizadas"), capacidade distinta da simples persistência do vínculo `CompraTag`
+      (T056)
+- [ ] T056 [US4] Implementar a persistência de tags/comentário compartilhados: `CompraTag` é
+      gravado uma única vez por Compra, reaproveitando `tagsRepository` (T055) para resolver ou
+      criar cada Tag pelo nome — todas as Parcelas herdam via `compraId`, nunca por parcela (FR-008)
+- [ ] T057 [US4] Construir `app/(tabs)/cartoes/nova-compra/index.tsx` (Nova Compra) conforme
       `NovaCompra.dc.html`: descrição, valor total, data, forma de pagamento, cartão,
-      `parcelasTotal`, `parcelaAtual` (opcional, default 1), tags, comentário — validação `zod`
-      reaproveitando as regras de `splitInstallments`
-- [ ] T057 [US4] Construir `app/(tabs)/cartoes/nova-compra/categoria.tsx` (drawer de categoria)
+      `parcelasTotal`, `parcelaAtual` (opcional, default 1), tags (com opção de criar uma nova tag
+      inline via `tagsRepository` quando o texto digitado não corresponder a nenhuma existente),
+      comentário — validação `zod` reaproveitando as regras de `splitInstallments`
+- [ ] T058 [US4] Construir `app/(tabs)/cartoes/nova-compra/categoria.tsx` (drawer de categoria)
       conforme `NovaCompraCategoria.dc.html`
-- [ ] T058 [US4] Implementar a regra "parcela já lançada em fatura fechada/paga fica congelada":
+- [ ] T059 [US4] Implementar a regra "parcela já lançada em fatura fechada/paga fica congelada":
       em `purchasesRepository.updatePurchase`, bloquear a edição de `Parcela.valor` para parcelas
       cuja `Fatura.status` seja `FECHADA` ou `PAGA` (Edge Case)
 
@@ -248,25 +260,25 @@ estava em andamento antes da adoção do app (FR-004 a FR-006, FR-008).
 
 ### Tests for User Story 8
 
-- [ ] T059 [P] [US8] Testes unitários de `validateBackupFile` em
+- [ ] T060 [P] [US8] Testes unitários de `validateBackupFile` em
       `tests/unit/domain/backup.test.ts`: `schemaVersion` desconhecido é rejeitado; shape mínimo
       de cada array em `data` é validado
 
 ### Implementation for User Story 8
 
-- [ ] T060 [US8] Implementar `app/domain/backup/serializeBackup.ts` e
+- [ ] T061 [US8] Implementar `app/domain/backup/serializeBackup.ts` e
       `app/domain/backup/validateBackupFile.ts` (schema `zod`) conforme `contracts/backup.md`
-- [ ] T061 [US8] Implementar `app/repositories/backupRepository.ts`: `exportAll()` lendo as 15
+- [ ] T062 [US8] Implementar `app/repositories/backupRepository.ts`: `exportAll()` lendo as 15
       tabelas por completo; `restoreAll(file)` executando **uma única `db.transaction`**
       (delete-all + insert-all respeitando a ordem de foreign keys) conforme `contracts/backup.md`
       — substituição integral, nunca mesclagem (FR-024)
-- [ ] T062 [US8] Implementar o fluxo de exportação com `expo-file-system` (escrever o `.json`) +
+- [ ] T063 [US8] Implementar o fluxo de exportação com `expo-file-system` (escrever o `.json`) +
       `expo-sharing` (compartilhar/salvar)
-- [ ] T063 [US8] Implementar o fluxo de importação com `expo-document-picker` (selecionar o
+- [ ] T064 [US8] Implementar o fluxo de importação com `expo-document-picker` (selecionar o
       `.json`) + `validateBackupFile` antes de qualquer escrita no banco
-- [ ] T064 [US8] Construir `app/(tabs)/backup/index.tsx` (Backup) conforme `Backup.dc.html`:
+- [ ] T065 [US8] Construir `app/(tabs)/backup/index.tsx` (Backup) conforme `Backup.dc.html`:
       botões Exportar/Importar
-- [ ] T065 [US8] Construir `app/(tabs)/backup/confirmar-restauracao.tsx` (BackupConfirmar) conforme
+- [ ] T066 [US8] Construir `app/(tabs)/backup/confirmar-restauracao.tsx` (BackupConfirmar) conforme
       `BackupConfirmar.dc.html`: aviso explícito de substituição integral e irreversível antes de
       chamar `restoreAll`
 
@@ -281,16 +293,16 @@ FR-037) — pré-requisito visual para US10 e US11.
 
 **Independent Test**: conforme spec.md → User Story 9.
 
-- [ ] T066 [P] [US9] Implementar `app/repositories/categoriesRepository.ts`: CRUD de Categoria
+- [ ] T067 [P] [US9] Implementar `app/repositories/categoriesRepository.ts`: CRUD de Categoria
       personalizada; `deleteCategory` atualiza em lote `Compra.categoriaId = NULL` para todas as
       compras que a usavam (FR-037); nunca permite excluir uma Categoria com `predefinida = true`
-- [ ] T067 [US9] Estender o formulário de Nova Compra (`app/(tabs)/cartoes/nova-compra/index.tsx`)
+- [ ] T068 [US9] Estender o formulário de Nova Compra (`app/(tabs)/cartoes/nova-compra/index.tsx`)
       para permitir escolher uma Categoria (predefinida ou personalizada) — campo opcional (FR-029)
-- [ ] T068 [US9] Construir `app/(tabs)/categorias/index.tsx` (Categorias · Main): lista de
+- [ ] T069 [US9] Construir `app/(tabs)/categorias/index.tsx` (Categorias · Main): lista de
       predefinidas + personalizadas
-- [ ] T069 [US9] Construir `app/(tabs)/categorias/nova.tsx` (CategoriaCriar): nome + escolha de
+- [ ] T070 [US9] Construir `app/(tabs)/categorias/nova.tsx` (CategoriaCriar): nome + escolha de
       ícone lucide entre os disponíveis (FR-028)
-- [ ] T070 [P] [US9] Implementar `app/components/TransactionAvatar.tsx` com a ordem de prioridade
+- [ ] T071 [P] [US9] Implementar `app/components/TransactionAvatar.tsx` com a ordem de prioridade
       **estabelecimento → categoria → ícone genérico "Outros"** (FR-030), para reuso em toda
       listagem de transações
 
@@ -306,32 +318,32 @@ FR-037) — pré-requisito visual para US10 e US11.
 
 ### Tests for User Story 3
 
-- [ ] T071 [P] [US3] Testes unitários de `genericParser.parse` em
+- [ ] T072 [P] [US3] Testes unitários de `genericParser.parse` em
       `tests/unit/domain/csvImport/genericParser.test.ts`, usando um fixture
       `tests/fixtures/generic-sample.csv` (linhas válidas + ao menos uma linha sem data/valor para
       exercitar FR-026)
-- [ ] T072 [P] [US3] Testes unitários de `nubankParser.parse` em
+- [ ] T073 [P] [US3] Testes unitários de `nubankParser.parse` em
       `tests/unit/domain/csvImport/nubankParser.test.ts`, usando `tests/fixtures/nubank-sample.csv`
       — cobrindo: valor com vírgula e sinal negativo com espaço (`"- 15,92"`), título com aspas
       internas escapadas, padrão `Parcela N/M`, e exclusão da linha `"Pagamento recebido"`
 
 ### Implementation for User Story 3
 
-- [ ] T073 [US3] Implementar `app/domain/csvImport/genericParser.ts` conforme
+- [ ] T074 [US3] Implementar `app/domain/csvImport/genericParser.ts` conforme
       `contracts/csv-import.md` (separador `;`, data `DD/MM/AAAA`, valor decimal com vírgula)
-- [ ] T074 [US3] Implementar `app/domain/csvImport/nubankParser.ts` conforme
+- [ ] T075 [US3] Implementar `app/domain/csvImport/nubankParser.ts` conforme
       `contracts/csv-import.md` e o formato confirmado em `research.md` (vírgula decimal,
       `"Pagamento recebido"` sempre excluído, créditos/estornos negativos importados como Compra de
       valor negativo)
-- [ ] T075 [US3] Implementar `app/repositories/csvImportRepository.ts`: recebe um
+- [ ] T076 [US3] Implementar `app/repositories/csvImportRepository.ts`: recebe um
       `CsvParseResult`, cria o `LoteImportacao`, persiste cada `CompraDraft` reaproveitando
       `purchasesRepository`/`splitInstallments` — sem caminho especial de persistência para dados
       importados
-- [ ] T076 [US3] Construir `app/(tabs)/importar-csv/index.tsx` (ImportarCSV): escolher cartão de
+- [ ] T077 [US3] Construir `app/(tabs)/importar-csv/index.tsx` (ImportarCSV): escolher cartão de
       destino + formato + upload via `expo-document-picker`
-- [ ] T077 [US3] Construir `app/(tabs)/importar-csv/resultado.tsx` (ImportarCSVResultado):
+- [ ] T078 [US3] Construir `app/(tabs)/importar-csv/resultado.tsx` (ImportarCSVResultado):
       contagem de linhas importadas/ignoradas com motivo (FR-026)
-- [ ] T078 [US3] Estender a tela de edição de transação para permitir adicionar tags e comentário a
+- [ ] T079 [US3] Estender a tela de edição de transação para permitir adicionar tags e comentário a
       uma transação importada (FR-007)
 
 **Checkpoint**: US3 completa e testável de forma independente.
@@ -344,13 +356,13 @@ FR-037) — pré-requisito visual para US10 e US11.
 
 **Independent Test**: conforme spec.md → User Story 5.
 
-- [ ] T079 [P] [US5] Testes unitários de `suggestBestCard` em `tests/unit/domain/bestCard.test.ts`:
+- [ ] T080 [P] [US5] Testes unitários de `suggestBestCard` em `tests/unit/domain/bestCard.test.ts`:
       dois cartões com ciclos diferentes, cartão arquivado excluído do ranking (FR-025), empate
       exato resolvido por `criadoEm` mais antigo
-- [ ] T080 [US5] Implementar `app/domain/bestCard/suggestBestCard.ts` conforme
+- [ ] T081 [US5] Implementar `app/domain/bestCard/suggestBestCard.ts` conforme
       `contracts/best-card.md`
-- [ ] T081 [P] [US5] Implementar o hook `app/hooks/useBestCard.ts`
-- [ ] T082 [US5] Exibir a sugestão de melhor cartão na tela `app/(tabs)/index.tsx` (Início) e/ou no
+- [ ] T082 [P] [US5] Implementar o hook `app/hooks/useBestCard.ts`
+- [ ] T083 [US5] Exibir a sugestão de melhor cartão na tela `app/(tabs)/index.tsx` (Início) e/ou no
       fluxo de Nova Compra, conforme `design-brief.md`
 
 **Checkpoint**: US5 completa e testável de forma independente.
@@ -363,23 +375,25 @@ FR-037) — pré-requisito visual para US10 e US11.
 
 **Independent Test**: conforme spec.md → User Story 6.
 
-- [ ] T083 [P] [US6] Testes unitários de `pendingChargesFor` e `monthlySubscriptionsTotal` em
+- [ ] T084 [P] [US6] Testes unitários de `pendingChargesFor` e `monthlySubscriptionsTotal` em
       `tests/unit/domain/subscriptions.test.ts`, incluindo o caso de idempotência (não gerar 2x no
       mesmo mês para a mesma assinatura)
-- [ ] T084 [US6] Implementar `app/domain/subscriptions/pendingChargesFor.ts` e
+- [ ] T085 [US6] Implementar `app/domain/subscriptions/pendingChargesFor.ts` e
       `app/domain/subscriptions/monthlySubscriptionsTotal.ts` conforme `contracts/subscriptions.md`
-- [ ] T085 [US6] Implementar `app/repositories/subscriptionsRepository.ts`: CRUD de Assinatura;
+- [ ] T086 [US6] Implementar `app/repositories/subscriptionsRepository.ts`: CRUD de Assinatura;
       `generatePendingCharges()` cria a Compra (`origem = ASSINATURA`) + Parcela para cada
       `PendingCharge`, copiando forma de pagamento/cartão/categoria/tags **vigentes no momento da
       geração** (FR-017)
-- [ ] T086 [US6] Disparar `generatePendingCharges()` em `app/_layout.tsx` (após as migrations) ou
+- [ ] T087 [US6] Disparar `generatePendingCharges()` em `app/_layout.tsx` (após as migrations) ou
       ao entrar nas telas de Início/Assinaturas
-- [ ] T087 [US6] Construir `app/(tabs)/assinaturas/index.tsx` (Assinaturas · Main): lista de
-      assinaturas ativas + total mensal somado (FR-018)
-- [ ] T088 [US6] Construir `app/(tabs)/assinaturas/[subscriptionId].tsx` (AssinaturaEditar):
-      editar nome/valor/forma de pagamento/dia — mudança de forma de pagamento só afeta gerações
-      futuras, nunca reescreve cobranças já geradas (Edge Case)
-- [ ] T089 [US6] Confirmar que uma assinatura paga via Pix desconta do saldo do mês (via
+- [ ] T088 [US6] Construir `app/(tabs)/assinaturas/index.tsx` (Assinaturas · Main): lista de
+      assinaturas ativas + total mensal somado (FR-018), com FAB "+" para nova assinatura
+- [ ] T089 [US6] Construir `app/(tabs)/assinaturas/[subscriptionId].tsx` (AssinaturaEditar) —
+      reutilizada tanto para **criar uma nova Assinatura** (FR-016, acessada pelo FAB "+" de T088)
+      quanto para editar uma existente: nome/valor/forma de pagamento/dia; mudança de forma de
+      pagamento em uma assinatura já existente só afeta gerações futuras, nunca reescreve cobranças
+      já geradas (Edge Case)
+- [ ] T090 [US6] Confirmar que uma assinatura paga via Pix desconta do saldo do mês (via
       `computeMonthBalance` da US2), não de uma fatura de cartão (FR-017, cenário 2)
 
 **Checkpoint**: US6 completa e testável de forma independente.
@@ -395,31 +409,31 @@ a FR-045). Depende de US1, US2 e US9 já existirem.
 
 ### Tests for User Story 11
 
-- [ ] T090 [P] [US11] Testes unitários de `resolvePeriod`, `totalSpent`, `compareToPrevious` em
+- [ ] T091 [P] [US11] Testes unitários de `resolvePeriod`, `totalSpent`, `compareToPrevious` em
       `tests/unit/domain/statistics.test.ts`, incluindo o caso "sem dado do período anterior" —
       indicar ausência de comparação em vez de uma variação incorreta (FR-041 Edge Case)
-- [ ] T091 [P] [US11] Testes unitários de `spendingByCategory`, `topExpenses`,
+- [ ] T092 [P] [US11] Testes unitários de `spendingByCategory`, `topExpenses`,
       `subscriptionsShare`, `idealSpendComparison` em `tests/unit/domain/statistics.test.ts`,
       incluindo o caso "sem renda/meta configurada" (FR-042 Edge Case)
 
 ### Implementation for User Story 11
 
-- [ ] T092 [US11] Implementar `app/domain/statistics/resolvePeriod.ts`,
+- [ ] T093 [US11] Implementar `app/domain/statistics/resolvePeriod.ts`,
       `app/domain/statistics/totalSpent.ts`, `app/domain/statistics/compareToPrevious.ts`
       conforme `contracts/statistics.md`
-- [ ] T093 [US11] Implementar `app/domain/statistics/spendingByCategory.ts`,
+- [ ] T094 [US11] Implementar `app/domain/statistics/spendingByCategory.ts`,
       `app/domain/statistics/topExpenses.ts`, `app/domain/statistics/subscriptionsShare.ts`,
       `app/domain/statistics/idealSpendComparison.ts` conforme `contracts/statistics.md`
-- [ ] T094 [US11] Implementar `app/repositories/statisticsRepository.ts` e
+- [ ] T095 [US11] Implementar `app/repositories/statisticsRepository.ts` e
       `app/repositories/idealGoalRepository.ts` (CRUD da `MetaConsumoIdeal` singleton)
-- [ ] T095 [P] [US11] Implementar o hook `app/hooks/useStatistics.ts`
-- [ ] T096 [US11] Construir o gráfico de consumo mensal em `app/(tabs)/index.tsx` (Início)
+- [ ] T096 [P] [US11] Implementar o hook `app/hooks/useStatistics.ts`
+- [ ] T097 [US11] Construir o gráfico de consumo mensal em `app/(tabs)/index.tsx` (Início)
       conforme `Main.dc.html`, tocável para abrir a tela de Estatísticas
-- [ ] T097 [US11] Construir `app/(tabs)/estatisticas.tsx` (Estatísticas) conforme
+- [ ] T098 [US11] Construir `app/(tabs)/estatisticas.tsx` (Estatísticas) conforme
       `Estatisticas.dc.html`: seletor de período (Diário/Semanal/Mensal/Anual), total + comparação,
       gasto por categoria, maiores gastos, % de assinaturas, seção de meta ideal (condicional a
       haver renda **e** meta configuradas)
-- [ ] T098 [US11] Construir a configuração de Meta de Consumo Ideal (percentual da renda mensal
+- [ ] T099 [US11] Construir a configuração de Meta de Consumo Ideal (percentual da renda mensal
       vigente) integrada à tela de Estatísticas ou Renda, conforme `design-brief.md`
 
 **Checkpoint**: US11 completa e testável de forma independente.
@@ -435,41 +449,55 @@ FR-055). Depende de US1, US4 e US11 já existirem.
 
 ### Tests for User Story 12
 
-- [ ] T099 [P] [US12] Testes unitários de `validateManualResponsibility`,
+- [ ] T100 [P] [US12] Testes unitários de `validateManualResponsibility`,
       `requiresMotivoResponsavelFields`, `shouldShowResponsibilitySummary` em
       `tests/unit/domain/expenseSplitting.test.ts` — **`0 ≤ valorResponsabilidade ≤
       valorTotalOriginal`** (FR-048)
-- [ ] T100 [P] [US12] Testes unitários de `recomputeSplitOnRefund` em
+- [ ] T101 [P] [US12] Testes unitários de `recomputeSplitOnRefund` em
       `tests/unit/domain/installments.test.ts`: sem entrada vinculada, uma entrada, múltiplas
       entradas (soma subtraída do total), entrada desvinculada volta ao valor manual (se houver)
       ou ao total (Edge Cases)
+- [ ] T102 [P] [US12] Testes unitários da precedência completa de responsabilidade
+      (`resolveResponsibility`) em `tests/unit/domain/expenseSplitting.test.ts`: nada definido →
+      usa o total (FR-049); só valor manual definido → usa o manual; entradas vinculadas presentes
+      → **sempre vencem, mesmo havendo um valor manual também definido** (Edge Case de precedência,
+      FR-051)
 
 ### Implementation for User Story 12
 
-- [ ] T101 [US12] Implementar `app/domain/expenseSplitting/validateManualResponsibility.ts`,
+- [ ] T103 [US12] Implementar `app/domain/expenseSplitting/resolveResponsibility.ts`: a função
+      `responsabilidadeEfetiva(compra, entradasVinculadas)` de `data-model.md`, com a precedência
+      completa de 3 vias — **(1) soma de entradas vinculadas, se houver; (2)
+      `valorResponsabilidade` manual; (3) `valorTotalOriginal`** — reunindo em um único ponto a
+      lógica hoje distribuída entre `splitInstallments` e `recomputeSplitOnRefund`, para que
+      nenhum repositório precise decidir essa precedência por conta própria
+- [ ] T104 [US12] Implementar `app/domain/expenseSplitting/validateManualResponsibility.ts`,
       `requiresMotivoResponsavelFields.ts`, `shouldShowResponsibilitySummary.ts` conforme
       `contracts/expense-splitting.md`
-- [ ] T102 [US12] Implementar `app/domain/installments/recomputeSplitOnRefund.ts` conforme
+- [ ] T105 [US12] Implementar `app/domain/installments/recomputeSplitOnRefund.ts` conforme
       `contracts/installments.md`, e integrá-la à proporção usada em `splitInstallments` — mesma
       fração de responsabilidade aplicada em cada parcela (FR-055)
-- [ ] T103 [US12] Estender `app/repositories/cashEntriesRepository.ts`: suportar
-      `compraVinculadaId` ao criar/editar/excluir uma EntradaAvulsa, disparando
-      `recomputeSplitOnRefund` e atualizando `Parcela.valorResponsabilidade` de todas as parcelas
-      da Compra afetada — **o valor calculado a partir de entradas vinculadas sempre prevalece
-      sobre um valor manual** (FR-051)
-- [ ] T104 [US12] Estender `app/repositories/purchasesRepository.ts`: suportar
+- [ ] T106 [US12] Estender `app/repositories/cashEntriesRepository.ts`: suportar
+      `compraVinculadaId` ao criar/editar/excluir uma EntradaAvulsa, chamando
+      `resolveResponsibility` (T103) — que internamente usa `recomputeSplitOnRefund` quando há
+      entradas vinculadas — e atualizando `Parcela.valorResponsabilidade` de todas as parcelas da
+      Compra afetada (FR-051)
+- [ ] T107 [US12] Estender `app/repositories/purchasesRepository.ts`: suportar
       `valorResponsabilidade`/`motivo`/`responsavel` na criação/edição de Compra, validando com
-      `validateManualResponsibility`
-- [ ] T105 [US12] Construir `app/(tabs)/cartoes/nova-compra/divisao-manual.tsx`
+      `validateManualResponsibility` e sempre recalculando o valor efetivo via
+      `resolveResponsibility` (T103) — nunca lendo `Compra.valorResponsabilidade` diretamente para
+      exibição ou estatística
+- [ ] T108 [US12] Construir `app/(tabs)/cartoes/nova-compra/divisao-manual.tsx`
       (NovaCompraDivisaoManual) conforme `NovaCompraDivisaoManual.dc.html`
-- [ ] T106 [US12] Construir `app/(tabs)/cartoes/nova-compra/divisao-vinculada.tsx`
+- [ ] T109 [US12] Construir `app/(tabs)/cartoes/nova-compra/divisao-vinculada.tsx`
       (NovaCompraDivisaoVinculada) conforme `NovaCompraDivisaoVinculada.dc.html`
-- [ ] T107 [US12] Exibir o resumo "Você paga: R$ X" em `FaturaDetalhe.tsx` e `CartaoDetalhe.tsx`
+- [ ] T110 [US12] Exibir o resumo "Você paga: R$ X" em `FaturaDetalhe.tsx` e `CartaoDetalhe.tsx`
       usando `shouldShowResponsibilitySummary` — **nunca altera o valor total exibido da fatura**
       (FR-052, FR-053)
-- [ ] T108 [US12] Confirmar que `domain/statistics` (US11) usa `responsabilidadeEfetiva` em vez de
-      `valor` em `totalSpent`/`spendingByCategory`/`topExpenses` (FR-054); adicionar um caso de
-      teste com uma compra dividida em `tests/unit/domain/statistics.test.ts`
+- [ ] T111 [US12] Confirmar que `domain/statistics` (US11) usa `resolveResponsibility` (T103) em
+      vez de `Compra.valor`/`Compra.valorResponsabilidade` diretamente em
+      `totalSpent`/`spendingByCategory`/`topExpenses` (FR-054); adicionar um caso de teste com uma
+      compra dividida em `tests/unit/domain/statistics.test.ts`
 
 **Checkpoint**: US12 completa e testável de forma independente.
 
@@ -484,34 +512,41 @@ opcional de logotipo (FR-031 a FR-036). Depende de US9 e US3 já existirem.
 
 ### Tests for User Story 10
 
-- [ ] T109 [P] [US10] Testes unitários de `matchEstablishment`, `reevaluateUnassignedTransactions`,
+- [ ] T112 [P] [US10] Testes unitários de `matchEstablishment`, `reevaluateUnassignedTransactions`,
       `suggestInitialPattern` em `tests/unit/domain/establishmentMatching.test.ts` — desempate por
       padrão mais longo e depois por `estabelecimentoCriadoEm` mais antigo (Assumption)
 
 ### Implementation for User Story 10
 
-- [ ] T110 [US10] Implementar `app/domain/establishmentMatching/matchEstablishment.ts`,
+- [ ] T113 [US10] Implementar `app/domain/establishmentMatching/matchEstablishment.ts`,
       `reevaluateUnassignedTransactions.ts`, `suggestInitialPattern.ts` conforme
       `contracts/establishment-matching.md`
-- [ ] T111 [US10] Implementar `app/repositories/establishmentsRepository.ts`: CRUD de
+- [ ] T114 [US10] Implementar `app/repositories/establishmentsRepository.ts`: CRUD de
       Estabelecimento + PadraoReconhecimento; ao adicionar um padrão, chamar
       `reevaluateUnassignedTransactions` e atualizar as Compras retornadas — **nunca sobrescrevendo
       uma associação com `estabelecimentoManual = true`** (FR-034, FR-035)
-- [ ] T112 [US10] Integrar `matchEstablishment` em `purchasesRepository.createPurchase` e
+- [ ] T115 [US10] Estender `app/repositories/purchasesRepository.ts` e a tela de edição de Compra:
+      permitir associar ou remover manualmente o Estabelecimento de uma transação **já existente**
+      (mesmo sem nenhum padrão reconhecido, ou para corrigir uma associação automática incorreta),
+      sempre marcando `estabelecimentoManual = true` ao fazer isso — distinto de T118, que é a
+      criação de um novo Estabelecimento (FR-034)
+- [ ] T116 [US10] Integrar `matchEstablishment` em `purchasesRepository.createPurchase` e
       `csvImportRepository` — toda Compra nova ou importada passa pelo matching automático (FR-033)
-- [ ] T113 [US10] Implementar a busca best-effort de logotipo via Brandfetch CDN
+- [ ] T117 [US10] Implementar a busca best-effort de logotipo via Brandfetch CDN
       (`https://cdn.brandfetch.io/{domain}`) + cache local via `expo-file-system`, salvando em
       `Estabelecimento.logoCachePath`; falha/timeout/offline **nunca bloqueia** e sempre recai no
       `iconeRespaldo` (FR-036, Princípio I)
-- [ ] T114 [US10] Construir `app/(tabs)/estabelecimentos/index.tsx` (EstabelecimentosLista)
-- [ ] T115 [US10] Construir `app/(tabs)/estabelecimentos/[establishmentId].tsx`
-      (EstabelecimentoDetalhe): nome, ícone de respaldo (obrigatório), domínio opcional, lista de
-      padrões
-- [ ] T116 [US10] Construir a criação de estabelecimento inline a partir da edição de uma
+- [ ] T118 [US10] Construir `app/(tabs)/estabelecimentos/index.tsx` (EstabelecimentosLista), com
+      FAB "+" para novo estabelecimento
+- [ ] T119 [US10] Construir `app/(tabs)/estabelecimentos/[establishmentId].tsx`
+      (EstabelecimentoDetalhe) — reutilizada tanto para **criar um novo Estabelecimento** a partir
+      do FAB "+" de T118 (FR-031) quanto para editar um existente: nome, ícone de respaldo
+      (obrigatório), domínio opcional, lista de padrões
+- [ ] T120 [US10] Construir a criação de estabelecimento inline a partir da edição de uma
       transação (`app/(tabs)/cartoes/nova-compra/estabelecimento.tsx`,
       `NovaCompraEstabelecimento.dc.html`), sugerindo o padrão inicial via `suggestInitialPattern`
       (FR-032)
-- [ ] T117 [US10] Atualizar `TransactionAvatar` (US9) para preferir `logoCachePath` >
+- [ ] T121 [US10] Atualizar `TransactionAvatar` (US9) para preferir `logoCachePath` >
       `iconeRespaldo` > categoria > "Outros" (FR-030)
 
 **Checkpoint**: US10 completa e testável de forma independente.
@@ -525,16 +560,19 @@ cadastrada, sem aplicação automática (FR-019 a FR-021).
 
 **Independent Test**: conforme spec.md → User Story 7.
 
-- [ ] T118 [P] [US7] Implementar `app/repositories/reservesRepository.ts`: CRUD de Reserva; saldo
-      **sempre derivado** como soma de `LancamentoReserva.valor` (nunca uma coluna própria)
-- [ ] T119 [US7] Implementar `app/repositories/reserveEntriesRepository.ts`: criar
+- [ ] T122 [P] [US7] Implementar `app/repositories/reservesRepository.ts`: CRUD de Reserva
+      (nome + taxa de rendimento mensal opcional); saldo **sempre derivado** como soma de
+      `LancamentoReserva.valor` (nunca uma coluna própria)
+- [ ] T123 [US7] Implementar `app/repositories/reserveEntriesRepository.ts`: criar
       `LancamentoReserva` do tipo `DEPOSITO`, `RETIRADA` ou `RENDIMENTO_MANUAL`; **nenhum código
       gera `RENDIMENTO_AUTOMATICO` nesta versão** (Princípio V / Assumption)
-- [ ] T120 [US7] Construir `app/(tabs)/reservas/index.tsx` (Reservas · Main): lista de reservas +
-      saldo de cada uma
-- [ ] T121 [US7] Construir `app/(tabs)/reservas/[reserveId].tsx` (ReservaDetalhe): saldo, taxa de
-      rendimento mensal configurada (exibida, **não aplicada automaticamente** — FR-021), histórico
-      de lançamentos, formulário de novo lançamento manual
+- [ ] T124 [US7] Construir `app/(tabs)/reservas/index.tsx` (Reservas · Main): lista de reservas +
+      saldo de cada uma, com FAB "+" para nova reserva
+- [ ] T125 [US7] Construir `app/(tabs)/reservas/[reserveId].tsx` (ReservaDetalhe) — reutilizada
+      tanto para **criar uma nova Reserva** (nome + taxa de rendimento mensal opcional, a partir do
+      FAB "+" de T124 — FR-019, FR-021) quanto para exibir uma existente: saldo, taxa configurada
+      (exibida, **não aplicada automaticamente** — FR-021), histórico de lançamentos, formulário de
+      novo lançamento manual
 
 **Checkpoint**: Todas as 12 User Stories completas e independentemente funcionais.
 
@@ -544,21 +582,21 @@ cadastrada, sem aplicação automática (FR-019 a FR-021).
 
 **Purpose**: Validação final e qualidade transversal a todas as stories.
 
-- [ ] T122 [P] Rodar `quickstart.md` de ponta a ponta em um dispositivo Android real via Expo Go,
+- [ ] T126 [P] Rodar `quickstart.md` de ponta a ponta em um dispositivo Android real via Expo Go,
       conferindo os 7 cenários
-- [ ] T123 [P] Revisão de contraste/acessibilidade da implementação real contra os tokens
+- [ ] T127 [P] Revisão de contraste/acessibilidade da implementação real contra os tokens
       validados em `design-brief.md` (WCAG já computado na fase de design — confirmar que os
       componentes Tamagui construídos batem com esses valores)
-- [ ] T124 [P] Testes de integração em `tests/integration/` (on-device) para: migrations rodando
+- [ ] T128 [P] Testes de integração em `tests/integration/` (on-device) para: migrations rodando
       do zero em um banco limpo, e round-trip completo de backup export→import (FR-024)
-- [ ] T125 Medir tempo de boot+migrations e tempo de abertura das listagens principais contra as
+- [ ] T129 Medir tempo de boot+migrations e tempo de abertura das listagens principais contra as
       metas do Technical Context (`plan.md`: <500ms boot, <100ms listagens)
-- [ ] T126 [P] Revisar cada tela construída contra os canvases aprovados em `design-brief.md`
+- [ ] T130 [P] Revisar cada tela construída contra os canvases aprovados em `design-brief.md`
       para fidelidade visual
-- [ ] T127 Revisão final da Constitution Check (`plan.md`) contra o código entregue: confirmar que
+- [ ] T131 Revisão final da Constitution Check (`plan.md`) contra o código entregue: confirmar que
       nenhuma chamada de rede além da busca de logotipo Brandfetch foi introduzida, e que ela
       permanece best-effort/não-bloqueante
-- [ ] T128 Registrar em `specs/001-personal-finance-tracker/checklists/requirements.md` a entrada
+- [ ] T132 Registrar em `specs/001-personal-finance-tracker/checklists/requirements.md` a entrada
       final de "implementação concluída"
 
 ---
