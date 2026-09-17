@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, gte, lt } from 'drizzle-orm';
 import { randomUUID } from 'expo-crypto';
 
 import { db } from '@/db/client';
@@ -73,6 +73,76 @@ export async function createCardPurchase(input: CreateCardPurchaseInput): Promis
   });
 
   return purchase;
+}
+
+export type CreatePixPurchaseInput = {
+  descricao: string;
+  valorTotalOriginal: number;
+  dataCompra: Date;
+  categoriaId?: string;
+};
+
+/**
+ * User Story 2: uma Compra Pix é sempre 1 parcela SEM fatura
+ * (`faturaId = null`) — conta direto no saldo do mês pela `dataCompra`,
+ * nunca no total de uma fatura de cartão (nota de `data-model.md` §
+ * Parcela; FR-015).
+ */
+export async function createPixPurchase(input: CreatePixPurchaseInput): Promise<Purchase> {
+  const parsed = purchaseSchema.parse({
+    descricao: input.descricao,
+    valorTotalOriginal: input.valorTotalOriginal,
+    dataCompra: input.dataCompra,
+    formaPagamento: 'PIX',
+    parcelasTotal: 1,
+    parcelaAtual: 1,
+  });
+
+  const compraId = randomUUID();
+  const [purchase] = await db
+    .insert(compras)
+    .values({
+      id: compraId,
+      descricao: parsed.descricao,
+      valorTotalOriginal: parsed.valorTotalOriginal,
+      dataCompra: parsed.dataCompra,
+      formaPagamento: 'PIX',
+      cartaoId: null,
+      parcelasTotal: 1,
+      parcelaAtual: 1,
+      categoriaId: input.categoriaId,
+      estabelecimentoManual: false,
+      origem: 'MANUAL',
+      criadoEm: new Date(),
+    })
+    .returning();
+
+  await db.insert(parcelas).values({
+    id: randomUUID(),
+    compraId,
+    faturaId: null,
+    numero: 1,
+    valor: parsed.valorTotalOriginal,
+    valorResponsabilidade: parsed.valorTotalOriginal,
+  });
+
+  return purchase;
+}
+
+/** Compras Pix de um mês de referência — base do saldo do mês (FR-015). */
+export async function listPixPurchasesForMonth(year: number, month: number): Promise<Purchase[]> {
+  const monthStart = new Date(year, month - 1, 1);
+  const monthEnd = new Date(year, month, 1);
+  return db
+    .select()
+    .from(compras)
+    .where(
+      and(
+        eq(compras.formaPagamento, 'PIX'),
+        gte(compras.dataCompra, monthStart),
+        lt(compras.dataCompra, monthEnd),
+      ),
+    );
 }
 
 export type InvoicePurchaseRow = {

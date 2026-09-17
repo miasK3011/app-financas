@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, gte, lt } from 'drizzle-orm';
 import { randomUUID } from 'expo-crypto';
 
 import { db } from '@/db/client';
@@ -117,4 +117,22 @@ export async function listOpenInvoicesWithTotals(
   const allInvoices = await db.select().from(faturas);
   const withStatus = await Promise.all(allInvoices.map((invoice) => withTotals(invoice, today)));
   return withStatus.filter((invoice) => invoice.status !== 'PAGA');
+}
+
+/**
+ * Faturas de qualquer cartão cujo VENCIMENTO cai no (ano, mês) pedido —
+ * base do saldo do mês (FR-015), independente de quando fecharam.
+ */
+export async function listInvoicesDueInMonth(
+  year: number,
+  month: number,
+  today: Date = new Date(),
+): Promise<InvoiceWithTotals[]> {
+  const monthStart = new Date(year, month - 1, 1);
+  const monthEnd = new Date(year, month, 1);
+  const rows = await db
+    .select()
+    .from(faturas)
+    .where(and(gte(faturas.dataVencimento, monthStart), lt(faturas.dataVencimento, monthEnd)));
+  return Promise.all(rows.map((invoice) => withTotals(invoice, today)));
 }

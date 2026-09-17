@@ -182,26 +182,26 @@ compra cai (FR-001, FR-002, FR-011).
 
 ### Tests for User Story 2
 
-- [ ] T041 [P] [US2] Testes unitários de `computeMonthBalance` em
+- [X] T041 [P] [US2] Testes unitários de `computeMonthBalance` em
       `tests/unit/domain/cashflow.test.ts`, cobrindo os 3 cenários de aceite da User Story 2
 
 ### Implementation for User Story 2
 
-- [ ] T042 [P] [US2] Implementar `src/repositories/incomeConfigRepository.ts`:
+- [X] T042 [P] [US2] Implementar `src/repositories/incomeConfigRepository.ts`:
       `setIncome(valor, vigenteDesde)`, `getIncomeForMonth(year, month)` (retorna o valor de maior
       `vigenteDesde` ≤ início do mês, sem reescrever histórico — FR-013)
-- [ ] T043 [P] [US2] Implementar `src/repositories/cashEntriesRepository.ts`: CRUD de EntradaAvulsa
-- [ ] T044 [US2] Estender `src/repositories/purchasesRepository.ts` para suportar forma de
+- [X] T043 [P] [US2] Implementar `src/repositories/cashEntriesRepository.ts`: CRUD de EntradaAvulsa
+- [X] T044 [US2] Estender `src/repositories/purchasesRepository.ts` para suportar forma de
       pagamento PIX (Parcela sem `faturaId`, contando pela `dataCompra` — nota de `data-model.md`)
-- [ ] T045 [US2] Implementar `src/domain/cashflow/computeMonthBalance.ts`: saldo = renda vigente +
+- [X] T045 [US2] Implementar `src/domain/cashflow/computeMonthBalance.ts`: saldo = renda vigente +
       soma(EntradaAvulsa do mês) − soma(Parcela PIX do mês) − soma(Fatura que vence no mês) (FR-015)
-- [ ] T046 [P] [US2] Implementar os hooks `src/hooks/useIncome.ts` e `src/hooks/useMonthBalance.ts`
-- [ ] T047 [US2] Construir `src/app/(tabs)/mais/renda/index.tsx` (Renda & Entradas · Main, incluindo o
+- [X] T046 [P] [US2] Implementar os hooks `src/hooks/useIncome.ts` e `src/hooks/useMonthBalance.ts`
+- [X] T047 [US2] Construir `src/app/(tabs)/mais/renda/index.tsx` (Renda & Entradas · Main, incluindo o
       estado vazio de `MainMesVazio.dc.html`): renda configurável, lista de entradas avulsas do
       mês, saldo do mês em destaque
-- [ ] T048 [US2] Construir `src/app/(tabs)/mais/renda/nova-entrada.tsx` (EntradaAvulsaNova): formulário de
+- [X] T048 [US2] Construir `src/app/(tabs)/mais/renda/nova-entrada.tsx` (EntradaAvulsaNova): formulário de
       nova entrada avulsa (descrição, valor, data)
-- [ ] T049 [US2] Construir `src/app/(tabs)/mais/renda/historico.tsx` (aba Histórico, `MainHistorico.dc.html`)
+- [X] T049 [US2] Construir `src/app/(tabs)/mais/renda/historico.tsx` (aba Histórico, `MainHistorico.dc.html`)
       com o histórico de valores de renda ao longo do tempo
 
 **Checkpoint**: User Stories 1 e 2 ambas funcionais e testáveis de forma independente.
