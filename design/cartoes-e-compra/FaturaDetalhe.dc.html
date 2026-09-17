@@ -76,7 +76,7 @@
     .tx-name { font-size: 14.5px; font-weight: 600; }
     .tag-chip { font-size: 11px; font-weight: 700; color: var(--color-text-secondary); background: var(--color-border); border-radius: 999px; padding: 2px 7px; }
     .installment-chip { font-size: 11px; font-weight: 700; color: var(--color-primary-dark); background: var(--color-primary-light); border-radius: 999px; padding: 2px 7px; }
-    .split-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: var(--color-text-secondary); background: var(--color-border); border-radius: 999px; padding: 2px 7px; }
+    .split-chip { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; color: var(--color-text-secondary); background: var(--color-border); flex: 0 0 auto; }
     .split-chip .icon { width: 11px; height: 11px; }
     .tx-cat { font-size: 12px; color: var(--color-text-tertiary); margin-top: 2px; }
     .tx-split-note { font-size: 12px; color: var(--color-text-tertiary); margin-top: 2px; }
@@ -166,11 +166,10 @@
               <span class="tx-name">Pizzaria Napoli</span>
               <span class="split-chip">
                 <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                Dividido
               </span>
             </div>
             <div class="tx-cat">Alimentação</div>
-            <div class="tx-split-note">Sua parte: R$ 30,00 de R$ 70,00 · Dividido com Maria</div>
+            <div class="tx-split-note">R$ 30,00 de R$ 70,00</div>
           </div>
           <div class="tx-value">R$ 70,00</div>
           <svg class="icon chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
@@ -185,11 +184,10 @@
               <span class="tx-name">Presente de aniversário</span>
               <span class="split-chip">
                 <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                Não é seu
               </span>
             </div>
             <div class="tx-cat">Compras</div>
-            <div class="tx-split-note">Sua parte: R$ 0,00 de R$ 100,00 · Responsável: Meu irmão</div>
+            <div class="tx-split-note">R$ 0,00 de R$ 100,00</div>
           </div>
           <div class="tx-value">R$ 100,00</div>
           <svg class="icon chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
