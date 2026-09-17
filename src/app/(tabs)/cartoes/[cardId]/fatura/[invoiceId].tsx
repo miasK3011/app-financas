@@ -4,6 +4,7 @@ import { ActivityIndicator } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { Money } from '@/components/Money';
+import { Screen } from '@/components/Screen';
 import { StatusBadge } from '@/components/StatusBadge';
 import { useInvoice, useInvoicePurchases } from '@/hooks/useInvoice';
 
@@ -30,16 +31,18 @@ export default function FaturaDetalheScreen() {
 
   if (loading || !invoice) {
     return (
-      <YStack flex={1} backgroundColor="$bg" alignItems="center" justifyContent="center">
-        <ActivityIndicator />
-      </YStack>
+      <Screen>
+        <YStack flex={1} alignItems="center" justifyContent="center">
+          <ActivityIndicator />
+        </YStack>
+      </Screen>
     );
   }
 
   const showResponsibility = invoice.totalResponsabilidade !== invoice.total;
 
   return (
-    <YStack flex={1} backgroundColor="$bg">
+    <Screen>
       <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
         <XStack alignItems="center" gap="$3">
           <Button
@@ -56,7 +59,14 @@ export default function FaturaDetalheScreen() {
           </Text>
         </XStack>
 
-        <YStack backgroundColor="$surface" borderColor="$border" borderWidth={1} borderRadius="$lg" padding={22} gap="$2">
+        <YStack
+          backgroundColor="$surface"
+          borderColor="$border"
+          borderWidth={1}
+          borderRadius="$lg"
+          padding={22}
+          gap="$2"
+        >
           <Money cents={invoice.total} fontSize={32} fontWeight="600" color="$text" />
           <XStack alignItems="center" gap="$2">
             <StatusBadge status={invoice.status} />
@@ -65,11 +75,22 @@ export default function FaturaDetalheScreen() {
             </Text>
           </XStack>
           {showResponsibility && (
-            <XStack borderTopWidth={1} borderColor="$border" paddingTop="$2" marginTop="$1" gap="$1">
+            <XStack
+              borderTopWidth={1}
+              borderColor="$border"
+              paddingTop="$2"
+              marginTop="$1"
+              gap="$1"
+            >
               <Text fontSize={13} color="$textSecondary">
                 Você paga
               </Text>
-              <Money cents={invoice.totalResponsabilidade} fontSize={13} fontWeight="700" color="$text" />
+              <Money
+                cents={invoice.totalResponsabilidade}
+                fontSize={13}
+                fontWeight="700"
+                color="$text"
+              />
             </XStack>
           )}
         </YStack>
@@ -97,14 +118,20 @@ export default function FaturaDetalheScreen() {
                 <YStack flex={1}>
                   <Text fontSize={14.5} fontWeight="600" color="$text">
                     {row.compra.descricao}
-                    {row.compra.parcelasTotal > 1 ? ` (${row.numero}/${row.compra.parcelasTotal})` : ''}
+                    {row.compra.parcelasTotal > 1
+                      ? ` (${row.numero}/${row.compra.parcelasTotal})`
+                      : ''}
                   </Text>
                   {row.valorResponsabilidade !== row.valor && (
                     <XStack marginTop={2} gap="$1">
                       <Text fontSize={12} color="$textTertiary">
                         Sua parte:
                       </Text>
-                      <Money cents={row.valorResponsabilidade} fontSize={12} color="$textTertiary" />
+                      <Money
+                        cents={row.valorResponsabilidade}
+                        fontSize={12}
+                        color="$textTertiary"
+                      />
                     </XStack>
                   )}
                 </YStack>
@@ -115,11 +142,17 @@ export default function FaturaDetalheScreen() {
         </YStack>
 
         {invoice.status !== 'PAGA' && (
-          <Button onPress={markAsPaid} backgroundColor="$primary" color="white" fontWeight="700" borderRadius={999}>
+          <Button
+            onPress={markAsPaid}
+            backgroundColor="$primary"
+            color="white"
+            fontWeight="700"
+            borderRadius={999}
+          >
             Marcar fatura como paga
           </Button>
         )}
       </ScrollView>
-    </YStack>
+    </Screen>
   );
 }

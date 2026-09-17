@@ -1,4 +1,9 @@
-import { Lora_500Medium, Lora_500Medium_Italic, Lora_600SemiBold, Lora_700Bold } from '@expo-google-fonts/lora';
+import {
+  Lora_500Medium,
+  Lora_500Medium_Italic,
+  Lora_600SemiBold,
+  Lora_700Bold,
+} from '@expo-google-fonts/lora';
 import {
   Manrope_400Regular,
   Manrope_500Medium,
@@ -8,8 +13,10 @@ import {
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { TamaguiProvider } from 'tamagui';
 
 import { db } from '@/db/client';
@@ -67,11 +74,19 @@ export default function RootLayout() {
   }
 
   return (
-    <TamaguiProvider config={tamaguiConfig} defaultTheme="light">
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-    </TamaguiProvider>
+    <SafeAreaProvider>
+      <TamaguiProvider config={tamaguiConfig} defaultTheme="light">
+        {/* Android moderno (RN 0.86) desenha edge-to-edge por padrão — a
+            barra de status vira transparente sobre o conteúdo. "dark"
+            deixa os ícones dela escuros, legíveis sobre o fundo claro do
+            app (--color-bg); cada tela cobre a faixa da própria barra de
+            status com fundo sólido via `components/Screen.tsx`. */}
+        <StatusBar style="dark" />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+      </TamaguiProvider>
+    </SafeAreaProvider>
   );
 }
 

@@ -1,33 +1,15 @@
 import { config as defaultConfig } from '@tamagui/config';
 import { createFont, createTamagui } from 'tamagui';
 
+import { colors } from './colors';
+
 /**
- * Design tokens from design-brief.md §3.1 (the approved Claude Design
- * canvases). These are additive, semantic tokens layered on top of
- * Tamagui's default numeric color/radius scale — components should
- * reference `$primary`, `$radiusLg`, etc. rather than raw hex values.
+ * Tokens adicionais/semânticos sobre a escala numérica padrão do
+ * Tamagui — componentes devem referenciar `$primary`, `$radiusLg` etc.,
+ * nunca hex cru (a única exceção é fora do Tamagui — StatusBar,
+ * SafeAreaView — que importam `colors` diretamente).
  */
-const colorTokens = {
-  primary: '#2E6F55',
-  primaryDark: '#234F3E',
-  primaryLight: '#E4F0EA',
-  success: '#3C8A5B',
-  successDark: '#306E49',
-  successBg: '#E7F4EC',
-  error: '#C74A3C',
-  errorDark: '#9E3A2F',
-  errorBg: '#FBEAE7',
-  info: '#2F6FB0',
-  infoDark: '#285E96',
-  infoBg: '#E5EEF7',
-  neutralFill: '#B9B7B2',
-  bg: '#FAFAF9',
-  surface: '#FFFFFF',
-  border: '#E7E5E2',
-  text: '#1C1C1E',
-  textSecondary: '#5B5B5E',
-  textTertiary: '#6C6C6D',
-};
+const colorTokens = colors;
 
 const radiusTokens = {
   lg: 20,

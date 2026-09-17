@@ -88,7 +88,10 @@ export async function getInvoiceWithTotals(
 }
 
 export async function markInvoiceAsPaid(invoiceId: string): Promise<void> {
-  await db.update(faturas).set({ status: 'PAGA', pagaEm: new Date() }).where(eq(faturas.id, invoiceId));
+  await db
+    .update(faturas)
+    .set({ status: 'PAGA', pagaEm: new Date() })
+    .where(eq(faturas.id, invoiceId));
 }
 
 export type InvoiceWithTotals = Invoice & {
@@ -108,7 +111,9 @@ async function withTotals(invoice: Invoice, today: Date): Promise<InvoiceWithTot
  * de todos os cartões — base do card "Total das faturas abertas" em
  * Cartões · Main.
  */
-export async function listOpenInvoicesWithTotals(today: Date = new Date()): Promise<InvoiceWithTotals[]> {
+export async function listOpenInvoicesWithTotals(
+  today: Date = new Date(),
+): Promise<InvoiceWithTotals[]> {
   const allInvoices = await db.select().from(faturas);
   const withStatus = await Promise.all(allInvoices.map((invoice) => withTotals(invoice, today)));
   return withStatus.filter((invoice) => invoice.status !== 'PAGA');

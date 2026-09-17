@@ -4,6 +4,7 @@ import { ActivityIndicator } from 'react-native';
 import { Button, Card, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { Money } from '@/components/Money';
+import { Screen } from '@/components/Screen';
 import { useCards } from '@/hooks/useCards';
 import { useOpenInvoicesTotal } from '@/hooks/useInvoice';
 
@@ -13,13 +14,19 @@ export default function CartoesScreen() {
   const { total, loading: totalLoading } = useOpenInvoicesTotal();
 
   return (
-    <YStack flex={1} backgroundColor="$bg">
+    <Screen>
       <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
         <Text fontFamily="$heading" fontSize={24} fontWeight="600" color="$text">
           Cartões
         </Text>
 
-        <Card backgroundColor="$surface" borderColor="$border" borderWidth={1} borderRadius="$lg" padding={22}>
+        <Card
+          backgroundColor="$surface"
+          borderColor="$border"
+          borderWidth={1}
+          borderRadius="$lg"
+          padding={22}
+        >
           <Text fontSize={13} color="$textSecondary">
             Total das faturas abertas
           </Text>
@@ -81,6 +88,6 @@ export default function CartoesScreen() {
         backgroundColor="$primary"
         icon={<Plus color="white" size={24} />}
       />
-    </YStack>
+    </Screen>
   );
 }

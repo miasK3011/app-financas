@@ -5,6 +5,7 @@ import { ActivityIndicator, Alert } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { Money } from '@/components/Money';
+import { Screen } from '@/components/Screen';
 import { StatusBadge } from '@/components/StatusBadge';
 import { useCards } from '@/hooks/useCards';
 import { useCardInvoices } from '@/hooks/useInvoice';
@@ -37,17 +38,21 @@ export default function CartaoFaturasScreen() {
   }, [cardId]);
 
   const handleArchive = () => {
-    Alert.alert('Arquivar cartão', 'O cartão sai das opções de nova compra, mas o histórico é mantido.', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Arquivar',
-        style: 'destructive',
-        onPress: async () => {
-          await archive(cardId!);
-          router.back();
+    Alert.alert(
+      'Arquivar cartão',
+      'O cartão sai das opções de nova compra, mas o histórico é mantido.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Arquivar',
+          style: 'destructive',
+          onPress: async () => {
+            await archive(cardId!);
+            router.back();
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   const sortedInvoices = [...invoices].sort(
@@ -55,7 +60,7 @@ export default function CartaoFaturasScreen() {
   );
 
   return (
-    <YStack flex={1} backgroundColor="$bg">
+    <Screen>
       <XStack alignItems="center" gap="$3" padding={20} paddingBottom={0}>
         <Button
           onPress={() => router.back()}
@@ -123,6 +128,6 @@ export default function CartaoFaturasScreen() {
           </YStack>
         )}
       </ScrollView>
-    </YStack>
+    </Screen>
   );
 }

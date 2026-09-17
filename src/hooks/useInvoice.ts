@@ -8,7 +8,10 @@ import {
   listOpenInvoicesWithTotals,
   markInvoiceAsPaid,
 } from '@/repositories/invoicesRepository';
-import { type InvoicePurchaseRow, listPurchasesForInvoice } from '@/repositories/purchasesRepository';
+import {
+  type InvoicePurchaseRow,
+  listPurchasesForInvoice,
+} from '@/repositories/purchasesRepository';
 
 // Todo hook aqui usa useFocusEffect, não useEffect: o React Navigation
 // mantém a tela anterior montada na pilha, então voltar de "Nova Compra"

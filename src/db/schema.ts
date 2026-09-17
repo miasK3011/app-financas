@@ -51,10 +51,14 @@ export const padroesReconhecimento = sqliteTable('padroes_reconhecimento', {
 // ---------------------------------------------------------------------------
 // Tag (FR-007, FR-008)
 // ---------------------------------------------------------------------------
-export const tags = sqliteTable('tags', {
-  id: text('id').primaryKey(),
-  nome: text('nome').notNull(),
-}, (t) => [uniqueIndex('tags_nome_unique').on(t.nome)]);
+export const tags = sqliteTable(
+  'tags',
+  {
+    id: text('id').primaryKey(),
+    nome: text('nome').notNull(),
+  },
+  (t) => [uniqueIndex('tags_nome_unique').on(t.nome)],
+);
 
 // ---------------------------------------------------------------------------
 // Reserva de Dinheiro Guardado + Lançamento de Reserva (FR-019..FR-021)
@@ -99,25 +103,29 @@ export const metaConsumoIdeal = sqliteTable('meta_consumo_ideal', {
 // ---------------------------------------------------------------------------
 // Fatura (FR-002, FR-011)
 // ---------------------------------------------------------------------------
-export const faturas = sqliteTable('faturas', {
-  id: text('id').primaryKey(),
-  cartaoId: text('cartao_id')
-    .notNull()
-    .references(() => cartoes.id),
-  referenciaAno: integer('referencia_ano').notNull(),
-  referenciaMes: integer('referencia_mes').notNull(),
-  dataFechamento: integer('data_fechamento', { mode: 'timestamp_ms' }).notNull(),
-  dataVencimento: integer('data_vencimento', { mode: 'timestamp_ms' }).notNull(),
-  // Só é escrita como 'ABERTA' (na criação) ou 'PAGA' (em markInvoiceAsPaid)
-  // — a distinção de exibição ABERTA vs. FECHADA nunca lê esta coluna,
-  // é sempre recalculada de `pagaEm`/`dataFechamento` via
-  // domain/invoices/computeInvoiceStatus.ts, para nunca ficar desatualizada
-  // conforme o tempo passa.
-  status: text('status', { enum: ['ABERTA', 'FECHADA', 'PAGA'] }).notNull(),
-  pagaEm: integer('paga_em', { mode: 'timestamp_ms' }),
-}, (t) => [
-  uniqueIndex('faturas_cartao_ano_mes_unique').on(t.cartaoId, t.referenciaAno, t.referenciaMes),
-]);
+export const faturas = sqliteTable(
+  'faturas',
+  {
+    id: text('id').primaryKey(),
+    cartaoId: text('cartao_id')
+      .notNull()
+      .references(() => cartoes.id),
+    referenciaAno: integer('referencia_ano').notNull(),
+    referenciaMes: integer('referencia_mes').notNull(),
+    dataFechamento: integer('data_fechamento', { mode: 'timestamp_ms' }).notNull(),
+    dataVencimento: integer('data_vencimento', { mode: 'timestamp_ms' }).notNull(),
+    // Só é escrita como 'ABERTA' (na criação) ou 'PAGA' (em markInvoiceAsPaid)
+    // — a distinção de exibição ABERTA vs. FECHADA nunca lê esta coluna,
+    // é sempre recalculada de `pagaEm`/`dataFechamento` via
+    // domain/invoices/computeInvoiceStatus.ts, para nunca ficar desatualizada
+    // conforme o tempo passa.
+    status: text('status', { enum: ['ABERTA', 'FECHADA', 'PAGA'] }).notNull(),
+    pagaEm: integer('paga_em', { mode: 'timestamp_ms' }),
+  },
+  (t) => [
+    uniqueIndex('faturas_cartao_ano_mes_unique').on(t.cartaoId, t.referenciaAno, t.referenciaMes),
+  ],
+);
 
 // ---------------------------------------------------------------------------
 // Lote de Importação (FR-009, FR-010, FR-026)
@@ -150,14 +158,18 @@ export const assinaturas = sqliteTable('assinaturas', {
   categoriaId: text('categoria_id').references(() => categorias.id),
 });
 
-export const assinaturaTags = sqliteTable('assinatura_tags', {
-  assinaturaId: text('assinatura_id')
-    .notNull()
-    .references(() => assinaturas.id),
-  tagId: text('tag_id')
-    .notNull()
-    .references(() => tags.id),
-}, (t) => [primaryKey({ columns: [t.assinaturaId, t.tagId] })]);
+export const assinaturaTags = sqliteTable(
+  'assinatura_tags',
+  {
+    assinaturaId: text('assinatura_id')
+      .notNull()
+      .references(() => assinaturas.id),
+    tagId: text('tag_id')
+      .notNull()
+      .references(() => tags.id),
+  },
+  (t) => [primaryKey({ columns: [t.assinaturaId, t.tagId] })],
+);
 
 // ---------------------------------------------------------------------------
 // Compra (FR-003..FR-008, FR-046..FR-055 — User Story 12)
@@ -186,14 +198,18 @@ export const compras = sqliteTable('compras', {
   criadoEm: integer('criado_em', { mode: 'timestamp_ms' }).notNull(),
 });
 
-export const compraTags = sqliteTable('compra_tags', {
-  compraId: text('compra_id')
-    .notNull()
-    .references(() => compras.id),
-  tagId: text('tag_id')
-    .notNull()
-    .references(() => tags.id),
-}, (t) => [primaryKey({ columns: [t.compraId, t.tagId] })]);
+export const compraTags = sqliteTable(
+  'compra_tags',
+  {
+    compraId: text('compra_id')
+      .notNull()
+      .references(() => compras.id),
+    tagId: text('tag_id')
+      .notNull()
+      .references(() => tags.id),
+  },
+  (t) => [primaryKey({ columns: [t.compraId, t.tagId] })],
+);
 
 // ---------------------------------------------------------------------------
 // Parcela (FR-004..FR-006, FR-055)
