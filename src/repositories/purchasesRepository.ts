@@ -217,7 +217,10 @@ export async function listPurchasesForInvoice(invoiceId: string): Promise<Invoic
  * uma Fatura cujo status de exibição (via `computeInvoiceStatus`, não
  * a coluna crua) é `FECHADA` ou `PAGA`.
  */
-export async function hasFrozenInstallments(compraId: string, today: Date = new Date()): Promise<boolean> {
+export async function hasFrozenInstallments(
+  compraId: string,
+  today: Date = new Date(),
+): Promise<boolean> {
   const rows = await db
     .select({ fatura: faturas })
     .from(parcelas)
@@ -240,6 +243,9 @@ export type UpdatePurchaseInput = {
  * (nenhuma existe ainda) deve chamar `hasFrozenInstallments` antes de
  * permitir essa edição mais sensível e bloquear se retornar `true`.
  */
-export async function updatePurchase(compraId: string, updates: UpdatePurchaseInput): Promise<void> {
+export async function updatePurchase(
+  compraId: string,
+  updates: UpdatePurchaseInput,
+): Promise<void> {
   await db.update(compras).set(updates).where(eq(compras.id, compraId));
 }

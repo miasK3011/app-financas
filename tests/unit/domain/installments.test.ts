@@ -1,5 +1,8 @@
 import { allocateInstallmentsToInvoices } from '@/domain/installments/allocateInstallmentsToInvoices';
-import { InvalidInstallmentError, splitInstallments } from '@/domain/installments/splitInstallments';
+import {
+  InvalidInstallmentError,
+  splitInstallments,
+} from '@/domain/installments/splitInstallments';
 
 describe('splitInstallments', () => {
   it('splits a simple R$300/3x purchase evenly', () => {

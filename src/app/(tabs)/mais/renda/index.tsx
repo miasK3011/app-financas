@@ -126,7 +126,9 @@ export default function RendaScreen() {
         </YStack>
 
         <Button
-          onPress={() => router.push({ pathname: '/cartoes/nova-compra', params: { formaPagamento: 'PIX' } })}
+          onPress={() =>
+            router.push({ pathname: '/cartoes/nova-compra', params: { formaPagamento: 'PIX' } })
+          }
           backgroundColor="$surface"
           borderColor="$border"
           borderWidth={1}

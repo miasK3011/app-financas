@@ -265,25 +265,25 @@ estava em andamento antes da adoção do app (FR-004 a FR-006, FR-008).
 
 ### Tests for User Story 8
 
-- [ ] T060 [P] [US8] Testes unitários de `validateBackupFile` em
+- [X] T060 [P] [US8] Testes unitários de `validateBackupFile` em
       `tests/unit/domain/backup.test.ts`: `schemaVersion` desconhecido é rejeitado; shape mínimo
       de cada array em `data` é validado
 
 ### Implementation for User Story 8
 
-- [ ] T061 [US8] Implementar `src/domain/backup/serializeBackup.ts` e
+- [X] T061 [US8] Implementar `src/domain/backup/serializeBackup.ts` e
       `src/domain/backup/validateBackupFile.ts` (schema `zod`) conforme `contracts/backup.md`
-- [ ] T062 [US8] Implementar `src/repositories/backupRepository.ts`: `exportAll()` lendo as 15
+- [X] T062 [US8] Implementar `src/repositories/backupRepository.ts`: `exportAll()` lendo as 15
       tabelas por completo; `restoreAll(file)` executando **uma única `db.transaction`**
       (delete-all + insert-all respeitando a ordem de foreign keys) conforme `contracts/backup.md`
       — substituição integral, nunca mesclagem (FR-024)
-- [ ] T063 [US8] Implementar o fluxo de exportação com `expo-file-system` (escrever o `.json`) +
+- [X] T063 [US8] Implementar o fluxo de exportação com `expo-file-system` (escrever o `.json`) +
       `expo-sharing` (compartilhar/salvar)
-- [ ] T064 [US8] Implementar o fluxo de importação com `expo-document-picker` (selecionar o
+- [X] T064 [US8] Implementar o fluxo de importação com `expo-document-picker` (selecionar o
       `.json`) + `validateBackupFile` antes de qualquer escrita no banco
-- [ ] T065 [US8] Construir `src/app/(tabs)/mais/backup/index.tsx` (Backup) conforme `Backup.dc.html`:
+- [X] T065 [US8] Construir `src/app/(tabs)/mais/backup/index.tsx` (Backup) conforme `Backup.dc.html`:
       botões Exportar/Importar
-- [ ] T066 [US8] Construir `src/app/(tabs)/mais/backup/confirmar-restauracao.tsx` (BackupConfirmar) conforme
+- [X] T066 [US8] Construir `src/app/(tabs)/mais/backup/confirmar-restauracao.tsx` (BackupConfirmar) conforme
       `BackupConfirmar.dc.html`: aviso explícito de substituição integral e irreversível antes de
       chamar `restoreAll`
 
