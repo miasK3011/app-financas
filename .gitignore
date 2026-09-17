@@ -20,3 +20,8 @@ yarn-error.*
 # Claude Design: keep .dc.html sources + canvas.json, ignore the seeded/built payload
 design/**/*.html
 !design/**/*.dc.html
+
+# Real bank exports dropped in for parser development — personal financial data,
+# never committed to this public repo. Only the anonymized nubank-sample.csv is tracked.
+tests/fixtures/Nubank_*.csv
+tests/fixtures/*real*.csv

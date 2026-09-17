@@ -41,34 +41,55 @@ Todas as incertezas técnicas levantadas pelo Technical Context e pela seção A
   `expo-sqlite/kv-store` em vez de um schema relacional — rejeitado por não suportar as relações e
   agregações (somas de fatura, joins de parcela↔fatura) exigidas pelas FR-011/FR-015.
 
-## Decisão: Formato do CSV do Nubank
+## Decisão: Formato do CSV do Nubank (CONFIRMADO com arquivo real)
 
-- **Decision**: O parser Nubank (`app/domain/csvImport/nubankParser.ts`) assume o formato de
-  exportação de fatura de cartão do Nubank publicamente documentado: cabeçalho exato
-  `date,title,amount`, separador vírgula, `date` no formato `YYYY-MM-DD`, `amount` decimal com
-  ponto (positivo = despesa), e `title` livre — podendo conter o padrão textual `Parcela N/M` para
-  compras parceladas (ex.: `Uber - Parcela 2/3`). Quando esse padrão é detectado no título, o
-  parser reconstrói a compra original agrupando linhas do mesmo título-base (texto antes de
-  " - Parcela") que aparecem em faturas diferentes seria ideal, mas como o Nubank exporta apenas
-  uma fatura por arquivo, a estratégia adotada é: cada linha com `Parcela N/M` vira uma `Compra`
-  independente com `installmentsCount = M` e `currentInstallment = N`, reaproveitando exatamente o
-  mesmo mecanismo do FR-004 (parcelamento já em andamento) — sem tentar unir linhas de arquivos de
-  meses diferentes automaticamente.
-- **Rationale**: A spec já registrava essa suposição em Assumptions (formato `date,title,amount`,
-  parcelas identificadas por padrão textual). Tratar cada linha `Parcela N/M` como uma "compra em
-  andamento" reaproveita a User Story 4 sem exigir uma segunda estrutura de dados — e é seguro
-  porque, se o usuário importar faturas de meses consecutivos, cada uma cria a parcela daquele mês
-  isoladamente sem duplicar valor (a parcela N/M vira uma Compra com 1 parcela restante alocada
-  naquele mês; ver `contracts/csv-import.md`).
-- **Ainda pendente de validação com dado real**: Este formato é o publicamente conhecido, mas
-  ainda **não foi confirmado com um arquivo de exportação real do usuário**, como a spec já sinalizava.
-  **Ação de acompanhamento**: a primeira tarefa de implementação do parser Nubank (em `tasks.md`)
-  deve incluir "validar/ajustar contra um CSV real exportado pelo usuário" como critério de
-  aceite explícito, e o parser deve ser escrito de forma isolada e coberta por testes de unidade
-  com fixtures, para que qualquer ajuste de coluna/formato seja uma mudança local e barata.
-- **Alternatives considered**: Bloquear o planejamento até o usuário fornecer o arquivo real —
-  rejeitado por não ser necessário bloquear todo o `/plan` por causa de um único parser isolado e
-  substituível; a spec já previa seguir com a suposição documentada.
+- **Status**: Validado contra um arquivo de exportação real fornecido pelo usuário em
+  2026-09-17 (mantido apenas localmente, fora do git — ver `tests/fixtures/nubank-sample.csv` para
+  uma versão anonimizada com a mesma estrutura). A suposição original da spec acertou o cabeçalho e
+  o formato de data, mas **errou o formato de número**; corrigido abaixo.
+- **Decision — formato confirmado**:
+  - Cabeçalho exato: `date,title,amount`.
+  - `date`: `YYYY-MM-DD`.
+  - `amount`: **string entre aspas, decimal com VÍRGULA (formato BRL)**, não com ponto — ex.:
+    `"152,39"`. Valores negativos vêm com um `-` seguido de **um espaço** antes do número, ainda
+    dentro das aspas — ex.: `"- 15,92"`. O parser deve: remover aspas (o `papaparse` já faz isso),
+    remover todo espaço em branco interno, tratar um `-` inicial como sinal negativo, trocar `,`
+    por `.` (e remover `.` de milhar, se houver, antes disso) e então converter para centavos.
+  - `title`: texto livre, podendo conter aspas internas escapadas no padrão CSV (`""`) — ex.:
+    `"Crédito de ""MP *ALIEXPRESS"""` — o `papaparse` decodifica isso automaticamente para o texto
+    literal `Crédito de "MP *ALIEXPRESS"`, confirmando que essa era a biblioteca certa para não
+    reimplementar escaping de CSV manualmente.
+  - Parcelamento: confirmado o padrão textual `<descrição> - Parcela N/M` no final do `title` (ex.:
+    `Autopecas Silva - Parcela 1/3`, `MercadoOnline*Loja Xyz - Parcela 1/4`) — a estratégia da
+    versão anterior desta decisão (cada linha vira uma `Compra` com `parcelasTotal = M`,
+    `parcelaAtual = N`, reaproveitando o fluxo de "parcelamento já em andamento" do FR-004)
+    continua válida e não precisou de ajuste.
+  - **Valores negativos são reais e frequentes** no extrato do Nubank, em três formas observadas:
+    (1) a linha `Pagamento recebido` — registra o pagamento da fatura anterior, **não é uma
+    compra** e deve ser **sempre excluída** da importação (vai para `skipped`, mas com um motivo
+    informativo, não de erro: `"Pagamento de fatura anterior — não é uma compra"`); (2) estornos/
+    créditos nomeados (ex.: `Crédito de "MP *ALIEXPRESS"`) — importados normalmente como uma
+    `Compra` de valor **negativo**, que reduz o total da fatura corretamente ao ser somada em
+    `computeInvoiceTotals` (FR-011), sem precisar de nenhum tratamento especial; (3) pares de
+    estorno/nova cobrança do mesmo estabelecimento no mesmo dia (ex.: `Uber - NuPay` com `-15,50`
+    seguido de `+15,50`) — importados como duas `Compra`s independentes, exatamente como aparecem
+    no CSV, sem tentar deduplicar ou compensar — é o comportamento real do banco e deve ser
+    espelhado fielmente.
+- **Rationale**: A spec já previa o cabeçalho e o padrão de parcelas corretamente; o formato de
+  número (vírgula, não ponto) é a única correção material, e é exatamente o tipo de ajuste local e
+  barato que a decisão original antecipava ("qualquer ajuste de coluna/formato seja uma mudança
+  local e barata" — mantido, o parser é isolado e coberto por fixture). Tratar `Pagamento recebido`
+  como exclusão e créditos/estornos como `Compra` de valor negativo evita inflar artificialmente o
+  total da fatura ou perder informação real do extrato.
+- **Impacto no `data-model.md`**: `Compra.valorTotalOriginal` pode ser **negativo** quando
+  `origem = CSV_IMPORT` e a linha original era um crédito/estorno (não se aplica a compras
+  cadastradas manualmente, onde o formulário sempre exige valor positivo). `Parcela.valor` herda o
+  mesmo sinal; `responsabilidadeEfetiva` para essas linhas continua sendo o padrão (= o próprio
+  valor, já que ninguém divide um estorno com outra pessoa) sem exigir mudança na fórmula.
+- **Alternatives considered**: Ignorar todas as linhas negativas do CSV — rejeitado por descartar
+  estornos reais que afetam o total correto da fatura; tentar compensar/casar pares de estorno
+  automaticamente — rejeitado por complexidade desnecessária (YAGNI) quando simplesmente importar
+  cada linha como está já produz o total correto.
 
 ## Decisão: Busca de logotipo (Brandfetch) sem backend
 

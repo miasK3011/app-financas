@@ -52,7 +52,7 @@ nunca divergir da fonte de verdade (SC-003).
 |---|---|---|
 | `id` | text PK | UUID |
 | `descricao` | text NOT NULL | |
-| `valorTotalOriginal` | integer NOT NULL | centavos; valor total ORIGINAL da compra (mesmo se parcelamento já em andamento — ver Assumptions) |
+| `valorTotalOriginal` | integer NOT NULL | centavos; valor total ORIGINAL da compra (mesmo se parcelamento já em andamento — ver Assumptions). Positivo em toda compra cadastrada manualmente; pode ser **negativo** quando `origem = CSV_IMPORT` e a linha original do extrato era um estorno/crédito (ver `research.md` — Decisão: Formato do CSV do Nubank) |
 | `dataCompra` | integer NOT NULL | |
 | `formaPagamento` | text NOT NULL | enum `PIX` \| `CARTAO` |
 | `cartaoId` | text FK nullable → Cartão | obrigatório quando `formaPagamento = CARTAO` |

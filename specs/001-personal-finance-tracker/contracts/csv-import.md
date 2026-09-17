@@ -30,14 +30,31 @@ function parse(rawCsv: string): CsvParseResult;
 
 ## `nubankParser.parse`
 
-- Espera cabeçalho exato `date,title,amount` (`,` como separador) — ver decisão e ressalva de
-  validação pendente em `research.md`.
-- `date` em `YYYY-MM-DD`; `amount` decimal com ponto, convertido para centavos.
+Formato confirmado com um arquivo real (ver `research.md`, Decisão: Formato do CSV do Nubank).
+
+- Espera cabeçalho exato `date,title,amount` (`,` como separador).
+- `date` em `YYYY-MM-DD`.
+- `amount` é **decimal com vírgula** (formato BRL, ex.: `"152,39"`), podendo vir negativo com um
+  `-` seguido de espaço antes do número (ex.: `"- 15,92"`). Parsing: remover espaços internos,
+  extrair o sinal, trocar `,` por `.`, então converter para centavos. **Nunca assumir ponto como
+  separador decimal neste parser.**
+- `title` pode conter aspas internas escapadas no padrão CSV (`""..""`) — o `papaparse` já
+  decodifica isso automaticamente, o parser não precisa de tratamento extra.
+- **Linha com `title === "Pagamento recebido"` é sempre excluída** (vai para `skipped` com motivo
+  informativo `"Pagamento de fatura anterior — não é uma compra"`) — nunca vira uma `Compra`, pois
+  representa o pagamento da fatura anterior, não um gasto.
+- Toda outra linha com `amount` negativo (estornos/créditos, ex.: `Crédito de "MP *ALIEXPRESS"`)
+  **é importada normalmente** como um `CompraDraft` com `valorTotalOriginal` negativo — reduz o
+  total da fatura corretamente ao somar (FR-011), sem tratamento especial. Pares de estorno/nova
+  cobrança do mesmo estabelecimento (duas linhas do mesmo dia, uma negativa e uma positiva) são
+  importados como duas `Compra`s independentes, fielmente ao que consta no extrato — nunca
+  deduplicados ou compensados entre si.
 - Se `title` contém o padrão `Parcela (\d+)\/(\d+)` (case-insensitive), o `CompraDraft` resultante
   usa `parcelasTotal = M`, `parcelaAtual = N`, e `descricao` = o texto de `title` sem o sufixo
-  `- Parcela N/M` — reaproveitando o mesmo fluxo de "parcelamento já em andamento" do FR-004 (ver
-  `research.md`, Decisão: Formato do CSV do Nubank).
-- Mesmo tratamento de linha inválida/incompleta que o parser genérico (FR-026).
+  `- Parcela N/M` — reaproveitando o mesmo fluxo de "parcelamento já em andamento" do FR-004.
+- Mesmo tratamento de linha inválida/incompleta (sem `date` ou `amount` não parseável) que o
+  parser genérico (FR-026) — isso é diferente e mais raro do que o caso de `Pagamento recebido`
+  acima, que é uma linha válida e completa, apenas não-importável por natureza.
 
 ## Uso pelo repositório (fora do domínio, apenas para contexto)
 
