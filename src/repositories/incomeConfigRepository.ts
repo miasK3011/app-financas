@@ -1,4 +1,4 @@
-import { desc, lte } from 'drizzle-orm';
+import { desc, lt } from 'drizzle-orm';
 import { randomUUID } from 'expo-crypto';
 
 import { db } from '@/db/client';
@@ -20,7 +20,13 @@ export async function setIncome(valor: number, vigenteDesde: Date): Promise<Inco
 }
 
 /**
- * Valor de maior `vigenteDesde` que seja ≤ o início do mês pedido —
+ * Valor de maior `vigenteDesde` que seja anterior ao FIM do mês pedido
+ * — não ao início. Correção sobre a redação original de
+ * `data-model.md` ("≤ o início daquele mês"): se o usuário atualiza a
+ * renda hoje, no meio do mês, `vigenteDesde` é hoje — comparar contra
+ * o início do mês (dia 1) faria essa renda nunca aparecer no mês
+ * corrente, quebrando o cenário 1 da User Story 2 ("o saldo do mês
+ * corrente passa a refletir o novo valor imediatamente", FR-013).
  * `undefined` quando nenhuma renda foi configurada ainda (Edge Case:
  * Estatísticas sem renda configurada).
  */
@@ -28,11 +34,11 @@ export async function getIncomeForMonth(
   year: number,
   month: number,
 ): Promise<IncomeConfig | undefined> {
-  const monthStart = new Date(year, month - 1, 1);
+  const nextMonthStart = new Date(year, month, 1);
   const [config] = await db
     .select()
     .from(configuracoesRenda)
-    .where(lte(configuracoesRenda.vigenteDesde, monthStart))
+    .where(lt(configuracoesRenda.vigenteDesde, nextMonthStart))
     .orderBy(desc(configuracoesRenda.vigenteDesde))
     .limit(1);
   return config;

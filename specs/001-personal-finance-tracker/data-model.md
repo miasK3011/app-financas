@@ -154,8 +154,17 @@ categoria e tags vigentes da Assinatura **naquele momento**. Chave de idempotên
 | `valor` | integer NOT NULL | centavos |
 | `vigenteDesde` | integer NOT NULL | data a partir da qual este valor é o vigente |
 
-O valor vigente em um mês de referência é o de maior `vigenteDesde` que seja ≤ o início daquele
-mês — histórico nunca é reescrito (FR-013).
+O valor vigente em um mês de referência é o de maior `vigenteDesde` que seja anterior ao início do
+mês SEGUINTE (ou seja, que caia em qualquer momento dentro do próprio mês de referência ou antes
+dele) — histórico nunca é reescrito (FR-013).
+
+**Correção de implementação (2026-09-18)**: a redação original desta regra comparava
+`vigenteDesde` contra o início do PRÓPRIO mês de referência (`vigenteDesde ≤ início do mês`).
+Isso quebrava o cenário 1 da User Story 2 na prática: ao atualizar a renda hoje, no meio do mês
+corrente, `vigenteDesde` é hoje — uma data posterior ao dia 1 daquele mês — então a consulta
+nunca encontrava essa renda para o mês corrente (ela só passaria a "aparecer" a partir do mês
+seguinte), apesar de aparecer corretamente no histórico completo (que lista tudo, sem esse
+filtro). Encontrado via teste manual no dispositivo.
 
 ## Entrada Avulsa
 
