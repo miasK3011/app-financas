@@ -71,52 +71,52 @@ User Stories.
 
 **⚠️ CRITICAL**: Nenhuma User Story pode começar antes desta fase estar completa.
 
-- [ ] T008 [P] Implementar `src/domain/shared/money.ts`: conversão reais↔centavos e
+- [X] T008 [P] Implementar `src/domain/shared/money.ts`: conversão reais↔centavos e
       `formatBRL(cents: number): string`
-- [ ] T009 [P] Implementar `src/domain/shared/dateClamp.ts`: `clampDayToMonth(day, year, month):
+- [X] T009 [P] Implementar `src/domain/shared/dateClamp.ts`: `clampDayToMonth(day, year, month):
       Date`, cobrindo o Edge Case "dia de fechamento/vencimento/cobrança configurado além do
       último dia de um mês mais curto ajusta automaticamente para o último dia válido daquele mês"
-- [ ] T010 Definir a tabela `Cartão` em `src/db/schema.ts`: `id` (text PK, uuid), `nome` (text not
+- [X] T010 Definir a tabela `Cartão` em `src/db/schema.ts`: `id` (text PK, uuid), `nome` (text not
       null), `diaFechamento`/`diaVencimento` (integer not null, **1–31**), `arquivadoEm` (integer
       nullable — `NULL` = ativo), `criadoEm` (integer not null), conforme `data-model.md`
-- [ ] T011 [P] Definir a tabela `Fatura` em `src/db/schema.ts`: campos conforme `data-model.md`,
+- [X] T011 [P] Definir a tabela `Fatura` em `src/db/schema.ts`: campos conforme `data-model.md`,
       **único por `(cartaoId, referenciaAno, referenciaMes)`**, `status` enum
       `ABERTA | FECHADA | PAGA`
-- [ ] T012 [P] Definir a tabela `Compra` em `src/db/schema.ts` com todos os campos de
+- [X] T012 [P] Definir a tabela `Compra` em `src/db/schema.ts` com todos os campos de
       `data-model.md`, incluindo `valorResponsabilidade` (integer nullable), `motivo`/`responsavel`
       (text nullable), `estabelecimentoManual` (boolean not null default false), `origem` enum
       `MANUAL | CSV_IMPORT | ASSINATURA`, e a validação **`1 ≤ parcelaAtual ≤ parcelasTotal`**
       expressa como schema `zod` companion em `src/domain/shared/purchaseSchema.ts`
-- [ ] T013 [P] Definir a tabela `Parcela` em `src/db/schema.ts`: `faturaId` (text FK **nullable** —
+- [X] T013 [P] Definir a tabela `Parcela` em `src/db/schema.ts`: `faturaId` (text FK **nullable** —
       `NULL` quando a Compra é PIX), `numero`, `valor`, `valorResponsabilidade`, conforme
       `data-model.md`
-- [ ] T014 [P] Definir as tabelas `Tag` (nome **UNIQUE**) e `CompraTag` (PK composta
+- [X] T014 [P] Definir as tabelas `Tag` (nome **UNIQUE**) e `CompraTag` (PK composta
       `compraId`+`tagId`) em `src/db/schema.ts`
-- [ ] T015 [P] Definir as tabelas `Assinatura` e `AssinaturaTag` em `src/db/schema.ts` conforme
+- [X] T015 [P] Definir as tabelas `Assinatura` e `AssinaturaTag` em `src/db/schema.ts` conforme
       `data-model.md`
-- [ ] T016 [P] Definir a tabela `ConfiguracaoRenda` em `src/db/schema.ts` (histórico por
+- [X] T016 [P] Definir a tabela `ConfiguracaoRenda` em `src/db/schema.ts` (histórico por
       `vigenteDesde`, nunca reescrito)
-- [ ] T017 [P] Definir a tabela `EntradaAvulsa` em `src/db/schema.ts`, com `compraVinculadaId`
+- [X] T017 [P] Definir a tabela `EntradaAvulsa` em `src/db/schema.ts`, com `compraVinculadaId`
       (text FK nullable → Compra)
-- [ ] T018 [P] Definir as tabelas `Reserva` e `LancamentoReserva` em `src/db/schema.ts` —
+- [X] T018 [P] Definir as tabelas `Reserva` e `LancamentoReserva` em `src/db/schema.ts` —
       `LancamentoReserva.tipo` enum `DEPOSITO | RETIRADA | RENDIMENTO_MANUAL |
       RENDIMENTO_AUTOMATICO` (o último reservado para a feature futura; nenhum código o gera ainda)
-- [ ] T019 [P] Definir a tabela `LoteImportacao` em `src/db/schema.ts`
-- [ ] T020 [P] Definir a tabela `Categoria` em `src/db/schema.ts` (`predefinida` boolean not null)
-- [ ] T021 [P] Definir as tabelas `Estabelecimento` e `PadraoReconhecimento` em `src/db/schema.ts`
-- [ ] T022 [P] Definir a tabela singleton `MetaConsumoIdeal` em `src/db/schema.ts`
+- [X] T019 [P] Definir a tabela `LoteImportacao` em `src/db/schema.ts`
+- [X] T020 [P] Definir a tabela `Categoria` em `src/db/schema.ts` (`predefinida` boolean not null)
+- [X] T021 [P] Definir as tabelas `Estabelecimento` e `PadraoReconhecimento` em `src/db/schema.ts`
+- [X] T022 [P] Definir a tabela singleton `MetaConsumoIdeal` em `src/db/schema.ts`
       (`percentualDaRenda` real not null)
-- [ ] T023 Rodar `npx drizzle-kit generate` para produzir a migration inicial em
+- [X] T023 Rodar `npx drizzle-kit generate` para produzir a migration inicial em
       `src/db/migrations/`; conferir as 15 tabelas geradas contra `data-model.md`
-- [ ] T024 Implementar `src/db/client.ts`: abrir o banco `expo-sqlite`, envolver com `drizzle()`,
+- [X] T024 Implementar `src/db/client.ts`: abrir o banco `expo-sqlite`, envolver com `drizzle()`,
       exportar a instância `db` tipada
-- [ ] T025 Implementar o gate de migration no boot em `src/app/_layout.tsx` usando `useMigrations` de
+- [X] T025 Implementar o gate de migration no boot em `src/app/_layout.tsx` usando `useMigrations` de
       `drizzle-orm/expo-sqlite/migrator`, exibindo uma tela de loading até concluir — nenhuma
       navegação é montada antes disso (`research.md` → Decisão: Migrations no boot)
-- [ ] T026 Implementar o seed das Categorias pré-definidas (Compras, Transporte, Alimentação,
+- [X] T026 Implementar o seed das Categorias pré-definidas (Compras, Transporte, Alimentação,
       Assinaturas, Saúde, Lazer, **Outros**) rodando uma vez após as migrations, se a tabela
       `Categoria` estiver vazia; `Outros` sempre com `predefinida = true` e nunca excluível
-- [ ] T027 Aplicar os tokens do tema Tamagui no shell do app (`TamaguiProvider` em
+- [X] T027 Aplicar os tokens do tema Tamagui no shell do app (`TamaguiProvider` em
       `src/app/_layout.tsx`), carregando Manrope + Lora via `expo-font`
 
 **Checkpoint**: Fundação pronta — as User Stories podem começar.

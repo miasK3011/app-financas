@@ -35,16 +35,31 @@ const radiusTokens = {
 };
 
 // Manrope: sans body/UI face. Lora: serif, reserved for titles and
-// monetary values only (design-brief.md §3.1) — both loaded via
-// expo-font in src/app/_layout.tsx (T027).
+// monetary values only (design-brief.md §3.1). Both are loaded via
+// expo-font in src/app/_layout.tsx (T027) under their exact
+// @expo-google-fonts asset names (e.g. "Manrope_600SemiBold") — RN has
+// no CSS-style weight resolution within one family, so `face` maps
+// each numeric weight to the specific loaded font name Tamagui must
+// use for that weight.
 const headingFont = createFont({
   ...defaultConfig.fonts.heading,
-  family: 'Lora',
+  family: 'Lora_500Medium',
+  face: {
+    500: { normal: 'Lora_500Medium', italic: 'Lora_500Medium_Italic' },
+    600: { normal: 'Lora_600SemiBold' },
+    700: { normal: 'Lora_700Bold' },
+  },
 });
 
 const bodyFont = createFont({
   ...defaultConfig.fonts.body,
-  family: 'Manrope',
+  family: 'Manrope_400Regular',
+  face: {
+    400: { normal: 'Manrope_400Regular' },
+    500: { normal: 'Manrope_500Medium' },
+    600: { normal: 'Manrope_600SemiBold' },
+    700: { normal: 'Manrope_700Bold' },
+  },
 });
 
 const tamaguiConfig = createTamagui({
