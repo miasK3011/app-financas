@@ -132,40 +132,41 @@ compra cai (FR-001, FR-002, FR-011).
 
 ### Tests for User Story 1
 
-- [ ] T028 [P] [US1] Testes unitários de `resolveInvoicePeriod` em
+- [X] T028 [P] [US1] Testes unitários de `resolveInvoicePeriod` em
       `tests/unit/domain/invoices.test.ts`: compra antes do fechamento cai no ciclo atual; compra
       **no dia exato do fechamento** cai no ciclo que fecha **naquele mesmo dia** (não no seguinte);
       compra um dia após o fechamento cai no ciclo seguinte (FR-002, cenários 1–3 da User Story 1)
-- [ ] T029 [P] [US1] Testes unitários de `computeInvoiceStatus` e `computeInvoiceTotals` em
+- [X] T029 [P] [US1] Testes unitários de `computeInvoiceStatus` e `computeInvoiceTotals` em
       `tests/unit/domain/invoices.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T030 [US1] Implementar `src/domain/invoices/resolveInvoicePeriod.ts` conforme
+- [X] T030 [US1] Implementar `src/domain/invoices/resolveInvoicePeriod.ts` conforme
       `contracts/invoices.md`
-- [ ] T031 [US1] Implementar `src/domain/invoices/ensureInvoice.ts` (upsert idempotente por
-      `(cardId, year, month)`) conforme `contracts/invoices.md`
-- [ ] T032 [US1] Implementar `src/domain/invoices/computeInvoiceStatus.ts` e
+- [X] T031 [US1] Implementar `src/domain/invoices/computeInvoiceDates.ts` (cálculo puro de
+      `dataFechamento`/`dataVencimento` para um `(cardId, year, month)` — o upsert em si fica em
+      `invoicesRepository.getOrCreateInvoice`, T034) conforme `contracts/invoices.md`
+- [X] T032 [US1] Implementar `src/domain/invoices/computeInvoiceStatus.ts` e
       `src/domain/invoices/computeInvoiceTotals.ts` conforme `contracts/invoices.md` (FR-011)
-- [ ] T033 [P] [US1] Implementar `src/repositories/cardsRepository.ts`: criar/listar/arquivar
+- [X] T033 [P] [US1] Implementar `src/repositories/cardsRepository.ts`: criar/listar/arquivar
       Cartão, validando `diaFechamento`/`diaVencimento` entre 1 e 31
-- [ ] T034 [US1] Implementar `src/repositories/invoicesRepository.ts`: `getOrCreateInvoice`,
+- [X] T034 [US1] Implementar `src/repositories/invoicesRepository.ts`: `getOrCreateInvoice`,
       `listInvoicesForCard`, `markInvoiceAsPaid`, agregando totais via `computeInvoiceTotals`
-- [ ] T035 [US1] Implementar `src/repositories/purchasesRepository.ts` (versão mínima): criar uma
+- [X] T035 [US1] Implementar `src/repositories/purchasesRepository.ts` (versão mínima): criar uma
       Compra à vista no cartão (1 parcela, sem parcelamento — estendido na US4), associando-a à
       fatura correta via `resolveInvoicePeriod` + `ensureInvoice`
-- [ ] T036 [P] [US1] Implementar os hooks `src/hooks/useCards.ts` e `src/hooks/useInvoice.ts`
-- [ ] T037 [US1] Construir `src/app/(tabs)/cartoes/index.tsx` (Cartões · Main) conforme
+- [X] T036 [P] [US1] Implementar os hooks `src/hooks/useCards.ts` e `src/hooks/useInvoice.ts`
+- [X] T037 [US1] Construir `src/app/(tabs)/cartoes/index.tsx` (Cartões · Main) conforme
       `design-brief.md` §5 e `design/cartoes-e-compra/Main.dc.html`: lista de cartões, card
       "Total das faturas abertas", FAB "+" para novo cartão
-- [ ] T038 [US1] Construir o formulário de novo cartão (`react-hook-form` + `zod`): nome,
+- [X] T038 [US1] Construir o formulário de novo cartão (`react-hook-form` + `zod`): nome,
       diaFechamento (1–31), diaVencimento (1–31)
-- [ ] T039 [US1] Construir `src/app/(tabs)/cartoes/[cardId]/index.tsx` (Cartão · Faturas) conforme
+- [X] T039 [US1] Construir `src/app/(tabs)/cartoes/[cardId]/index.tsx` (Cartão · Faturas) conforme
       `CartaoDetalhe.dc.html`: lista de faturas com badge de status distinto para "Aberta"
       (`--color-info`/`--color-info-dark`); incluir a ação **"Arquivar cartão"** (com confirmação),
       chamando `cardsRepository.archiveCard` — o cartão some das opções de nova compra e da
       sugestão de melhor cartão, mas continua exibindo suas faturas (FR-025)
-- [ ] T040 [US1] Construir `src/app/(tabs)/cartoes/[cardId]/fatura/[invoiceId].tsx` (Fatura · Detalhe)
+- [X] T040 [US1] Construir `src/app/(tabs)/cartoes/[cardId]/fatura/[invoiceId].tsx` (Fatura · Detalhe)
       conforme `FaturaDetalhe.dc.html`: valor total, lista de compras da fatura, botão "Marcar
       fatura como paga" chamando `markInvoiceAsPaid`
 

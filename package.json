@@ -6,6 +6,7 @@
     "@expo-google-fonts/lora": "^0.4.2",
     "@expo-google-fonts/manrope": "^0.4.2",
     "@expo/ui": "~57.0.18",
+    "@hookform/resolvers": "^5.9.1",
     "@tamagui/config": "^2.7.7",
     "@tamagui/core": "^2.7.7",
     "date-fns": "^4.4.0",

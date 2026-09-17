@@ -9,6 +9,7 @@ export default function CartoesStackLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
+      <Stack.Screen name="novo" options={{ presentation: 'modal' }} />
       <Stack.Screen name="[cardId]/index" />
       <Stack.Screen name="[cardId]/fatura/[invoiceId]" />
       <Stack.Screen name="nova-compra/index" />

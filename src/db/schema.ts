@@ -108,6 +108,11 @@ export const faturas = sqliteTable('faturas', {
   referenciaMes: integer('referencia_mes').notNull(),
   dataFechamento: integer('data_fechamento', { mode: 'timestamp_ms' }).notNull(),
   dataVencimento: integer('data_vencimento', { mode: 'timestamp_ms' }).notNull(),
+  // Só é escrita como 'ABERTA' (na criação) ou 'PAGA' (em markInvoiceAsPaid)
+  // — a distinção de exibição ABERTA vs. FECHADA nunca lê esta coluna,
+  // é sempre recalculada de `pagaEm`/`dataFechamento` via
+  // domain/invoices/computeInvoiceStatus.ts, para nunca ficar desatualizada
+  // conforme o tempo passa.
   status: text('status', { enum: ['ABERTA', 'FECHADA', 'PAGA'] }).notNull(),
   pagaEm: integer('paga_em', { mode: 'timestamp_ms' }),
 }, (t) => [
