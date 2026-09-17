@@ -39,28 +39,28 @@ com `src/domain/` + `src/db/` + `src/repositories/` + `src/hooks/` + `src/compon
 
 **Purpose**: Inicialização do projeto Expo e ferramentas compartilhadas.
 
-- [ ] T001 Inicializar projeto Expo (TypeScript, template `default` do `create-expo-app`, que já
+- [X] T001 Inicializar projeto Expo (TypeScript, template `default` do `create-expo-app`, que já
       gera `src/app/` com `expo-router`) na raiz do repositório, mesclando o scaffold com o
       repositório existente sem sobrescrever `specs/`, `design/`, `.specify/`, `.gitignore` ou
       `.claude/` já existentes; criar `tests/` conforme `plan.md` → Project Structure
-- [ ] T002 [P] Instalar e configurar Tamagui (`tamagui`, `@tamagui/core`, `@tamagui/config`);
+- [X] T002 [P] Instalar e configurar Tamagui (`tamagui`, `@tamagui/core`, `@tamagui/config`);
       criar `src/theme/tamagui.config.ts` com os tokens de `design-brief.md` §3.1 (cores
       `--color-primary #2E6F55`, `--color-error #C74A3C`, `--color-info #2F6FB0`, raios `20px`/`14px`,
       fontes Manrope + Lora via Google Fonts)
-- [ ] T003 [P] Instalar Drizzle ORM (`drizzle-orm`, `drizzle-kit`, `expo-sqlite`); criar
+- [X] T003 [P] Instalar Drizzle ORM (`drizzle-orm`, `drizzle-kit`, `expo-sqlite`); criar
       `drizzle.config.ts` na raiz (dialect `sqlite`, schema `src/db/schema.ts`,
       out `src/db/migrations`)
-- [ ] T004 [P] Instalar as demais dependências de `research.md` → Resumo de dependências:
+- [X] T004 [P] Instalar as demais dependências de `research.md` → Resumo de dependências:
       `lucide-react-native`, `react-native-svg`, `date-fns`, `react-hook-form`, `zod`, `papaparse`,
       `expo-file-system`, `expo-sharing`, `expo-document-picker`, `expo-crypto`
-- [ ] T005 [P] Configurar ESLint + Prettier + `tsconfig.json` em modo `strict: true`
-- [ ] T006 [P] Configurar Jest (`jest-expo` preset) + `@testing-library/react-native`; criar
+- [X] T005 [P] Configurar ESLint + Prettier + `tsconfig.json` em modo `strict: true`
+- [X] T006 [P] Configurar Jest (`jest-expo` preset) + `@testing-library/react-native`; criar
       `tests/unit/`, `tests/integration/`; adicionar script `npm test`
-- [ ] T007 Criar o esqueleto de rotas `expo-router` conforme a árvore corrigida em `plan.md` →
+- [X] T007 Criar o esqueleto de rotas `expo-router` conforme a árvore corrigida em `plan.md` →
       Project Structure: `src/app/_layout.tsx` (stack raiz) e `src/app/(tabs)/_layout.tsx` (Tabs
       navigator com as 5 abas da barra inferior: **inicio, cartoes, assinaturas, reservas, mais**),
       cada aba com seu próprio `_layout.tsx` (Stack) e uma tela placeholder vazia para cada uma das
-      19 rotas de tela do design-brief.md + a tela de menu `mais/index.tsx`
+      rotas de tela do design-brief.md + a tela de menu `mais/index.tsx`
 
 ---
 

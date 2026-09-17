@@ -1,0 +1,77 @@
+import { config as defaultConfig } from '@tamagui/config';
+import { createFont, createTamagui } from 'tamagui';
+
+/**
+ * Design tokens from design-brief.md §3.1 (the approved Claude Design
+ * canvases). These are additive, semantic tokens layered on top of
+ * Tamagui's default numeric color/radius scale — components should
+ * reference `$primary`, `$radiusLg`, etc. rather than raw hex values.
+ */
+const colorTokens = {
+  primary: '#2E6F55',
+  primaryDark: '#234F3E',
+  primaryLight: '#E4F0EA',
+  success: '#3C8A5B',
+  successDark: '#306E49',
+  successBg: '#E7F4EC',
+  error: '#C74A3C',
+  errorDark: '#9E3A2F',
+  errorBg: '#FBEAE7',
+  info: '#2F6FB0',
+  infoDark: '#285E96',
+  infoBg: '#E5EEF7',
+  neutralFill: '#B9B7B2',
+  bg: '#FAFAF9',
+  surface: '#FFFFFF',
+  border: '#E7E5E2',
+  text: '#1C1C1E',
+  textSecondary: '#5B5B5E',
+  textTertiary: '#6C6C6D',
+};
+
+const radiusTokens = {
+  lg: 20,
+  md: 14,
+};
+
+// Manrope: sans body/UI face. Lora: serif, reserved for titles and
+// monetary values only (design-brief.md §3.1) — both loaded via
+// expo-font in src/app/_layout.tsx (T027).
+const headingFont = createFont({
+  ...defaultConfig.fonts.heading,
+  family: 'Lora',
+});
+
+const bodyFont = createFont({
+  ...defaultConfig.fonts.body,
+  family: 'Manrope',
+});
+
+const tamaguiConfig = createTamagui({
+  ...defaultConfig,
+  fonts: {
+    ...defaultConfig.fonts,
+    heading: headingFont,
+    body: bodyFont,
+  },
+  tokens: {
+    ...defaultConfig.tokens,
+    color: {
+      ...defaultConfig.tokens.color,
+      ...colorTokens,
+    },
+    radius: {
+      ...defaultConfig.tokens.radius,
+      ...radiusTokens,
+    },
+  },
+});
+
+export type AppTamaguiConfig = typeof tamaguiConfig;
+
+declare module 'tamagui' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface TamaguiCustomConfig extends AppTamaguiConfig {}
+}
+
+export default tamaguiConfig;
