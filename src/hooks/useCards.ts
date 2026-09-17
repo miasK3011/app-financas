@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 
 import {
   archiveCard,
@@ -24,9 +25,17 @@ export function useCards(includeArchived = false) {
     setLoading(false);
   }, [includeArchived]);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  // useEffect só roda de novo se as deps mudarem — mas o React Navigation
+  // mantém a tela de trás MONTADA na pilha, então voltar de "Novo cartão"
+  // não remonta "Cartões · Main" e um simples useEffect nunca refaz o
+  // fetch. useFocusEffect roda de novo toda vez que a tela recebe foco
+  // (inclusive ao voltar de outra tela), que é exatamente o gatilho certo
+  // aqui.
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
 
   const create = useCallback(
     async (input: CardInput) => {

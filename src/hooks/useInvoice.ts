@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 
 import {
   type InvoiceWithTotals,
@@ -8,6 +9,11 @@ import {
   markInvoiceAsPaid,
 } from '@/repositories/invoicesRepository';
 import { type InvoicePurchaseRow, listPurchasesForInvoice } from '@/repositories/purchasesRepository';
+
+// Todo hook aqui usa useFocusEffect, não useEffect: o React Navigation
+// mantém a tela anterior montada na pilha, então voltar de "Nova Compra"
+// ou "Marcar como paga" nunca remonta a tela de lista — só useFocusEffect
+// refaz o fetch nesse retorno (ver o mesmo comentário em useCards.ts).
 
 export function useInvoice(invoiceId: string | undefined) {
   const [invoice, setInvoice] = useState<InvoiceWithTotals>();
@@ -23,9 +29,11 @@ export function useInvoice(invoiceId: string | undefined) {
     setLoading(false);
   }, [invoiceId]);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
 
   const markAsPaid = useCallback(async () => {
     if (!invoiceId) return;
@@ -51,9 +59,11 @@ export function useInvoicePurchases(invoiceId: string | undefined) {
     setLoading(false);
   }, [invoiceId]);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
 
   return { purchases, loading, refresh };
 }
@@ -73,9 +83,11 @@ export function useCardInvoices(cardId: string | undefined) {
     setLoading(false);
   }, [cardId]);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
 
   return { invoices, loading, refresh };
 }
@@ -92,9 +104,11 @@ export function useOpenInvoicesTotal() {
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
 
   return { total, loading, refresh };
 }
