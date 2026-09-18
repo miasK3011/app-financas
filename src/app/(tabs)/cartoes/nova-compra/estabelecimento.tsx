@@ -7,6 +7,7 @@ import { ActivityIndicator } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { AppInput } from '@/components/AppInput';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { TransactionAvatar } from '@/components/TransactionAvatar';
 import { CATEGORY_ICON_OPTIONS } from '@/domain/shared/categoryIcons';
@@ -135,17 +136,16 @@ export default function NovaCompraEstabelecimentoScreen() {
             </Text>
           </YStack>
 
-          <Button
+          <PrimaryButton
             onPress={handleCreate}
             disabled={!nome.trim()}
             opacity={nome.trim() ? 1 : 0.5}
-            backgroundColor="$primary"
             color="white"
             fontWeight="700"
             borderRadius={999}
           >
             Criar e usar
-          </Button>
+          </PrimaryButton>
         </ScrollView>
       </Screen>
     );

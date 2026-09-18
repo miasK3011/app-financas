@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Alert } from 'react-native';
 import { Button, Text, YStack } from 'tamagui';
 
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import {
   exportBackupToFile,
@@ -80,17 +81,16 @@ export default function BackupScreen() {
             Gera um arquivo com todos os seus dados (cartões, faturas, compras, assinaturas,
             reservas e renda) para você salvar onde quiser.
           </Text>
-          <Button
+          <PrimaryButton
             onPress={handleExport}
             disabled={exporting}
-            backgroundColor="$primary"
             color="white"
             fontWeight="700"
             borderRadius={999}
             marginTop="$2"
           >
             {exporting ? 'Exportando…' : 'Exportar'}
-          </Button>
+          </PrimaryButton>
         </YStack>
 
         <YStack

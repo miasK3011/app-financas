@@ -4,6 +4,7 @@ import { ActivityIndicator } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { Money } from '@/components/Money';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { StatusBadge } from '@/components/StatusBadge';
 import { TransactionAvatar } from '@/components/TransactionAvatar';
@@ -45,22 +46,22 @@ export default function FaturaDetalheScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
-        <XStack alignItems="center" gap="$3">
-          <Button
-            onPress={() => router.back()}
-            circular
-            size="$3"
-            backgroundColor="$surface"
-            borderColor="$border"
-            borderWidth={1}
-            icon={<ChevronLeft size={18} />}
-          />
-          <Text fontFamily="$heading" fontSize={18} fontWeight="600" color="$text">
-            {MONTH_NAMES[invoice.referenciaMes - 1]} {invoice.referenciaAno}
-          </Text>
-        </XStack>
+      <XStack alignItems="center" gap="$3" padding={20} paddingBottom={0}>
+        <Button
+          onPress={() => router.back()}
+          circular
+          size="$3"
+          backgroundColor="$surface"
+          borderColor="$border"
+          borderWidth={1}
+          icon={<ChevronLeft size={18} />}
+        />
+        <Text fontFamily="$heading" fontSize={18} fontWeight="600" color="$text">
+          {MONTH_NAMES[invoice.referenciaMes - 1]} {invoice.referenciaAno}
+        </Text>
+      </XStack>
 
+      <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
         <YStack
           backgroundColor="$surface"
           borderColor="$border"
@@ -150,15 +151,9 @@ export default function FaturaDetalheScreen() {
         </YStack>
 
         {invoice.status !== 'PAGA' && (
-          <Button
-            onPress={markAsPaid}
-            backgroundColor="$primary"
-            color="white"
-            fontWeight="700"
-            borderRadius={999}
-          >
+          <PrimaryButton onPress={markAsPaid} color="white" fontWeight="700" borderRadius={999}>
             Marcar fatura como paga
-          </Button>
+          </PrimaryButton>
         )}
       </ScrollView>
     </Screen>

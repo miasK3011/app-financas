@@ -8,6 +8,7 @@ import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { AppInput } from '@/components/AppInput';
 import { Money } from '@/components/Money';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import type { PeriodKind } from '@/domain/statistics/types';
 import { useStatistics } from '@/hooks/useStatistics';
@@ -151,14 +152,9 @@ export default function EstatisticasScreen() {
                     keyboardType="decimal-pad"
                     autoFocus
                   />
-                  <Button
-                    onPress={handleSaveGoal}
-                    backgroundColor="$primary"
-                    color="white"
-                    fontWeight="700"
-                  >
+                  <PrimaryButton onPress={handleSaveGoal} color="white" fontWeight="700">
                     Salvar
-                  </Button>
+                  </PrimaryButton>
                 </XStack>
               ) : stats.idealSpend ? (
                 <YStack gap="$1">

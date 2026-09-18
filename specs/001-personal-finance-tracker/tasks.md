@@ -604,6 +604,36 @@ cadastrada, sem aplicação automática (FR-019 a FR-021).
 - [ ] T132 Registrar em `specs/001-personal-finance-tracker/checklists/requirements.md` a entrada
       final de "implementação concluída"
 
+### Bugs/imperfeições reportados em teste real (build Trocadin, 2026-09-18)
+
+Triagem de 7 pontos reportados pelo usuário testando a build de preview no dia a dia (fora do
+Expo Go pela primeira vez) — issues no GitHub têm o diagnóstico completo de cada um.
+
+- [X] T133 Corrigir `computeInvoiceStatus` marcando fatura `FECHADA` a partir de qualquer horário
+      do próprio dia de fechamento (comparação de timestamp em vez de dia de calendário) —
+      [#4](https://github.com/miasK3011/app-financas/issues/4)
+- [ ] T134 Auditoria de fidelidade visual tela-a-tela contra `design/*.dc.html` (mesmo escopo de
+      T130, tratado como issue própria por ter sido reportado separadamente) —
+      [#5](https://github.com/miasK3011/app-financas/issues/5)
+- [ ] T135 Investigar botões travados (sem resposta a toque) depois de o app voltar de uma
+      Activity externa no Android (ex.: seletor de arquivo) — precisa de reprodução em
+      dispositivo real, não diagnosticável só por leitura de código —
+      [#6](https://github.com/miasK3011/app-financas/issues/6)
+- [X] T136 Adicionar `pressStyle` aos botões de ação principal (`PrimaryButton`, novo componente
+      compartilhado) — sem isso, o Tamagui usa o cinza `$backgroundPress` default ao pressionar,
+      indistinguível do fundo do app — [#7](https://github.com/miasK3011/app-financas/issues/7)
+- [X] T137 Fixar `color`/`placeholderTextColor` explícitos em `AppInput` — texto reportado como
+      ilegível (branco sobre branco) em alguns campos; causa raiz não confirmada 100% por análise
+      estática, correção aplicada é defensiva — [#8](https://github.com/miasK3011/app-financas/issues/8)
+- [X] T138 (parcial) Mover o header de `Fatura · Detalhe` pra fora do `ScrollView` (só essa tela
+      tinha o bug de rolar junto do conteúdo); reconstrução do padding inferior do header em
+      todas as telas (via um `ScreenHeader` compartilhado) fica em aberto —
+      [#9](https://github.com/miasK3011/app-financas/issues/9)
+- [ ] T139 Redesenhar "Divisão de responsabilidade" pra bater com `NovaCompra.dc.html`: estado
+      padrão somente-leitura "100% do valor" + botão "Dividir compra" (hoje o campo já vem sempre
+      editável), e adicionar uma ação explícita de "remover divisão"/voltar a 100% (não existe em
+      nenhuma tela nem em nenhum mockup hoje) — [#10](https://github.com/miasK3011/app-financas/issues/10)
+
 ---
 
 ## Dependencies & Execution Order

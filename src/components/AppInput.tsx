@@ -11,14 +11,20 @@ export type AppInputProps = InputProps & {
  * (`$bg` = `#FAFAF9`), o que faz o campo "sumir" visualmente. Este
  * wrapper fixa o fundo em `$surface` (branco) e centraliza o destaque
  * de erro usado em todo formulário do app.
+ *
+ * `color`/`placeholderTextColor` também são fixados explicitamente —
+ * relatado em dispositivo real como texto invisível (branco sobre
+ * branco) em alguns campos.
  */
-export function AppInput({ error, borderColor, borderWidth, ...props }: AppInputProps) {
+export function AppInput({ error, borderColor, borderWidth, color, ...props }: AppInputProps) {
   return (
     <Input
       backgroundColor="$surface"
       borderRadius="$md"
       borderColor={error ? '$error' : (borderColor ?? '$border')}
       borderWidth={error ? 2 : (borderWidth ?? 1)}
+      color={color ?? '$text'}
+      placeholderTextColor="$textTertiary"
       {...props}
     />
   );

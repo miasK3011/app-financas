@@ -8,6 +8,7 @@ import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { AppInput } from '@/components/AppInput';
 import { MoneyInput } from '@/components/MoneyInput';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { type Category, listCategories } from '@/repositories/categoriesRepository';
 import { useCards } from '@/hooks/useCards';
@@ -289,17 +290,16 @@ export default function AssinaturaEditarScreen() {
           />
         </YStack>
 
-        <Button
+        <PrimaryButton
           onPress={handleSave}
           disabled={!canSave || saving}
           opacity={canSave ? 1 : 0.5}
-          backgroundColor="$primary"
           color="white"
           fontWeight="700"
           borderRadius={999}
         >
           {isNew ? 'Criar assinatura' : 'Salvar alterações'}
-        </Button>
+        </PrimaryButton>
 
         {!isNew && (
           <Button

@@ -1,3 +1,5 @@
+import { startOfDay } from 'date-fns';
+
 export type InvoiceStatusInput = {
   pagaEm: Date | null;
   dataFechamento: Date;
@@ -24,7 +26,14 @@ export function computeInvoiceStatus(fatura: InvoiceStatusInput, today: Date): I
   if (fatura.pagaEm !== null) {
     return 'PAGA';
   }
-  if (today > fatura.dataFechamento) {
+  // `dataFechamento` é sempre meia-noite (`clampDayToMonth`) — comparar o
+  // timestamp completo de `today` contra ela faria a fatura virar FECHADA
+  // a partir de 00:00:01 do PRÓPRIO dia de fechamento, quando ele ainda
+  // não terminou. Truncar `today` ao início do dia mantém ABERTA durante
+  // todo o dia de fechamento, fechando só a partir do dia seguinte —
+  // simétrico com `resolveInvoicePeriod`, que já trata esse dia como
+  // parte do ciclo atual (bug real encontrado em teste no dispositivo).
+  if (startOfDay(today) > fatura.dataFechamento) {
     return 'FECHADA';
   }
   return 'ABERTA';

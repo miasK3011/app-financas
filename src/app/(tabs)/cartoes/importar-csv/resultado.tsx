@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
+import { ScrollView, Text, XStack, YStack } from 'tamagui';
 
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 
 type SkippedRow = { rawLine: string; reason: string };
@@ -81,15 +82,14 @@ export default function ImportarCsvResultadoScreen() {
           </YStack>
         )}
 
-        <Button
+        <PrimaryButton
           onPress={() => router.back()}
-          backgroundColor="$primary"
           color="white"
           fontWeight="700"
           borderRadius={999}
         >
           Concluir
-        </Button>
+        </PrimaryButton>
       </ScrollView>
     </Screen>
   );

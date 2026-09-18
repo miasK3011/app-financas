@@ -4,6 +4,7 @@ import { ActivityIndicator } from 'react-native';
 import { Button, Card, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { Money } from '@/components/Money';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { useBestCard } from '@/hooks/useBestCard';
 import { useCards } from '@/hooks/useCards';
@@ -106,7 +107,7 @@ export default function CartoesScreen() {
         </YStack>
       </ScrollView>
 
-      <Button
+      <PrimaryButton
         onPress={() => router.push('/cartoes/novo')}
         position="absolute"
         bottom={24}
@@ -114,7 +115,6 @@ export default function CartoesScreen() {
         width={56}
         height={56}
         borderRadius={28}
-        backgroundColor="$primary"
         icon={<Plus color="white" size={24} />}
       />
     </Screen>

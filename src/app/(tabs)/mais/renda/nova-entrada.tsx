@@ -1,11 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, Text, YStack } from 'tamagui';
+import { Text, YStack } from 'tamagui';
 import { z } from 'zod';
 
 import { AppInput } from '@/components/AppInput';
 import { MoneyInput } from '@/components/MoneyInput';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { useMonthBalance } from '@/hooks/useMonthBalance';
 
@@ -89,16 +90,15 @@ export default function NovaEntradaAvulsaScreen() {
           )}
         </YStack>
 
-        <Button
+        <PrimaryButton
           onPress={onSubmit}
           disabled={isSubmitting}
-          backgroundColor="$primary"
           color="white"
           fontWeight="700"
           borderRadius={999}
         >
           Adicionar entrada
-        </Button>
+        </PrimaryButton>
       </YStack>
     </Screen>
   );

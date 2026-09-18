@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Alert } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import {
   type CsvFormat,
@@ -152,17 +153,16 @@ export default function ImportarCsvScreen() {
           </Button>
         </YStack>
 
-        <Button
+        <PrimaryButton
           onPress={handleImport}
           disabled={!canImport}
           opacity={canImport ? 1 : 0.5}
-          backgroundColor="$primary"
           color="white"
           fontWeight="700"
           borderRadius={999}
         >
           {importing ? <ActivityIndicator color="white" /> : 'Importar'}
-        </Button>
+        </PrimaryButton>
       </ScrollView>
     </Screen>
   );

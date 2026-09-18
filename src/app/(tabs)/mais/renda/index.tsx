@@ -6,6 +6,7 @@ import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { Money } from '@/components/Money';
 import { MoneyInput } from '@/components/MoneyInput';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { useIncome } from '@/hooks/useIncome';
 import { useMonthBalance } from '@/hooks/useMonthBalance';
@@ -91,14 +92,9 @@ export default function RendaScreen() {
                 borderRadius="$md"
                 autoFocus
               />
-              <Button
-                onPress={handleSaveIncome}
-                backgroundColor="$primary"
-                color="white"
-                fontWeight="700"
-              >
+              <PrimaryButton onPress={handleSaveIncome} color="white" fontWeight="700">
                 Salvar
-              </Button>
+              </PrimaryButton>
             </XStack>
           ) : (
             <XStack justifyContent="space-between" alignItems="center">
@@ -189,7 +185,7 @@ export default function RendaScreen() {
         </YStack>
       </ScrollView>
 
-      <Button
+      <PrimaryButton
         onPress={() => router.push('/mais/renda/nova-entrada')}
         position="absolute"
         bottom={24}
@@ -197,7 +193,6 @@ export default function RendaScreen() {
         width={56}
         height={56}
         borderRadius={28}
-        backgroundColor="$primary"
         icon={<Plus color="white" size={24} />}
       />
     </Screen>

@@ -1,9 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, Text, YStack } from 'tamagui';
+import { Text, YStack } from 'tamagui';
 
 import { AppInput } from '@/components/AppInput';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { useCards } from '@/hooks/useCards';
 import { type CardInput, cardInputSchema } from '@/repositories/cardsRepository';
@@ -107,16 +108,15 @@ export default function NovoCartaoScreen() {
           )}
         </YStack>
 
-        <Button
+        <PrimaryButton
           onPress={onSubmit}
           disabled={isSubmitting}
-          backgroundColor="$primary"
           color="white"
           fontWeight="700"
           borderRadius={999}
         >
           Salvar cartão
-        </Button>
+        </PrimaryButton>
       </YStack>
     </Screen>
   );

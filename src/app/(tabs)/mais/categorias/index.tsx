@@ -6,6 +6,7 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { type Category, deleteCategory, listCategories } from '@/repositories/categoriesRepository';
 
@@ -107,7 +108,7 @@ export default function CategoriasScreen() {
         )}
       </ScrollView>
 
-      <Button
+      <PrimaryButton
         onPress={() => router.push('/mais/categorias/nova')}
         position="absolute"
         bottom={24}
@@ -115,7 +116,6 @@ export default function CategoriasScreen() {
         width={56}
         height={56}
         borderRadius={28}
-        backgroundColor="$primary"
         icon={<Plus color="white" size={24} />}
       />
     </Screen>

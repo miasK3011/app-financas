@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { TransactionAvatar } from '@/components/TransactionAvatar';
 import {
@@ -87,7 +88,7 @@ export default function EstabelecimentosScreen() {
         )}
       </ScrollView>
 
-      <Button
+      <PrimaryButton
         onPress={() => router.push('/mais/estabelecimentos/novo')}
         position="absolute"
         bottom={24}
@@ -95,7 +96,6 @@ export default function EstabelecimentosScreen() {
         width={56}
         height={56}
         borderRadius={28}
-        backgroundColor="$primary"
         icon={<Plus color="white" size={24} />}
       />
     </Screen>

@@ -2,9 +2,10 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { Plus } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
-import { Button, Card, ScrollView, Text, XStack, YStack } from 'tamagui';
+import { Card, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { Money } from '@/components/Money';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { monthlySubscriptionsTotal } from '@/domain/subscriptions/monthlySubscriptionsTotal';
 import { listActiveSubscriptions, type Subscription } from '@/repositories/subscriptionsRepository';
@@ -95,7 +96,7 @@ export default function AssinaturasScreen() {
         </YStack>
       </ScrollView>
 
-      <Button
+      <PrimaryButton
         onPress={() => router.push('/assinaturas/nova')}
         position="absolute"
         bottom={24}
@@ -103,7 +104,6 @@ export default function AssinaturasScreen() {
         width={56}
         height={56}
         borderRadius={28}
-        backgroundColor="$primary"
         icon={<Plus color="white" size={24} />}
       />
     </Screen>

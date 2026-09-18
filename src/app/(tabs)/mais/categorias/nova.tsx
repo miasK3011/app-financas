@@ -7,6 +7,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { AppInput } from '@/components/AppInput';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { CATEGORY_ICON_OPTIONS } from '@/domain/shared/categoryIcons';
 import {
@@ -104,16 +105,15 @@ export default function CategoriaCriarScreen() {
           </XStack>
         </YStack>
 
-        <Button
+        <PrimaryButton
           onPress={onSubmit}
           disabled={isSubmitting}
-          backgroundColor="$primary"
           color="white"
           fontWeight="700"
           borderRadius={999}
         >
           Salvar categoria
-        </Button>
+        </PrimaryButton>
       </ScrollView>
     </Screen>
   );

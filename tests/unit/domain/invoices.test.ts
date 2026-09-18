@@ -94,6 +94,25 @@ describe('computeInvoiceStatus', () => {
     );
     expect(status).toBe('ABERTA');
   });
+
+  it('returns ABERTA for the whole closing day, not just at exact midnight (regression)', () => {
+    // Bug real: comparar o timestamp completo de `today` (em vez de
+    // truncar ao dia) fazia a fatura virar FECHADA a partir de
+    // 00:00:01 do próprio dia de fechamento.
+    const status = computeInvoiceStatus(
+      { pagaEm: null, dataFechamento: new Date(2026, 9, 10) },
+      new Date(2026, 9, 10, 23, 59, 59),
+    );
+    expect(status).toBe('ABERTA');
+  });
+
+  it('returns FECHADA starting midnight of the day after closing', () => {
+    const status = computeInvoiceStatus(
+      { pagaEm: null, dataFechamento: new Date(2026, 9, 10) },
+      new Date(2026, 9, 11, 0, 0, 1),
+    );
+    expect(status).toBe('FECHADA');
+  });
 });
 
 describe('demoteFutureOpenInvoices', () => {

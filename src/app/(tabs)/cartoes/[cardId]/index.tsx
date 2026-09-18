@@ -5,6 +5,7 @@ import { ActivityIndicator, Alert } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { Money } from '@/components/Money';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { StatusBadge } from '@/components/StatusBadge';
 import { shouldShowResponsibilitySummary } from '@/domain/expenseSplitting/shouldShowResponsibilitySummary';
@@ -155,7 +156,7 @@ export default function CartaoFaturasScreen() {
       </ScrollView>
 
       {!card?.arquivadoEm && (
-        <Button
+        <PrimaryButton
           onPress={() =>
             router.push({ pathname: '/cartoes/nova-compra', params: { cartaoId: cardId } })
           }
@@ -165,7 +166,6 @@ export default function CartaoFaturasScreen() {
           width={56}
           height={56}
           borderRadius={28}
-          backgroundColor="$primary"
           icon={<Plus color="white" size={24} />}
         />
       )}

@@ -7,6 +7,7 @@ import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 import { AppInput } from '@/components/AppInput';
 import { Money } from '@/components/Money';
 import { MoneyInput } from '@/components/MoneyInput';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { requiresMotivoResponsavelFields } from '@/domain/expenseSplitting/requiresMotivoResponsavelFields';
 import { getPurchase, updatePurchase } from '@/repositories/purchasesRepository';
@@ -122,16 +123,15 @@ export default function NovaCompraDivisaoManualScreen() {
           </XStack>
         )}
 
-        <Button
+        <PrimaryButton
           onPress={handleSave}
           disabled={saving}
-          backgroundColor="$primary"
           color="white"
           fontWeight="700"
           borderRadius={999}
         >
           Salvar
-        </Button>
+        </PrimaryButton>
       </ScrollView>
     </Screen>
   );

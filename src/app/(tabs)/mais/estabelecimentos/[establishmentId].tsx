@@ -7,6 +7,7 @@ import { ActivityIndicator } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { AppInput } from '@/components/AppInput';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { CATEGORY_ICON_OPTIONS } from '@/domain/shared/categoryIcons';
 import {
@@ -177,17 +178,16 @@ export default function EstabelecimentoDetalheScreen() {
           <AppInput value={dominio} onChangeText={setDominio} placeholder="Ex.: ifood.com.br" />
         </YStack>
 
-        <Button
+        <PrimaryButton
           onPress={handleSave}
           disabled={!canSave || saving}
           opacity={canSave ? 1 : 0.5}
-          backgroundColor="$primary"
           color="white"
           fontWeight="700"
           borderRadius={999}
         >
           {isNew ? 'Criar estabelecimento' : 'Salvar alterações'}
-        </Button>
+        </PrimaryButton>
 
         {savedId && (
           <YStack gap="$2">
@@ -228,14 +228,9 @@ export default function EstabelecimentoDetalheScreen() {
                 onChangeText={setNewPatternText}
                 placeholder="Ex.: IFOOD"
               />
-              <Button
-                onPress={handleAddPattern}
-                backgroundColor="$primary"
-                color="white"
-                fontWeight="700"
-              >
+              <PrimaryButton onPress={handleAddPattern} color="white" fontWeight="700">
                 Adicionar
-              </Button>
+              </PrimaryButton>
             </XStack>
           </YStack>
         )}

@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { AppInput } from '@/components/AppInput';
 import { DateField } from '@/components/DateField';
 import { MoneyInput } from '@/components/MoneyInput';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { Stepper } from '@/components/Stepper';
 import { requiresMotivoResponsavelFields } from '@/domain/expenseSplitting/requiresMotivoResponsavelFields';
@@ -517,16 +518,15 @@ export default function NovaCompraScreen() {
           )}
         </YStack>
 
-        <Button
+        <PrimaryButton
           onPress={onSubmit}
           disabled={isSubmitting}
-          backgroundColor="$primary"
           color="white"
           fontWeight="700"
           borderRadius={999}
         >
           Salvar compra
-        </Button>
+        </PrimaryButton>
       </ScrollView>
     </Screen>
   );
