@@ -1,8 +1,7 @@
-import { Input, type InputProps } from 'tamagui';
-
+import { AppInput, type AppInputProps } from '@/components/AppInput';
 import { formatBRL } from '@/domain/shared/money';
 
-export type MoneyInputProps = Omit<InputProps, 'value' | 'onChangeText'> & {
+export type MoneyInputProps = Omit<AppInputProps, 'value' | 'onChangeText'> & {
   /** Valor em centavos; `undefined` mostra o campo vazio (R$ 0,00). */
   value: number | undefined;
   onChangeValue: (cents: number | undefined) => void;
@@ -21,7 +20,7 @@ export function MoneyInput({ value, onChangeValue, ...inputProps }: MoneyInputPr
   };
 
   return (
-    <Input
+    <AppInput
       value={value === undefined ? '' : formatBRL(value)}
       onChangeText={handleChangeText}
       keyboardType="number-pad"

@@ -1,9 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, Input, Text, YStack } from 'tamagui';
+import { Button, Text, YStack } from 'tamagui';
 import { z } from 'zod';
 
+import { AppInput } from '@/components/AppInput';
 import { MoneyInput } from '@/components/MoneyInput';
 import { Screen } from '@/components/Screen';
 import { useMonthBalance } from '@/hooks/useMonthBalance';
@@ -50,13 +51,12 @@ export default function NovaEntradaAvulsaScreen() {
           <Controller
             control={control}
             name="descricao"
-            render={({ field }) => (
-              <Input
+            render={({ field, fieldState }) => (
+              <AppInput
                 value={field.value}
                 onChangeText={field.onChange}
                 placeholder="Ex.: Freela de design"
-                borderColor="$border"
-                borderRadius="$md"
+                error={Boolean(fieldState.error)}
               />
             )}
           />
@@ -74,12 +74,11 @@ export default function NovaEntradaAvulsaScreen() {
           <Controller
             control={control}
             name="valorCentavos"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <MoneyInput
                 value={field.value}
                 onChangeValue={field.onChange}
-                borderColor="$border"
-                borderRadius="$md"
+                error={Boolean(fieldState.error)}
               />
             )}
           />

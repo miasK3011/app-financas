@@ -1,8 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, Input, Text, YStack } from 'tamagui';
+import { Button, Text, YStack } from 'tamagui';
 
+import { AppInput } from '@/components/AppInput';
 import { Screen } from '@/components/Screen';
 import { useCards } from '@/hooks/useCards';
 import { type CardInput, cardInputSchema } from '@/repositories/cardsRepository';
@@ -38,13 +39,12 @@ export default function NovoCartaoScreen() {
           <Controller
             control={control}
             name="nome"
-            render={({ field }) => (
-              <Input
+            render={({ field, fieldState }) => (
+              <AppInput
                 value={field.value}
                 onChangeText={field.onChange}
                 placeholder="Ex.: Nubank"
-                borderColor="$border"
-                borderRadius="$md"
+                error={Boolean(fieldState.error)}
               />
             )}
           />
@@ -62,14 +62,15 @@ export default function NovoCartaoScreen() {
           <Controller
             control={control}
             name="diaFechamento"
-            render={({ field }) => (
-              <Input
+            render={({ field, fieldState }) => (
+              <AppInput
                 value={field.value === undefined ? '' : String(field.value)}
-                onChangeText={(text) => field.onChange(text === '' ? undefined : Number(text))}
+                onChangeText={(text) =>
+                  field.onChange(text === '' ? undefined : Number(text.replace(/\D/g, '')))
+                }
                 placeholder="Ex.: 10"
                 keyboardType="number-pad"
-                borderColor="$border"
-                borderRadius="$md"
+                error={Boolean(fieldState.error)}
               />
             )}
           />
@@ -87,14 +88,15 @@ export default function NovoCartaoScreen() {
           <Controller
             control={control}
             name="diaVencimento"
-            render={({ field }) => (
-              <Input
+            render={({ field, fieldState }) => (
+              <AppInput
                 value={field.value === undefined ? '' : String(field.value)}
-                onChangeText={(text) => field.onChange(text === '' ? undefined : Number(text))}
+                onChangeText={(text) =>
+                  field.onChange(text === '' ? undefined : Number(text.replace(/\D/g, '')))
+                }
                 placeholder="Ex.: 17"
                 keyboardType="number-pad"
-                borderColor="$border"
-                borderRadius="$md"
+                error={Boolean(fieldState.error)}
               />
             )}
           />

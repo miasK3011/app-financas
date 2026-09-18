@@ -28,7 +28,9 @@ export function DateField({ value, onChangeValue, ...stackProps }: DateFieldProp
       paddingHorizontal={16}
       alignItems="center"
       backgroundColor="$surface"
+      borderColor="$border"
       borderWidth={1}
+      borderRadius="$md"
       onPress={openPicker}
       {...stackProps}
     >

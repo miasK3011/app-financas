@@ -3,9 +3,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, Input, ScrollView, Text, XStack, YStack } from 'tamagui';
+import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 import { z } from 'zod';
 
+import { AppInput } from '@/components/AppInput';
 import { DateField } from '@/components/DateField';
 import { MoneyInput } from '@/components/MoneyInput';
 import { Screen } from '@/components/Screen';
@@ -19,8 +20,14 @@ const formSchema = z
     dataCompra: z.date(),
     formaPagamento: z.enum(['PIX', 'CARTAO']),
     cartaoId: z.string().optional(),
-    parcelasTotal: z.number().int().min(1),
-    parcelaAtual: z.number().int().min(1),
+    parcelasTotal: z
+      .number({ error: 'Informe o número de parcelas' })
+      .int()
+      .min(1, 'Mínimo de 1 parcela'),
+    parcelaAtual: z
+      .number({ error: 'Informe a parcela atual' })
+      .int()
+      .min(1, 'A parcela mínima é 1'),
     tagsText: z.string().optional(),
     comentario: z.string().optional(),
   })
@@ -34,6 +41,16 @@ const formSchema = z
   });
 
 type FormValues = z.infer<typeof formSchema>;
+
+/**
+ * Só dígitos viram o novo valor — permite apagar o campo por completo
+ * (undefined, mostrado vazio) em vez de forçar um "1" que atrapalha
+ * digitar o número desejado, e nunca aceita sinal negativo.
+ */
+function handleIntegerChange(onChange: (value: number | undefined) => void, text: string) {
+  const digitsOnly = text.replace(/\D/g, '');
+  onChange(digitsOnly === '' ? undefined : Number(digitsOnly));
+}
 
 export default function NovaCompraScreen() {
   const router = useRouter();
@@ -139,13 +156,12 @@ export default function NovaCompraScreen() {
           <Controller
             control={control}
             name="descricao"
-            render={({ field }) => (
-              <Input
+            render={({ field, fieldState }) => (
+              <AppInput
                 value={field.value}
                 onChangeText={field.onChange}
                 placeholder="Ex.: Pizzaria Napoli"
-                borderColor="$border"
-                borderRadius="$md"
+                error={Boolean(fieldState.error)}
               />
             )}
           />
@@ -164,12 +180,11 @@ export default function NovaCompraScreen() {
             <Controller
               control={control}
               name="valorCentavos"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <MoneyInput
                   value={field.value}
                   onChangeValue={field.onChange}
-                  borderColor="$border"
-                  borderRadius="$md"
+                  error={Boolean(fieldState.error)}
                 />
               )}
             />
@@ -188,12 +203,7 @@ export default function NovaCompraScreen() {
               control={control}
               name="dataCompra"
               render={({ field }) => (
-                <DateField
-                  value={field.value}
-                  onChangeValue={field.onChange}
-                  borderColor="$border"
-                  borderRadius="$md"
-                />
+                <DateField value={field.value} onChangeValue={field.onChange} />
               )}
             />
           </YStack>
@@ -265,16 +275,20 @@ export default function NovaCompraScreen() {
                 <Controller
                   control={control}
                   name="parcelasTotal"
-                  render={({ field }) => (
-                    <Input
-                      value={String(field.value)}
-                      onChangeText={(text) => field.onChange(Number(text) || 1)}
+                  render={({ field, fieldState }) => (
+                    <AppInput
+                      value={field.value === undefined ? '' : String(field.value)}
+                      onChangeText={(text) => handleIntegerChange(field.onChange, text)}
                       keyboardType="number-pad"
-                      borderColor="$border"
-                      borderRadius="$md"
+                      error={Boolean(fieldState.error)}
                     />
                   )}
                 />
+                {errors.parcelasTotal && (
+                  <Text fontSize={12} color="$error">
+                    {errors.parcelasTotal.message}
+                  </Text>
+                )}
               </YStack>
 
               {parcelasTotal > 1 && (
@@ -285,13 +299,12 @@ export default function NovaCompraScreen() {
                   <Controller
                     control={control}
                     name="parcelaAtual"
-                    render={({ field }) => (
-                      <Input
-                        value={String(field.value)}
-                        onChangeText={(text) => field.onChange(Number(text) || 1)}
+                    render={({ field, fieldState }) => (
+                      <AppInput
+                        value={field.value === undefined ? '' : String(field.value)}
+                        onChangeText={(text) => handleIntegerChange(field.onChange, text)}
                         keyboardType="number-pad"
-                        borderColor="$border"
-                        borderRadius="$md"
+                        error={Boolean(fieldState.error)}
                       />
                     )}
                   />
@@ -338,12 +351,10 @@ export default function NovaCompraScreen() {
             control={control}
             name="tagsText"
             render={({ field }) => (
-              <Input
+              <AppInput
                 value={field.value}
                 onChangeText={field.onChange}
                 placeholder="Ex.: Trabalho, Presente"
-                borderColor="$border"
-                borderRadius="$md"
               />
             )}
           />
@@ -357,13 +368,7 @@ export default function NovaCompraScreen() {
             control={control}
             name="comentario"
             render={({ field }) => (
-              <Input
-                value={field.value}
-                onChangeText={field.onChange}
-                placeholder="Opcional"
-                borderColor="$border"
-                borderRadius="$md"
-              />
+              <AppInput value={field.value} onChangeText={field.onChange} placeholder="Opcional" />
             )}
           />
         </YStack>

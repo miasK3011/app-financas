@@ -4,8 +4,9 @@ import * as LucideIcons from 'lucide-react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import type { ComponentType } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, Input, ScrollView, Text, XStack, YStack } from 'tamagui';
+import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
+import { AppInput } from '@/components/AppInput';
 import { Screen } from '@/components/Screen';
 import { CATEGORY_ICON_OPTIONS } from '@/domain/shared/categoryIcons';
 import {
@@ -62,13 +63,12 @@ export default function CategoriaCriarScreen() {
           <Controller
             control={control}
             name="nome"
-            render={({ field }) => (
-              <Input
+            render={({ field, fieldState }) => (
+              <AppInput
                 value={field.value}
                 onChangeText={field.onChange}
                 placeholder="Ex.: Pets"
-                borderColor="$border"
-                borderRadius="$md"
+                error={Boolean(fieldState.error)}
               />
             )}
           />
