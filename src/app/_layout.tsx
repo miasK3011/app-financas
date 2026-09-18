@@ -22,6 +22,7 @@ import { TamaguiProvider } from 'tamagui';
 import { db } from '@/db/client';
 import migrations from '@/db/migrations/migrations';
 import { seedPredefinedCategories } from '@/db/seed';
+import { generatePendingCharges } from '@/repositories/subscriptionsRepository';
 import tamaguiConfig from '@/theme/tamagui.config';
 
 /**
@@ -54,6 +55,16 @@ export default function RootLayout() {
       .then(() => setSeedReady(true))
       .catch(setSeedError);
   }, [migrationsReady]);
+
+  // FR-017: geração idempotente das cobranças de assinatura pendentes
+  // do mês — roda em segundo plano a cada abertura do app; uma falha
+  // aqui não deve travar o boot (só tenta de novo na próxima abertura).
+  useEffect(() => {
+    if (!seedReady) return;
+    generatePendingCharges().catch((error) => {
+      console.error('[assinaturas] falha ao gerar cobranças pendentes', error);
+    });
+  }, [seedReady]);
 
   const error = migrationError ?? seedError ?? fontError;
   if (error) {

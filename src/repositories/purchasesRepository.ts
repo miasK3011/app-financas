@@ -45,9 +45,14 @@ export type CreateCardPurchaseInput = {
   parcelaAtual?: number;
   comentario?: string;
   tagNomes?: string[];
-  /** Default `'MANUAL'` — `csvImportRepository` passa `'CSV_IMPORT'` + `loteImportacaoId` (FR-009). */
-  origem?: 'MANUAL' | 'CSV_IMPORT';
+  /**
+   * Default `'MANUAL'` — `csvImportRepository` passa `'CSV_IMPORT'` +
+   * `loteImportacaoId` (FR-009); `subscriptionsRepository` passa
+   * `'ASSINATURA'` + `assinaturaId` (FR-017).
+   */
+  origem?: 'MANUAL' | 'CSV_IMPORT' | 'ASSINATURA';
   loteImportacaoId?: string;
+  assinaturaId?: string;
 };
 
 /**
@@ -98,6 +103,7 @@ export async function createCardPurchase(input: CreateCardPurchaseInput): Promis
       estabelecimentoManual: false,
       origem: input.origem ?? 'MANUAL',
       loteImportacaoId: input.loteImportacaoId,
+      assinaturaId: input.assinaturaId,
       criadoEm: new Date(),
     })
     .returning();
@@ -127,6 +133,9 @@ export type CreatePixPurchaseInput = {
   categoriaId?: string;
   comentario?: string;
   tagNomes?: string[];
+  /** Default `'MANUAL'` — `subscriptionsRepository` passa `'ASSINATURA'` + `assinaturaId` (FR-017). */
+  origem?: 'MANUAL' | 'ASSINATURA';
+  assinaturaId?: string;
 };
 
 /**
@@ -160,7 +169,8 @@ export async function createPixPurchase(input: CreatePixPurchaseInput): Promise<
       comentario: input.comentario,
       categoriaId: input.categoriaId,
       estabelecimentoManual: false,
-      origem: 'MANUAL',
+      origem: input.origem ?? 'MANUAL',
+      assinaturaId: input.assinaturaId,
       criadoEm: new Date(),
     })
     .returning();

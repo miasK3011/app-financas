@@ -380,25 +380,25 @@ FR-037) — pré-requisito visual para US10 e US11.
 
 **Independent Test**: conforme spec.md → User Story 6.
 
-- [ ] T084 [P] [US6] Testes unitários de `pendingChargesFor` e `monthlySubscriptionsTotal` em
+- [X] T084 [P] [US6] Testes unitários de `pendingChargesFor` e `monthlySubscriptionsTotal` em
       `tests/unit/domain/subscriptions.test.ts`, incluindo o caso de idempotência (não gerar 2x no
       mesmo mês para a mesma assinatura)
-- [ ] T085 [US6] Implementar `src/domain/subscriptions/pendingChargesFor.ts` e
+- [X] T085 [US6] Implementar `src/domain/subscriptions/pendingChargesFor.ts` e
       `src/domain/subscriptions/monthlySubscriptionsTotal.ts` conforme `contracts/subscriptions.md`
-- [ ] T086 [US6] Implementar `src/repositories/subscriptionsRepository.ts`: CRUD de Assinatura;
+- [X] T086 [US6] Implementar `src/repositories/subscriptionsRepository.ts`: CRUD de Assinatura;
       `generatePendingCharges()` cria a Compra (`origem = ASSINATURA`) + Parcela para cada
       `PendingCharge`, copiando forma de pagamento/cartão/categoria/tags **vigentes no momento da
       geração** (FR-017)
-- [ ] T087 [US6] Disparar `generatePendingCharges()` em `src/app/_layout.tsx` (após as migrations) ou
+- [X] T087 [US6] Disparar `generatePendingCharges()` em `src/app/_layout.tsx` (após as migrations) ou
       ao entrar nas telas de Início/Assinaturas
-- [ ] T088 [US6] Construir `src/app/(tabs)/assinaturas/index.tsx` (Assinaturas · Main): lista de
+- [X] T088 [US6] Construir `src/app/(tabs)/assinaturas/index.tsx` (Assinaturas · Main): lista de
       assinaturas ativas + total mensal somado (FR-018), com FAB "+" para nova assinatura
-- [ ] T089 [US6] Construir `src/app/(tabs)/assinaturas/[subscriptionId].tsx` (AssinaturaEditar) —
+- [X] T089 [US6] Construir `src/app/(tabs)/assinaturas/[subscriptionId].tsx` (AssinaturaEditar) —
       reutilizada tanto para **criar uma nova Assinatura** (FR-016, acessada pelo FAB "+" de T088)
       quanto para editar uma existente: nome/valor/forma de pagamento/dia; mudança de forma de
       pagamento em uma assinatura já existente só afeta gerações futuras, nunca reescreve cobranças
       já geradas (Edge Case)
-- [ ] T090 [US6] Confirmar que uma assinatura paga via Pix desconta do saldo do mês (via
+- [X] T090 [US6] Confirmar que uma assinatura paga via Pix desconta do saldo do mês (via
       `computeMonthBalance` da US2), não de uma fatura de cartão (FR-017, cenário 2)
 
 **Checkpoint**: US6 completa e testável de forma independente.
