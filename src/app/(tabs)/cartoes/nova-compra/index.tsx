@@ -10,6 +10,7 @@ import { AppInput } from '@/components/AppInput';
 import { DateField } from '@/components/DateField';
 import { MoneyInput } from '@/components/MoneyInput';
 import { Screen } from '@/components/Screen';
+import { Stepper } from '@/components/Stepper';
 import { useCards } from '@/hooks/useCards';
 import { createCardPurchase, createPixPurchase } from '@/repositories/purchasesRepository';
 
@@ -20,14 +21,8 @@ const formSchema = z
     dataCompra: z.date(),
     formaPagamento: z.enum(['PIX', 'CARTAO']),
     cartaoId: z.string().optional(),
-    parcelasTotal: z
-      .number({ error: 'Informe o número de parcelas' })
-      .int()
-      .min(1, 'Mínimo de 1 parcela'),
-    parcelaAtual: z
-      .number({ error: 'Informe a parcela atual' })
-      .int()
-      .min(1, 'A parcela mínima é 1'),
+    parcelasTotal: z.number().int().min(1),
+    parcelaAtual: z.number().int().min(1),
     tagsText: z.string().optional(),
     comentario: z.string().optional(),
   })
@@ -41,16 +36,6 @@ const formSchema = z
   });
 
 type FormValues = z.infer<typeof formSchema>;
-
-/**
- * Só dígitos viram o novo valor — permite apagar o campo por completo
- * (undefined, mostrado vazio) em vez de forçar um "1" que atrapalha
- * digitar o número desejado, e nunca aceita sinal negativo.
- */
-function handleIntegerChange(onChange: (value: number | undefined) => void, text: string) {
-  const digitsOnly = text.replace(/\D/g, '');
-  onChange(digitsOnly === '' ? undefined : Number(digitsOnly));
-}
 
 export default function NovaCompraScreen() {
   const router = useRouter();
@@ -70,6 +55,7 @@ export default function NovaCompraScreen() {
     handleSubmit,
     watch,
     setValue,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -275,20 +261,18 @@ export default function NovaCompraScreen() {
                 <Controller
                   control={control}
                   name="parcelasTotal"
-                  render={({ field, fieldState }) => (
-                    <AppInput
-                      value={field.value === undefined ? '' : String(field.value)}
-                      onChangeText={(text) => handleIntegerChange(field.onChange, text)}
-                      keyboardType="number-pad"
-                      error={Boolean(fieldState.error)}
+                  render={({ field }) => (
+                    <Stepper
+                      value={field.value}
+                      onChangeValue={(next) => {
+                        field.onChange(next);
+                        if (getValues('parcelaAtual') > next) {
+                          setValue('parcelaAtual', next);
+                        }
+                      }}
                     />
                   )}
                 />
-                {errors.parcelasTotal && (
-                  <Text fontSize={12} color="$error">
-                    {errors.parcelasTotal.message}
-                  </Text>
-                )}
               </YStack>
 
               {parcelasTotal > 1 && (
@@ -299,20 +283,14 @@ export default function NovaCompraScreen() {
                   <Controller
                     control={control}
                     name="parcelaAtual"
-                    render={({ field, fieldState }) => (
-                      <AppInput
-                        value={field.value === undefined ? '' : String(field.value)}
-                        onChangeText={(text) => handleIntegerChange(field.onChange, text)}
-                        keyboardType="number-pad"
-                        error={Boolean(fieldState.error)}
+                    render={({ field }) => (
+                      <Stepper
+                        value={field.value}
+                        onChangeValue={field.onChange}
+                        max={parcelasTotal}
                       />
                     )}
                   />
-                  {errors.parcelaAtual && (
-                    <Text fontSize={12} color="$error">
-                      {errors.parcelaAtual.message}
-                    </Text>
-                  )}
                 </YStack>
               )}
             </XStack>

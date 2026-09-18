@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
 import { colors } from '@/theme/colors';
@@ -10,6 +11,10 @@ import { colors } from '@/theme/colors';
  * padding de safe-area. `SafeAreaView` cobre esse espaço com o fundo
  * do app (em vez de deixá-lo transparente/preto), então a barra de
  * status para de "brigar" visualmente com o conteúdo.
+ *
+ * `KeyboardAvoidingView` evita que o teclado tampe o campo focado nos
+ * formulários mais longos (rola a tela para cima em vez de cobrir o
+ * input) — `behavior="height"` é o que funciona no Android.
  */
 export function Screen({
   children,
@@ -20,7 +25,9 @@ export function Screen({
 }) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={edges}>
-      {children}
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="height">
+        {children}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
