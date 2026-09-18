@@ -25,7 +25,7 @@ export function DateField({ value, onChangeValue, ...stackProps }: DateFieldProp
   return (
     <XStack
       height={44}
-      paddingHorizontal={12}
+      paddingHorizontal={16}
       alignItems="center"
       backgroundColor="$surface"
       borderWidth={1}
