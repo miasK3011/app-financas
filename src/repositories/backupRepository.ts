@@ -134,17 +134,46 @@ export async function exportBackupToFile(): Promise<void> {
 }
 
 /**
- * T064, parte 1: abre o seletor de arquivo nativo. Retorna `null` se o
- * usuário cancelar — a validação em si (`readAndValidateBackupFile`)
- * fica separada para a tela `BackupConfirmar` poder rodá-la de novo
- * sem reabrir o seletor.
+ * Bug conhecido do Expo Go no Android (não específico deste app —
+ * expo/expo#21792, aberto desde o SDK 48 e ainda presente no SDK 57):
+ * o Expo Go carrega várias versões de cada módulo nativo lado a lado
+ * ("versioned modules"), e o `DocumentPicker` e o `FileSystem` acabam
+ * lendo a URI `content://` a partir de Contexts Android DIFERENTES —
+ * a permissão de leitura concedida pelo seletor (via
+ * `ACTION_OPEN_DOCUMENT`) fica presa ao Context que a recebeu, então
+ * o `FileSystem` nunca a enxerga, e toda tentativa de ler a URI
+ * diretamente falha com "Permission Denial… requires
+ * ACTION_OPEN_DOCUMENT" — não importa qual provedor (Downloads,
+ * armazenamento externo, etc.) nem qual API (nova ou legada) tenta.
+ * Isso não acontece num build nativo standalone, só no Expo Go.
  *
- * `copyToCacheDirectory: false` é deliberado: em testes reais no
- * dispositivo, a cópia para o cache (o padrão) produziu um arquivo sem
- * permissão de leitura para o próprio app rodando via Expo Go (`file
- * isn't readable`, tanto na API nova quanto na legada de
- * expo-file-system — bug da cópia em si, não de qual API lê depois).
- * Ler direto da URI original do seletor evita essa cópia problemática.
+ * O contorno confirmado pela comunidade (mesma issue): pedir pro
+ * `expo-file-system` copiar o arquivo pela SUA PRÓPRIA função de cópia
+ * (que passa por um caminho do SO diferente da leitura direta e não
+ * esbarra nesse mesmo problema de Context) para dentro do cache do
+ * nosso próprio app, e só então ler o arquivo já copiado. Usar a
+ * mesma família de API (a nova, `File`) tanto para copiar quanto para
+ * ler evita mais uma inconsistência: uma primeira tentativa usando a
+ * API legada (`copyAsync`) pra copiar produziu um arquivo que nem ela
+ * mesma, nem a nova, conseguiam reler depois ("Missing READ
+ * permission"/"isn't readable") — sintoma idêntico ao bug original,
+ * mas agora dentro do cache do próprio app.
+ */
+async function copyPickedFileToOwnCache(uri: string, name: string): Promise<string> {
+  const source = new File(uri);
+  const destination = new File(Paths.cache, `backup-import-${Date.now()}-${name}`);
+  if (destination.exists) destination.delete();
+  await source.copy(destination);
+  return destination.uri;
+}
+
+/**
+ * T064, parte 1: abre o seletor de arquivo nativo e já copia o arquivo
+ * escolhido para o cache do nosso próprio app (ver
+ * `copyPickedFileToOwnCache`) — a partir daí, a URI retornada é sempre
+ * um `file://` local sem nenhuma restrição de permissão, pronta para
+ * `readAndValidateBackupFile` ler quantas vezes precisar. Retorna
+ * `null` se o usuário cancelar.
  */
 export async function pickBackupFileUri(): Promise<string | null> {
   const result = await DocumentPicker.getDocumentAsync({
@@ -154,33 +183,11 @@ export async function pickBackupFileUri(): Promise<string | null> {
   if (result.canceled || !result.assets?.[0]) {
     return null;
   }
-  return result.assets[0].uri;
+  const asset = result.assets[0];
+  return copyPickedFileToOwnCache(asset.uri, asset.name);
 }
 
-/**
- * Bug conhecido do Android (não específico deste app): ao escolher um
- * arquivo pelo atalho rápido "Downloads" na lateral do seletor de
- * arquivos do sistema, o Android às vezes devolve uma URI no formato
- * `content://com.android.providers.downloads.documents/document/msf:…`
- * que nenhum app consegue reabrir depois — nem a API nova nem a legada
- * do `expo-file-system` — porque o próprio `DownloadStorageProvider`
- * recusa o acesso ("Permission Denial… requires ACTION_OPEN_DOCUMENT").
- * O contorno é sempre do lado do usuário: escolher o arquivo navegando
- * até "Este dispositivo" (ou um app gerenciador de arquivos) em vez do
- * atalho "Downloads".
- */
-function isKnownDownloadsShortcutBug(uri: string): boolean {
-  return uri.includes('com.android.providers.downloads.documents') && uri.includes('msf:');
-}
-
-/**
- * Lê o conteúdo textual de uma URI de arquivo. Tenta a API nova
- * (`File.text()`) primeiro; alguns provedores de arquivo do Android
- * devolvem uma URI `content://` que a API nova ainda não lê de forma
- * confiável em todo fabricante/versão — cai para a API legada
- * (`expo-file-system/legacy`, ainda mantida e testada há anos com
- * exatamente esse tipo de URI) se a primeira tentativa falhar.
- */
+/** Lê o conteúdo textual de uma URI de arquivo já local (dentro do cache do próprio app). */
 async function readFileText(uri: string): Promise<string> {
   try {
     return await new File(uri).text();
@@ -188,17 +195,7 @@ async function readFileText(uri: string): Promise<string> {
     try {
       return await readAsStringAsync(uri);
     } catch (legacyApiError) {
-      if (isKnownDownloadsShortcutBug(uri)) {
-        throw new Error(
-          'Este arquivo foi selecionado pelo atalho "Downloads" do seletor do Android, que tem ' +
-            'um bug conhecido do sistema e impede a leitura por qualquer app. Tente selecionar ' +
-            'o arquivo de novo navegando até "Este dispositivo" → pasta Download (ou por um ' +
-            'app gerenciador de arquivos), em vez do atalho rápido "Downloads".',
-        );
-      }
-      throw new Error(
-        `${(newApiError as Error).message} / ${(legacyApiError as Error).message}`,
-      );
+      throw new Error(`${(newApiError as Error).message} / ${(legacyApiError as Error).message}`);
     }
   }
 }
