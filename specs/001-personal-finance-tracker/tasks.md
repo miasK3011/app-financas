@@ -414,31 +414,31 @@ a FR-045). Depende de US1, US2 e US9 já existirem.
 
 ### Tests for User Story 11
 
-- [ ] T091 [P] [US11] Testes unitários de `resolvePeriod`, `totalSpent`, `compareToPrevious` em
+- [X] T091 [P] [US11] Testes unitários de `resolvePeriod`, `totalSpent`, `compareToPrevious` em
       `tests/unit/domain/statistics.test.ts`, incluindo o caso "sem dado do período anterior" —
       indicar ausência de comparação em vez de uma variação incorreta (FR-041 Edge Case)
-- [ ] T092 [P] [US11] Testes unitários de `spendingByCategory`, `topExpenses`,
+- [X] T092 [P] [US11] Testes unitários de `spendingByCategory`, `topExpenses`,
       `subscriptionsShare`, `idealSpendComparison` em `tests/unit/domain/statistics.test.ts`,
       incluindo o caso "sem renda/meta configurada" (FR-042 Edge Case)
 
 ### Implementation for User Story 11
 
-- [ ] T093 [US11] Implementar `src/domain/statistics/resolvePeriod.ts`,
+- [X] T093 [US11] Implementar `src/domain/statistics/resolvePeriod.ts`,
       `src/domain/statistics/totalSpent.ts`, `src/domain/statistics/compareToPrevious.ts`
       conforme `contracts/statistics.md`
-- [ ] T094 [US11] Implementar `src/domain/statistics/spendingByCategory.ts`,
+- [X] T094 [US11] Implementar `src/domain/statistics/spendingByCategory.ts`,
       `src/domain/statistics/topExpenses.ts`, `src/domain/statistics/subscriptionsShare.ts`,
       `src/domain/statistics/idealSpendComparison.ts` conforme `contracts/statistics.md`
-- [ ] T095 [US11] Implementar `src/repositories/statisticsRepository.ts` e
+- [X] T095 [US11] Implementar `src/repositories/statisticsRepository.ts` e
       `src/repositories/idealGoalRepository.ts` (CRUD da `MetaConsumoIdeal` singleton)
-- [ ] T096 [P] [US11] Implementar o hook `src/hooks/useStatistics.ts`
-- [ ] T097 [US11] Construir o gráfico de consumo mensal em `src/app/(tabs)/inicio/index.tsx` (Início)
+- [X] T096 [P] [US11] Implementar o hook `src/hooks/useStatistics.ts`
+- [X] T097 [US11] Construir o gráfico de consumo mensal em `src/app/(tabs)/inicio/index.tsx` (Início)
       conforme `Main.dc.html`, tocável para abrir a tela de Estatísticas
-- [ ] T098 [US11] Construir `src/app/(tabs)/inicio/estatisticas.tsx` (Estatísticas) conforme
+- [X] T098 [US11] Construir `src/app/(tabs)/inicio/estatisticas.tsx` (Estatísticas) conforme
       `Estatisticas.dc.html`: seletor de período (Diário/Semanal/Mensal/Anual), total + comparação,
       gasto por categoria, maiores gastos, % de assinaturas, seção de meta ideal (condicional a
       haver renda **e** meta configuradas)
-- [ ] T099 [US11] Construir a configuração de Meta de Consumo Ideal (percentual da renda mensal
+- [X] T099 [US11] Construir a configuração de Meta de Consumo Ideal (percentual da renda mensal
       vigente) integrada à tela de Estatísticas ou Renda, conforme `design-brief.md`
 
 **Checkpoint**: US11 completa e testável de forma independente.
