@@ -7,6 +7,7 @@ import { Money } from '@/components/Money';
 import { Screen } from '@/components/Screen';
 import { StatusBadge } from '@/components/StatusBadge';
 import { TransactionAvatar } from '@/components/TransactionAvatar';
+import { shouldShowResponsibilitySummary } from '@/domain/expenseSplitting/shouldShowResponsibilitySummary';
 import { useInvoice, useInvoicePurchases } from '@/hooks/useInvoice';
 
 const MONTH_NAMES = [
@@ -40,7 +41,7 @@ export default function FaturaDetalheScreen() {
     );
   }
 
-  const showResponsibility = invoice.totalResponsabilidade !== invoice.total;
+  const showResponsibility = shouldShowResponsibilitySummary(invoice);
 
   return (
     <Screen>

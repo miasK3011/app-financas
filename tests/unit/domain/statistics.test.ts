@@ -1,3 +1,4 @@
+import { resolveResponsibility } from '@/domain/expenseSplitting/resolveResponsibility';
 import { compareToPrevious } from '@/domain/statistics/compareToPrevious';
 import { idealSpendComparison } from '@/domain/statistics/idealSpendComparison';
 import { resolvePeriod } from '@/domain/statistics/resolvePeriod';
@@ -7,7 +8,9 @@ import { topExpenses } from '@/domain/statistics/topExpenses';
 import { totalSpent } from '@/domain/statistics/totalSpent';
 import type { ParcelaComCompra } from '@/domain/statistics/types';
 
-function parcela(overrides: Partial<ParcelaComCompra['compra']> & { valorResponsabilidade: number }): ParcelaComCompra {
+function parcela(
+  overrides: Partial<ParcelaComCompra['compra']> & { valorResponsabilidade: number },
+): ParcelaComCompra {
   const { valorResponsabilidade, ...compraOverrides } = overrides;
   return {
     parcelaId: 'parcela-' + Math.random(),
@@ -51,7 +54,10 @@ describe('resolvePeriod', () => {
 
 describe('totalSpent', () => {
   it('sums valorResponsabilidade, not the raw parcela value', () => {
-    const parcelas = [parcela({ valorResponsabilidade: 1000 }), parcela({ valorResponsabilidade: 500 })];
+    const parcelas = [
+      parcela({ valorResponsabilidade: 1000 }),
+      parcela({ valorResponsabilidade: 500 }),
+    ];
     expect(totalSpent(parcelas)).toBe(1500);
   });
 
@@ -132,5 +138,26 @@ describe('idealSpendComparison', () => {
 
   it('returns null when there is no goal configured (FR-042 Edge Case)', () => {
     expect(idealSpendComparison(3500, 5000, null)).toBeNull();
+  });
+});
+
+describe('US12 — a purchase split with someone else (FR-054)', () => {
+  it('totalSpent/spendingByCategory/topExpenses all reflect the split share, not the full compra value', () => {
+    // Compra de R$100 dividida ao meio (resolveResponsibility, como o
+    // repositório calcularia antes de persistir Parcela.valorResponsabilidade).
+    const responsabilidadeEfetiva = resolveResponsibility(
+      { valorTotalOriginal: 10000, valorResponsabilidade: 5000 },
+      [],
+    );
+    expect(responsabilidadeEfetiva).toBe(5000);
+
+    const parcelas: ParcelaComCompra[] = [
+      parcela({ valorResponsabilidade: responsabilidadeEfetiva, categoriaId: 'cat-1' }),
+      parcela({ valorResponsabilidade: 2000, categoriaId: 'cat-1' }),
+    ];
+
+    expect(totalSpent(parcelas)).toBe(7000); // 5000 + 2000, nunca 10000 + 2000
+    expect(spendingByCategory(parcelas)).toEqual([{ categoriaId: 'cat-1', total: 7000 }]);
+    expect(topExpenses(parcelas, 1)[0].valorResponsabilidade).toBe(5000);
   });
 });

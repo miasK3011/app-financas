@@ -7,6 +7,7 @@ import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 import { Money } from '@/components/Money';
 import { Screen } from '@/components/Screen';
 import { StatusBadge } from '@/components/StatusBadge';
+import { shouldShowResponsibilitySummary } from '@/domain/expenseSplitting/shouldShowResponsibilitySummary';
 import { useCards } from '@/hooks/useCards';
 import { useCardInvoices } from '@/hooks/useInvoice';
 import { type Card, getCard } from '@/repositories/cardsRepository';
@@ -129,7 +130,22 @@ export default function CartaoFaturasScreen() {
                   </XStack>
                 </YStack>
                 <XStack alignItems="center" gap="$2">
-                  <Money cents={invoice.total} fontSize={15} fontWeight="600" color="$text" />
+                  <YStack alignItems="flex-end">
+                    <Money cents={invoice.total} fontSize={15} fontWeight="600" color="$text" />
+                    {shouldShowResponsibilitySummary(invoice) && (
+                      <XStack gap="$1">
+                        <Text fontSize={11} color="$textTertiary">
+                          Você paga:
+                        </Text>
+                        <Money
+                          cents={invoice.totalResponsabilidade}
+                          fontSize={11}
+                          fontWeight="700"
+                          color="$textTertiary"
+                        />
+                      </XStack>
+                    )}
+                  </YStack>
                   <ChevronRight size={16} color="#6C6C6D" />
                 </XStack>
               </XStack>

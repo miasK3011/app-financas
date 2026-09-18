@@ -11,6 +11,7 @@ import { DateField } from '@/components/DateField';
 import { MoneyInput } from '@/components/MoneyInput';
 import { Screen } from '@/components/Screen';
 import { Stepper } from '@/components/Stepper';
+import { requiresMotivoResponsavelFields } from '@/domain/expenseSplitting/requiresMotivoResponsavelFields';
 import { useBestCard } from '@/hooks/useBestCard';
 import { useCards } from '@/hooks/useCards';
 import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
@@ -27,6 +28,9 @@ const formSchema = z
     parcelaAtual: z.number().int().min(1),
     tagsText: z.string().optional(),
     comentario: z.string().optional(),
+    valorResponsabilidade: z.number().int().optional(),
+    motivo: z.string().optional(),
+    responsavel: z.string().optional(),
   })
   .refine((data) => data.formaPagamento !== 'CARTAO' || Boolean(data.cartaoId), {
     message: 'Selecione um cartão',
@@ -35,7 +39,16 @@ const formSchema = z
   .refine((data) => data.parcelaAtual <= data.parcelasTotal, {
     message: 'A parcela atual não pode ser maior que o total de parcelas',
     path: ['parcelaAtual'],
-  });
+  })
+  .refine(
+    (data) =>
+      data.valorResponsabilidade === undefined ||
+      (data.valorResponsabilidade >= 0 && data.valorResponsabilidade <= data.valorCentavos),
+    {
+      message: 'O valor de responsabilidade deve estar entre 0 e o valor total da compra',
+      path: ['valorResponsabilidade'],
+    },
+  );
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -73,6 +86,9 @@ export default function NovaCompraScreen() {
       parcelaAtual: 1,
       tagsText: '',
       comentario: '',
+      valorResponsabilidade: undefined,
+      motivo: '',
+      responsavel: '',
     },
   });
 
@@ -88,6 +104,8 @@ export default function NovaCompraScreen() {
   const formaPagamento = watch('formaPagamento');
   const parcelasTotal = watch('parcelasTotal');
   const selectedCartaoId = watch('cartaoId');
+  const valorCentavos = watch('valorCentavos');
+  const valorResponsabilidade = watch('valorResponsabilidade');
 
   const onSubmit = handleSubmit(async (data) => {
     const tagNomes = (data.tagsText ?? '')
@@ -106,6 +124,9 @@ export default function NovaCompraScreen() {
         categoriaId,
         comentario: data.comentario || undefined,
         tagNomes,
+        valorResponsabilidade: data.valorResponsabilidade,
+        motivo: data.motivo || undefined,
+        responsavel: data.responsavel || undefined,
       });
     } else {
       await createPixPurchase({
@@ -115,6 +136,9 @@ export default function NovaCompraScreen() {
         categoriaId,
         comentario: data.comentario || undefined,
         tagNomes,
+        valorResponsabilidade: data.valorResponsabilidade,
+        motivo: data.motivo || undefined,
+        responsavel: data.responsavel || undefined,
       });
     }
 
@@ -382,6 +406,73 @@ export default function NovaCompraScreen() {
               <AppInput value={field.value} onChangeText={field.onChange} placeholder="Opcional" />
             )}
           />
+        </YStack>
+
+        <YStack
+          backgroundColor="$surface"
+          borderColor="$border"
+          borderWidth={1}
+          borderRadius="$lg"
+          padding={18}
+          gap="$3"
+        >
+          <Text fontSize={12} fontWeight="700" color="$textTertiary" textTransform="uppercase">
+            Divisão de responsabilidade (opcional)
+          </Text>
+          <Controller
+            control={control}
+            name="valorResponsabilidade"
+            render={({ field, fieldState }) => (
+              <MoneyInput
+                value={field.value}
+                onChangeValue={field.onChange}
+                error={Boolean(fieldState.error)}
+                placeholder="Deixe em branco para usar o valor total"
+              />
+            )}
+          />
+          {errors.valorResponsabilidade && (
+            <Text fontSize={12} color="$error">
+              {errors.valorResponsabilidade.message}
+            </Text>
+          )}
+
+          {requiresMotivoResponsavelFields(valorResponsabilidade ?? null, valorCentavos ?? 0) && (
+            <XStack gap="$3">
+              <YStack flex={1} gap="$2">
+                <Text fontSize={13} color="$textSecondary">
+                  Motivo (opcional)
+                </Text>
+                <Controller
+                  control={control}
+                  name="motivo"
+                  render={({ field }) => (
+                    <AppInput
+                      value={field.value}
+                      onChangeText={field.onChange}
+                      placeholder="Ex.: Dividimos a conta"
+                    />
+                  )}
+                />
+              </YStack>
+              <YStack flex={1} gap="$2">
+                <Text fontSize={13} color="$textSecondary">
+                  Responsável (opcional)
+                </Text>
+                <Controller
+                  control={control}
+                  name="responsavel"
+                  render={({ field }) => (
+                    <AppInput
+                      value={field.value}
+                      onChangeText={field.onChange}
+                      placeholder="Ex.: Maria"
+                    />
+                  )}
+                />
+              </YStack>
+            </XStack>
+          )}
         </YStack>
 
         <Button

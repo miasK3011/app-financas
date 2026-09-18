@@ -7,11 +7,14 @@ import {
   categorias,
   compraTags,
   compras,
+  entradasAvulsas,
   estabelecimentos,
   faturas,
   parcelas,
   tags,
 } from '@/db/schema';
+import { resolveResponsibility } from '@/domain/expenseSplitting/resolveResponsibility';
+import { validateManualResponsibility } from '@/domain/expenseSplitting/validateManualResponsibility';
 import { allocateInstallmentsToInvoices } from '@/domain/installments/allocateInstallmentsToInvoices';
 import { splitInstallments } from '@/domain/installments/splitInstallments';
 import { computeInvoiceStatus } from '@/domain/invoices/computeInvoiceStatus';
@@ -53,6 +56,10 @@ export type CreateCardPurchaseInput = {
   origem?: 'MANUAL' | 'CSV_IMPORT' | 'ASSINATURA';
   loteImportacaoId?: string;
   assinaturaId?: string;
+  /** US12/FR-046..FR-048 — validado por `validateManualResponsibility` antes de salvar. */
+  valorResponsabilidade?: number;
+  motivo?: string;
+  responsavel?: string;
 };
 
 /**
@@ -78,11 +85,22 @@ export async function createCardPurchase(input: CreateCardPurchaseInput): Promis
     throw new Error(`Cartão ${input.cartaoId} não encontrado`);
   }
 
+  if (input.valorResponsabilidade !== undefined) {
+    validateManualResponsibility(input.valorResponsabilidade, parsed.valorTotalOriginal);
+  }
+  const responsabilidadeEfetiva = resolveResponsibility(
+    {
+      valorTotalOriginal: parsed.valorTotalOriginal,
+      valorResponsabilidade: input.valorResponsabilidade ?? null,
+    },
+    [],
+  );
+
   const plan = splitInstallments({
     valorTotalOriginal: parsed.valorTotalOriginal,
     parcelasTotal: parsed.parcelasTotal,
     parcelaAtual: parsed.parcelaAtual,
-    valorResponsabilidade: null,
+    valorResponsabilidade: responsabilidadeEfetiva,
   });
   const allocations = allocateInstallmentsToInvoices(plan, card, parsed.dataCompra);
 
@@ -104,6 +122,9 @@ export async function createCardPurchase(input: CreateCardPurchaseInput): Promis
       origem: input.origem ?? 'MANUAL',
       loteImportacaoId: input.loteImportacaoId,
       assinaturaId: input.assinaturaId,
+      valorResponsabilidade: input.valorResponsabilidade ?? null,
+      motivo: input.motivo,
+      responsavel: input.responsavel,
       criadoEm: new Date(),
     })
     .returning();
@@ -136,6 +157,10 @@ export type CreatePixPurchaseInput = {
   /** Default `'MANUAL'` — `subscriptionsRepository` passa `'ASSINATURA'` + `assinaturaId` (FR-017). */
   origem?: 'MANUAL' | 'ASSINATURA';
   assinaturaId?: string;
+  /** US12/FR-046..FR-048 — validado por `validateManualResponsibility` antes de salvar. */
+  valorResponsabilidade?: number;
+  motivo?: string;
+  responsavel?: string;
 };
 
 /**
@@ -154,6 +179,17 @@ export async function createPixPurchase(input: CreatePixPurchaseInput): Promise<
     parcelaAtual: 1,
   });
 
+  if (input.valorResponsabilidade !== undefined) {
+    validateManualResponsibility(input.valorResponsabilidade, parsed.valorTotalOriginal);
+  }
+  const responsabilidadeEfetiva = resolveResponsibility(
+    {
+      valorTotalOriginal: parsed.valorTotalOriginal,
+      valorResponsabilidade: input.valorResponsabilidade ?? null,
+    },
+    [],
+  );
+
   const compraId = randomUUID();
   const [purchase] = await db
     .insert(compras)
@@ -171,6 +207,9 @@ export async function createPixPurchase(input: CreatePixPurchaseInput): Promise<
       estabelecimentoManual: false,
       origem: input.origem ?? 'MANUAL',
       assinaturaId: input.assinaturaId,
+      valorResponsabilidade: input.valorResponsabilidade ?? null,
+      motivo: input.motivo,
+      responsavel: input.responsavel,
       criadoEm: new Date(),
     })
     .returning();
@@ -181,7 +220,7 @@ export async function createPixPurchase(input: CreatePixPurchaseInput): Promise<
     faturaId: null,
     numero: 1,
     valor: parsed.valorTotalOriginal,
-    valorResponsabilidade: parsed.valorTotalOriginal,
+    valorResponsabilidade: responsabilidadeEfetiva,
   });
 
   await attachTagsToCompra(compraId, input.tagNomes);
@@ -285,20 +324,86 @@ export type UpdatePurchaseInput = {
   descricao?: string;
   categoriaId?: string | null;
   comentario?: string | null;
+  /** US12/FR-046..FR-048 — `null` limpa o valor manual (volta ao total, se não houver entrada vinculada). */
+  valorResponsabilidade?: number | null;
+  motivo?: string | null;
+  responsavel?: string | null;
 };
 
 /**
- * Só atualiza campos que nunca afetam `Parcela.valor` (descrição,
- * categoria, comentário) — por isso não precisa checar parcelas
- * congeladas para eles. Uma futura tela de "editar valor/parcelamento"
- * (nenhuma existe ainda) deve chamar `hasFrozenInstallments` antes de
- * permitir essa edição mais sensível e bloquear se retornar `true`.
+ * Descrição/categoria/comentário nunca afetam `Parcela.valor`, então
+ * não precisam checar parcelas congeladas. `valorResponsabilidade`
+ * também não — é uma dimensão separada de "quem pagou de fato", que
+ * pode mudar mesmo depois da fatura fechar/ser paga (ex.: reembolso
+ * recebido depois) — só dispara `recomputeResponsibility` para
+ * propagar a mudança às Parcelas já existentes. Uma futura tela de
+ * "editar valor/parcelamento" em si (nenhuma existe ainda) deve
+ * chamar `hasFrozenInstallments` antes de permitir ESSA edição.
  */
 export async function updatePurchase(
   compraId: string,
   updates: UpdatePurchaseInput,
 ): Promise<void> {
+  if (updates.valorResponsabilidade != null) {
+    const compra = await getPurchase(compraId);
+    if (compra) {
+      validateManualResponsibility(updates.valorResponsabilidade, compra.valorTotalOriginal);
+    }
+  }
+
   await db.update(compras).set(updates).where(eq(compras.id, compraId));
+
+  if ('valorResponsabilidade' in updates) {
+    await recomputeResponsibility(compraId);
+  }
+}
+
+async function listEntradasVinculadas(compraId: string): Promise<{ valor: number }[]> {
+  return db
+    .select({ valor: entradasAvulsas.valor })
+    .from(entradasAvulsas)
+    .where(eq(entradasAvulsas.compraVinculadaId, compraId));
+}
+
+/**
+ * FR-051: reexecuta a precedência de responsabilidade (`resolveResponsibility`)
+ * e propaga o resultado, se mudou, para `Parcela.valorResponsabilidade`
+ * de TODAS as parcelas já existentes da Compra — via `splitInstallments`
+ * (mesma proporção, FR-055), nunca reatribuindo fatura nem `Parcela.valor`.
+ * Chamado sempre que o valor manual muda ou uma EntradaAvulsa vinculada
+ * é criada/editada/excluída/desvinculada.
+ */
+export async function recomputeResponsibility(compraId: string): Promise<void> {
+  const compra = await getPurchase(compraId);
+  if (!compra) return;
+
+  const entradasVinculadas = await listEntradasVinculadas(compraId);
+  const responsabilidadeEfetiva = resolveResponsibility(
+    {
+      valorTotalOriginal: compra.valorTotalOriginal,
+      valorResponsabilidade: compra.valorResponsabilidade,
+    },
+    entradasVinculadas,
+  );
+
+  const plan = splitInstallments({
+    valorTotalOriginal: compra.valorTotalOriginal,
+    parcelasTotal: compra.parcelasTotal,
+    parcelaAtual: compra.parcelaAtual,
+    valorResponsabilidade: responsabilidadeEfetiva,
+  });
+
+  const existingParcelas = await db.select().from(parcelas).where(eq(parcelas.compraId, compraId));
+
+  for (const entry of plan) {
+    const match = existingParcelas.find((parcela) => parcela.numero === entry.numero);
+    if (match) {
+      await db
+        .update(parcelas)
+        .set({ valorResponsabilidade: entry.valorResponsabilidade })
+        .where(eq(parcelas.id, match.id));
+    }
+  }
 }
 
 /** Nomes das tags atuais de uma Compra — para pré-preencher a tela de edição (FR-007). */

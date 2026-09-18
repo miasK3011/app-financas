@@ -1,8 +1,10 @@
 import { allocateInstallmentsToInvoices } from '@/domain/installments/allocateInstallmentsToInvoices';
+import { recomputeSplitOnRefund } from '@/domain/installments/recomputeSplitOnRefund';
 import {
   InvalidInstallmentError,
   splitInstallments,
 } from '@/domain/installments/splitInstallments';
+import { resolveResponsibility } from '@/domain/expenseSplitting/resolveResponsibility';
 
 describe('splitInstallments', () => {
   it('splits a simple R$300/3x purchase evenly', () => {
@@ -122,5 +124,39 @@ describe('allocateInstallmentsToInvoices', () => {
     const allocations = allocateInstallmentsToInvoices(plan, card, new Date(2026, 9, 5));
     expect(allocations[0]).toEqual({ numero: 5, year: 2026, month: 10 });
     expect(allocations.at(-1)).toEqual({ numero: 12, year: 2027, month: 5 });
+  });
+});
+
+describe('recomputeSplitOnRefund', () => {
+  it('returns the full total when there is no linked entry', () => {
+    expect(recomputeSplitOnRefund({ valorTotalOriginal: 7000 }, [])).toBe(7000);
+  });
+
+  it('subtracts a single linked entry from the total', () => {
+    expect(recomputeSplitOnRefund({ valorTotalOriginal: 7000 }, [{ valor: 2000 }])).toBe(5000);
+  });
+
+  it('subtracts the sum of multiple linked entries', () => {
+    const result = recomputeSplitOnRefund({ valorTotalOriginal: 7000 }, [
+      { valor: 2000 },
+      { valor: 1000 },
+    ]);
+    expect(result).toBe(4000);
+  });
+
+  it('clamps at 0 instead of going negative', () => {
+    expect(recomputeSplitOnRefund({ valorTotalOriginal: 7000 }, [{ valor: 9000 }])).toBe(0);
+  });
+
+  it('unlinking the last entry falls back to the manual value, if any (Edge Case)', () => {
+    // resolveResponsibility é quem decide isso na prática — recomputeSplitOnRefund
+    // sozinha não conhece o valor manual, só o ramo "com entradas vinculadas".
+    const compra = { valorTotalOriginal: 7000, valorResponsabilidade: 3500 };
+    expect(resolveResponsibility(compra, [])).toBe(3500);
+  });
+
+  it('unlinking the last entry falls back to the total when there is no manual value (Edge Case)', () => {
+    const compra = { valorTotalOriginal: 7000, valorResponsabilidade: null };
+    expect(resolveResponsibility(compra, [])).toBe(7000);
   });
 });

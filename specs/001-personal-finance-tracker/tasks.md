@@ -454,15 +454,15 @@ FR-055). Depende de US1, US4 e US11 já existirem.
 
 ### Tests for User Story 12
 
-- [ ] T100 [P] [US12] Testes unitários de `validateManualResponsibility`,
+- [X] T100 [P] [US12] Testes unitários de `validateManualResponsibility`,
       `requiresMotivoResponsavelFields`, `shouldShowResponsibilitySummary` em
       `tests/unit/domain/expenseSplitting.test.ts` — **`0 ≤ valorResponsabilidade ≤
       valorTotalOriginal`** (FR-048)
-- [ ] T101 [P] [US12] Testes unitários de `recomputeSplitOnRefund` em
+- [X] T101 [P] [US12] Testes unitários de `recomputeSplitOnRefund` em
       `tests/unit/domain/installments.test.ts`: sem entrada vinculada, uma entrada, múltiplas
       entradas (soma subtraída do total), entrada desvinculada volta ao valor manual (se houver)
       ou ao total (Edge Cases)
-- [ ] T102 [P] [US12] Testes unitários da precedência completa de responsabilidade
+- [X] T102 [P] [US12] Testes unitários da precedência completa de responsabilidade
       (`resolveResponsibility`) em `tests/unit/domain/expenseSplitting.test.ts`: nada definido →
       usa o total (FR-049); só valor manual definido → usa o manual; entradas vinculadas presentes
       → **sempre vencem, mesmo havendo um valor manual também definido** (Edge Case de precedência,
@@ -470,36 +470,36 @@ FR-055). Depende de US1, US4 e US11 já existirem.
 
 ### Implementation for User Story 12
 
-- [ ] T103 [US12] Implementar `src/domain/expenseSplitting/resolveResponsibility.ts`: a função
+- [X] T103 [US12] Implementar `src/domain/expenseSplitting/resolveResponsibility.ts`: a função
       `responsabilidadeEfetiva(compra, entradasVinculadas)` de `data-model.md`, com a precedência
       completa de 3 vias — **(1) soma de entradas vinculadas, se houver; (2)
       `valorResponsabilidade` manual; (3) `valorTotalOriginal`** — reunindo em um único ponto a
       lógica hoje distribuída entre `splitInstallments` e `recomputeSplitOnRefund`, para que
       nenhum repositório precise decidir essa precedência por conta própria
-- [ ] T104 [US12] Implementar `src/domain/expenseSplitting/validateManualResponsibility.ts`,
+- [X] T104 [US12] Implementar `src/domain/expenseSplitting/validateManualResponsibility.ts`,
       `requiresMotivoResponsavelFields.ts`, `shouldShowResponsibilitySummary.ts` conforme
       `contracts/expense-splitting.md`
-- [ ] T105 [US12] Implementar `src/domain/installments/recomputeSplitOnRefund.ts` conforme
+- [X] T105 [US12] Implementar `src/domain/installments/recomputeSplitOnRefund.ts` conforme
       `contracts/installments.md`, e integrá-la à proporção usada em `splitInstallments` — mesma
       fração de responsabilidade aplicada em cada parcela (FR-055)
-- [ ] T106 [US12] Estender `src/repositories/cashEntriesRepository.ts`: suportar
+- [X] T106 [US12] Estender `src/repositories/cashEntriesRepository.ts`: suportar
       `compraVinculadaId` ao criar/editar/excluir uma EntradaAvulsa, chamando
       `resolveResponsibility` (T103) — que internamente usa `recomputeSplitOnRefund` quando há
       entradas vinculadas — e atualizando `Parcela.valorResponsabilidade` de todas as parcelas da
       Compra afetada (FR-051)
-- [ ] T107 [US12] Estender `src/repositories/purchasesRepository.ts`: suportar
+- [X] T107 [US12] Estender `src/repositories/purchasesRepository.ts`: suportar
       `valorResponsabilidade`/`motivo`/`responsavel` na criação/edição de Compra, validando com
       `validateManualResponsibility` e sempre recalculando o valor efetivo via
       `resolveResponsibility` (T103) — nunca lendo `Compra.valorResponsabilidade` diretamente para
       exibição ou estatística
-- [ ] T108 [US12] Construir `src/app/(tabs)/cartoes/nova-compra/divisao-manual.tsx`
+- [X] T108 [US12] Construir `src/app/(tabs)/cartoes/nova-compra/divisao-manual.tsx`
       (NovaCompraDivisaoManual) conforme `NovaCompraDivisaoManual.dc.html`
-- [ ] T109 [US12] Construir `src/app/(tabs)/cartoes/nova-compra/divisao-vinculada.tsx`
+- [X] T109 [US12] Construir `src/app/(tabs)/cartoes/nova-compra/divisao-vinculada.tsx`
       (NovaCompraDivisaoVinculada) conforme `NovaCompraDivisaoVinculada.dc.html`
-- [ ] T110 [US12] Exibir o resumo "Você paga: R$ X" em `FaturaDetalhe.tsx` e `CartaoDetalhe.tsx`
+- [X] T110 [US12] Exibir o resumo "Você paga: R$ X" em `FaturaDetalhe.tsx` e `CartaoDetalhe.tsx`
       usando `shouldShowResponsibilitySummary` — **nunca altera o valor total exibido da fatura**
       (FR-052, FR-053)
-- [ ] T111 [US12] Confirmar que `domain/statistics` (US11) usa `resolveResponsibility` (T103) em
+- [X] T111 [US12] Confirmar que `domain/statistics` (US11) usa `resolveResponsibility` (T103) em
       vez de `Compra.valor`/`Compra.valorResponsabilidade` diretamente em
       `totalSpent`/`spendingByCategory`/`topExpenses` (FR-054); adicionar um caso de teste com uma
       compra dividida em `tests/unit/domain/statistics.test.ts`
