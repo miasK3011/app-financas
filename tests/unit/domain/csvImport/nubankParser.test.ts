@@ -24,16 +24,38 @@ describe('nubankParser.parse', () => {
   it('detects the "- Parcela N/M" pattern and strips it from the description', () => {
     const result = parse(fixture);
     const parcelado = result.imported.find((item) => item.descricao === 'Autopecas Silva');
+    // O CSV traz "150,00" como o valor DESTA parcela (1/3), não da
+    // compra inteira — valorTotalOriginal reconstitui o total
+    // (150,00 × 3 = 450,00) para que splitInstallments, ao dividir de
+    // volta por 3, recupere o valor certo de cada parcela.
     expect(parcelado).toMatchObject({
       parcelasTotal: 3,
       parcelaAtual: 1,
-      valorTotalOriginal: 15000,
+      valorTotalOriginal: 45000,
     });
 
     const outroParcelado = result.imported.find(
       (item) => item.descricao === 'MercadoOnline*Loja Xyz',
     );
-    expect(outroParcelado).toMatchObject({ parcelasTotal: 4, parcelaAtual: 1 });
+    expect(outroParcelado).toMatchObject({
+      parcelasTotal: 4,
+      parcelaAtual: 1,
+      valorTotalOriginal: 16000, // "40,00" (valor da parcela) × 4
+    });
+  });
+
+  it('reconstructs the full total from a per-installment amount (regression: "Mp *Aliexpress - Parcela 1/4","35,69")', () => {
+    const csv = 'date,title,amount\n2026-08-27,Mp *Aliexpress - Parcela 1/4,"35,69"\n';
+    const result = parse(csv);
+    expect(result.imported).toEqual([
+      {
+        descricao: 'Mp *Aliexpress',
+        valorTotalOriginal: 14276, // 35,69 × 4 — nunca 35,69 dividido por 4
+        dataCompra: new Date(2026, 7, 27),
+        parcelasTotal: 4,
+        parcelaAtual: 1,
+      },
+    ]);
   });
 
   it('excludes "Pagamento recebido" from imported, reporting it as skipped instead', () => {

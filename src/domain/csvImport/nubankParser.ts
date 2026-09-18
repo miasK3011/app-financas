@@ -55,20 +55,28 @@ export function parse(rawCsv: string): CsvParseResult {
       continue;
     }
 
-    const valorTotalOriginal = row.amount ? parseNubankAmount(row.amount) : null;
-    if (valorTotalOriginal === null) {
+    const valorLinha = row.amount ? parseNubankAmount(row.amount) : null;
+    if (valorLinha === null) {
       skipped.push({ rawLine, reason: 'Valor ausente ou inválido' });
       continue;
     }
 
     const parcelaMatch = PARCELA_PATTERN.exec(title);
     const descricao = (parcelaMatch ? title.replace(PARCELA_PATTERN, '') : title).trim();
+    const parcelasTotal = parcelaMatch ? Number(parcelaMatch[2]) : 1;
 
     imported.push({
       descricao: descricao || 'Compra importada',
-      valorTotalOriginal,
+      // O Nubank já reporta `amount` como o valor DESTA parcela, não
+      // da compra inteira — reconstituímos o total (valor × parcelas)
+      // porque `createCardPurchase`/`splitInstallments` sempre dividem
+      // `valorTotalOriginal` pelo total de parcelas de novo. Como a
+      // multiplicação é exata (valor × parcelas ÷ parcelas = valor),
+      // isso reproduz fielmente o valor original de cada parcela, sem
+      // arredondamento espúrio.
+      valorTotalOriginal: valorLinha * parcelasTotal,
       dataCompra,
-      parcelasTotal: parcelaMatch ? Number(parcelaMatch[2]) : 1,
+      parcelasTotal,
       parcelaAtual: parcelaMatch ? Number(parcelaMatch[1]) : 1,
     });
   }
