@@ -10,6 +10,7 @@ import {
   estabelecimentos,
   faturas,
   parcelas,
+  tags,
 } from '@/db/schema';
 import { allocateInstallmentsToInvoices } from '@/domain/installments/allocateInstallmentsToInvoices';
 import { splitInstallments } from '@/domain/installments/splitInstallments';
@@ -44,6 +45,9 @@ export type CreateCardPurchaseInput = {
   parcelaAtual?: number;
   comentario?: string;
   tagNomes?: string[];
+  /** Default `'MANUAL'` — `csvImportRepository` passa `'CSV_IMPORT'` + `loteImportacaoId` (FR-009). */
+  origem?: 'MANUAL' | 'CSV_IMPORT';
+  loteImportacaoId?: string;
 };
 
 /**
@@ -92,7 +96,8 @@ export async function createCardPurchase(input: CreateCardPurchaseInput): Promis
       comentario: input.comentario,
       categoriaId: input.categoriaId,
       estabelecimentoManual: false,
-      origem: 'MANUAL',
+      origem: input.origem ?? 'MANUAL',
+      loteImportacaoId: input.loteImportacaoId,
       criadoEm: new Date(),
     })
     .returning();
@@ -190,6 +195,11 @@ export async function listPixPurchasesForMonth(year: number, month: number): Pro
     );
 }
 
+export async function getPurchase(compraId: string): Promise<Purchase | undefined> {
+  const [purchase] = await db.select().from(compras).where(eq(compras.id, compraId));
+  return purchase;
+}
+
 export type InvoicePurchaseRow = {
   parcelaId: string;
   numero: number;
@@ -279,4 +289,25 @@ export async function updatePurchase(
   updates: UpdatePurchaseInput,
 ): Promise<void> {
   await db.update(compras).set(updates).where(eq(compras.id, compraId));
+}
+
+/** Nomes das tags atuais de uma Compra — para pré-preencher a tela de edição (FR-007). */
+export async function listTagsForCompra(compraId: string): Promise<string[]> {
+  const rows = await db
+    .select({ nome: tags.nome })
+    .from(compraTags)
+    .innerJoin(tags, eq(compraTags.tagId, tags.id))
+    .where(eq(compraTags.compraId, compraId));
+  return rows.map((row) => row.nome);
+}
+
+/**
+ * FR-007: substitui TODAS as tags da Compra pela lista dada — nunca
+ * mescla (evita "tag fantasma" que o usuário já removeu no formulário
+ * continuar vinculada). Usado também para adicionar tags/comentário a
+ * uma transação importada via CSV (T079).
+ */
+export async function setPurchaseTags(compraId: string, tagNomes: string[]): Promise<void> {
+  await db.delete(compraTags).where(eq(compraTags.compraId, compraId));
+  await attachTagsToCompra(compraId, tagNomes);
 }

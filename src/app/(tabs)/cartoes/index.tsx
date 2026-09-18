@@ -37,6 +37,17 @@ export default function CartoesScreen() {
           )}
         </Card>
 
+        <Button
+          onPress={() => router.push('/cartoes/importar-csv')}
+          backgroundColor="$surface"
+          borderColor="$border"
+          borderWidth={1}
+          color="$primary"
+          fontWeight="700"
+        >
+          Importar fatura via CSV
+        </Button>
+
         <YStack gap="$1">
           <Text fontSize={15} fontWeight="600" color="$text">
             Meus cartões

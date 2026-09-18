@@ -10,11 +10,21 @@ import { z } from 'zod';
  * `valorResponsabilidade`, FR-048) ficam em
  * `domain/expenseSplitting/validateManualResponsibility.ts` — não
  * duplicadas aqui.
+ *
+ * `valorTotalOriginal` aceita negativo: estornos/créditos importados
+ * do CSV do Nubank viram Compras de valor negativo, que reduzem o
+ * total da fatura ao somar (research.md § Formato do CSV do Nubank).
+ * O formulário de Nova Compra nunca produz um valor negativo (o
+ * `MoneyInput` só aceita dígitos), então a regra permissiva aqui não
+ * afeta esse fluxo.
  */
 export const purchaseSchema = z
   .object({
     descricao: z.string().min(1),
-    valorTotalOriginal: z.number().int().positive(),
+    valorTotalOriginal: z
+      .number()
+      .int()
+      .refine((value) => value !== 0, 'Valor não pode ser zero'),
     dataCompra: z.date(),
     formaPagamento: z.enum(['PIX', 'CARTAO']),
     cartaoId: z.string().optional(),

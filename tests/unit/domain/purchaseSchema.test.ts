@@ -35,4 +35,14 @@ describe('purchaseSchema', () => {
     });
     expect(result.success).toBe(true);
   });
+
+  it('accepts a negative valorTotalOriginal (Nubank CSV refund/credit import)', () => {
+    const result = purchaseSchema.safeParse({ ...base, valorTotalOriginal: -1250 });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects a zero valorTotalOriginal', () => {
+    const result = purchaseSchema.safeParse({ ...base, valorTotalOriginal: 0 });
+    expect(result.success).toBe(false);
+  });
 });

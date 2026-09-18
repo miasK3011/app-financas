@@ -1,0 +1,5 @@
+data;valor;descricao
+05/09/2026;123,45;Supermercado ABC
+10/09/2026;89,90;Farmácia XYZ
+;50,00;Linha sem data
+15/09/2026;;Linha sem valor

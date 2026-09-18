@@ -116,6 +116,7 @@ export default function FaturaDetalheScreen() {
                 justifyContent="space-between"
                 alignItems="center"
                 gap="$3"
+                onPress={() => router.push(`/cartoes/compra/${row.compra.id}`)}
               >
                 <TransactionAvatar
                   estabelecimento={row.estabelecimento}

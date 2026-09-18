@@ -323,32 +323,32 @@ FR-037) — pré-requisito visual para US10 e US11.
 
 ### Tests for User Story 3
 
-- [ ] T072 [P] [US3] Testes unitários de `genericParser.parse` em
+- [X] T072 [P] [US3] Testes unitários de `genericParser.parse` em
       `tests/unit/domain/csvImport/genericParser.test.ts`, usando um fixture
       `tests/fixtures/generic-sample.csv` (linhas válidas + ao menos uma linha sem data/valor para
       exercitar FR-026)
-- [ ] T073 [P] [US3] Testes unitários de `nubankParser.parse` em
+- [X] T073 [P] [US3] Testes unitários de `nubankParser.parse` em
       `tests/unit/domain/csvImport/nubankParser.test.ts`, usando `tests/fixtures/nubank-sample.csv`
       — cobrindo: valor com vírgula e sinal negativo com espaço (`"- 15,92"`), título com aspas
       internas escapadas, padrão `Parcela N/M`, e exclusão da linha `"Pagamento recebido"`
 
 ### Implementation for User Story 3
 
-- [ ] T074 [US3] Implementar `src/domain/csvImport/genericParser.ts` conforme
+- [X] T074 [US3] Implementar `src/domain/csvImport/genericParser.ts` conforme
       `contracts/csv-import.md` (separador `;`, data `DD/MM/AAAA`, valor decimal com vírgula)
-- [ ] T075 [US3] Implementar `src/domain/csvImport/nubankParser.ts` conforme
+- [X] T075 [US3] Implementar `src/domain/csvImport/nubankParser.ts` conforme
       `contracts/csv-import.md` e o formato confirmado em `research.md` (vírgula decimal,
       `"Pagamento recebido"` sempre excluído, créditos/estornos negativos importados como Compra de
       valor negativo)
-- [ ] T076 [US3] Implementar `src/repositories/csvImportRepository.ts`: recebe um
+- [X] T076 [US3] Implementar `src/repositories/csvImportRepository.ts`: recebe um
       `CsvParseResult`, cria o `LoteImportacao`, persiste cada `CompraDraft` reaproveitando
       `purchasesRepository`/`splitInstallments` — sem caminho especial de persistência para dados
       importados
-- [ ] T077 [US3] Construir `src/app/(tabs)/cartoes/importar-csv/index.tsx` (ImportarCSV): escolher cartão de
+- [X] T077 [US3] Construir `src/app/(tabs)/cartoes/importar-csv/index.tsx` (ImportarCSV): escolher cartão de
       destino + formato + upload via `expo-document-picker`
-- [ ] T078 [US3] Construir `src/app/(tabs)/cartoes/importar-csv/resultado.tsx` (ImportarCSVResultado):
+- [X] T078 [US3] Construir `src/app/(tabs)/cartoes/importar-csv/resultado.tsx` (ImportarCSVResultado):
       contagem de linhas importadas/ignoradas com motivo (FR-026)
-- [ ] T079 [US3] Estender a tela de edição de transação para permitir adicionar tags e comentário a
+- [X] T079 [US3] Estender a tela de edição de transação para permitir adicionar tags e comentário a
       uma transação importada (FR-007)
 
 **Checkpoint**: US3 completa e testável de forma independente.
