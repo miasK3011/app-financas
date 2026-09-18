@@ -12,6 +12,7 @@ import { MoneyInput } from '@/components/MoneyInput';
 import { Screen } from '@/components/Screen';
 import { Stepper } from '@/components/Stepper';
 import { useCards } from '@/hooks/useCards';
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { createCardPurchase, createPixPurchase } from '@/repositories/purchasesRepository';
 
 const formSchema = z
@@ -47,6 +48,7 @@ export default function NovaCompraScreen() {
     categoriaNome?: string;
   }>();
   const { cards } = useCards();
+  const keyboardHeight = useKeyboardHeight();
   const [categoriaId, setCategoriaId] = useState<string | undefined>(params.categoriaId);
   const [categoriaNome, setCategoriaNome] = useState<string | undefined>(params.categoriaNome);
 
@@ -134,7 +136,10 @@ export default function NovaCompraScreen() {
         </Text>
       </XStack>
 
-      <ScrollView contentContainerStyle={{ padding: 20, gap: 18 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingBottom: 20 + keyboardHeight, gap: 18 }}
+        keyboardShouldPersistTaps="handled"
+      >
         <YStack gap="$2">
           <Text fontSize={13} color="$textSecondary">
             Descrição
