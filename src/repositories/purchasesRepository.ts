@@ -20,6 +20,7 @@ import { splitInstallments } from '@/domain/installments/splitInstallments';
 import { computeInvoiceStatus } from '@/domain/invoices/computeInvoiceStatus';
 import { purchaseSchema } from '@/domain/shared/purchaseSchema';
 
+import { matchEstablishmentForDescription } from './establishmentsRepository';
 import { getOrCreateInvoice } from './invoicesRepository';
 import { findOrCreateTag } from './tagsRepository';
 
@@ -60,6 +61,8 @@ export type CreateCardPurchaseInput = {
   valorResponsabilidade?: number;
   motivo?: string;
   responsavel?: string;
+  /** US10/FR-034 — se ausente, tenta matching automático por `matchEstablishmentForDescription`. */
+  estabelecimentoId?: string;
 };
 
 /**
@@ -104,6 +107,11 @@ export async function createCardPurchase(input: CreateCardPurchaseInput): Promis
   });
   const allocations = allocateInstallmentsToInvoices(plan, card, parsed.dataCompra);
 
+  const estabelecimentoId =
+    input.estabelecimentoId ??
+    (await matchEstablishmentForDescription(parsed.descricao)) ??
+    undefined;
+
   const compraId = randomUUID();
   const [purchase] = await db
     .insert(compras)
@@ -118,7 +126,8 @@ export async function createCardPurchase(input: CreateCardPurchaseInput): Promis
       parcelaAtual: parsed.parcelaAtual,
       comentario: input.comentario,
       categoriaId: input.categoriaId,
-      estabelecimentoManual: false,
+      estabelecimentoId,
+      estabelecimentoManual: input.estabelecimentoId !== undefined,
       origem: input.origem ?? 'MANUAL',
       loteImportacaoId: input.loteImportacaoId,
       assinaturaId: input.assinaturaId,
@@ -161,6 +170,8 @@ export type CreatePixPurchaseInput = {
   valorResponsabilidade?: number;
   motivo?: string;
   responsavel?: string;
+  /** US10/FR-034 — se ausente, tenta matching automático por `matchEstablishmentForDescription`. */
+  estabelecimentoId?: string;
 };
 
 /**
@@ -190,6 +201,11 @@ export async function createPixPurchase(input: CreatePixPurchaseInput): Promise<
     [],
   );
 
+  const estabelecimentoId =
+    input.estabelecimentoId ??
+    (await matchEstablishmentForDescription(parsed.descricao)) ??
+    undefined;
+
   const compraId = randomUUID();
   const [purchase] = await db
     .insert(compras)
@@ -204,7 +220,8 @@ export async function createPixPurchase(input: CreatePixPurchaseInput): Promise<
       parcelaAtual: 1,
       comentario: input.comentario,
       categoriaId: input.categoriaId,
-      estabelecimentoManual: false,
+      estabelecimentoId,
+      estabelecimentoManual: input.estabelecimentoId !== undefined,
       origem: input.origem ?? 'MANUAL',
       assinaturaId: input.assinaturaId,
       valorResponsabilidade: input.valorResponsabilidade ?? null,
@@ -328,6 +345,8 @@ export type UpdatePurchaseInput = {
   valorResponsabilidade?: number | null;
   motivo?: string | null;
   responsavel?: string | null;
+  /** US10/FR-034 — associar/remover manualmente; sempre marca `estabelecimentoManual = true`. */
+  estabelecimentoId?: string | null;
 };
 
 /**
@@ -336,9 +355,13 @@ export type UpdatePurchaseInput = {
  * também não — é uma dimensão separada de "quem pagou de fato", que
  * pode mudar mesmo depois da fatura fechar/ser paga (ex.: reembolso
  * recebido depois) — só dispara `recomputeResponsibility` para
- * propagar a mudança às Parcelas já existentes. Uma futura tela de
- * "editar valor/parcelamento" em si (nenhuma existe ainda) deve
- * chamar `hasFrozenInstallments` antes de permitir ESSA edição.
+ * propagar a mudança às Parcelas já existentes. `estabelecimentoId`
+ * definido por esta função é SEMPRE manual (distinto do matching
+ * automático em `createCardPurchase`/`createPixPurchase`) — nunca mais
+ * será sobrescrito por `establishmentsRepository.addPattern` (FR-034).
+ * Uma futura tela de "editar valor/parcelamento" em si (nenhuma existe
+ * ainda) deve chamar `hasFrozenInstallments` antes de permitir ESSA
+ * edição.
  */
 export async function updatePurchase(
   compraId: string,
@@ -351,7 +374,12 @@ export async function updatePurchase(
     }
   }
 
-  await db.update(compras).set(updates).where(eq(compras.id, compraId));
+  const dbUpdates: typeof updates & { estabelecimentoManual?: boolean } = { ...updates };
+  if ('estabelecimentoId' in updates) {
+    dbUpdates.estabelecimentoManual = true;
+  }
+
+  await db.update(compras).set(dbUpdates).where(eq(compras.id, compraId));
 
   if ('valorResponsabilidade' in updates) {
     await recomputeResponsibility(compraId);

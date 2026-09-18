@@ -60,12 +60,20 @@ export default function NovaCompraScreen() {
     formaPagamento?: 'PIX' | 'CARTAO';
     categoriaId?: string;
     categoriaNome?: string;
+    estabelecimentoId?: string;
+    estabelecimentoNome?: string;
   }>();
   const { cards } = useCards();
   const { suggestion: bestCard } = useBestCard();
   const keyboardHeight = useKeyboardHeight();
   const [categoriaId, setCategoriaId] = useState<string | undefined>(params.categoriaId);
   const [categoriaNome, setCategoriaNome] = useState<string | undefined>(params.categoriaNome);
+  const [estabelecimentoId, setEstabelecimentoId] = useState<string | undefined>(
+    params.estabelecimentoId,
+  );
+  const [estabelecimentoNome, setEstabelecimentoNome] = useState<string | undefined>(
+    params.estabelecimentoNome,
+  );
 
   const {
     control,
@@ -101,11 +109,19 @@ export default function NovaCompraScreen() {
     }
   }, [params.categoriaId, params.categoriaNome]);
 
+  useEffect(() => {
+    if (params.estabelecimentoId) {
+      setEstabelecimentoId(params.estabelecimentoId);
+      setEstabelecimentoNome(params.estabelecimentoNome);
+    }
+  }, [params.estabelecimentoId, params.estabelecimentoNome]);
+
   const formaPagamento = watch('formaPagamento');
   const parcelasTotal = watch('parcelasTotal');
   const selectedCartaoId = watch('cartaoId');
   const valorCentavos = watch('valorCentavos');
   const valorResponsabilidade = watch('valorResponsabilidade');
+  const descricaoAtual = watch('descricao');
 
   const onSubmit = handleSubmit(async (data) => {
     const tagNomes = (data.tagsText ?? '')
@@ -127,6 +143,7 @@ export default function NovaCompraScreen() {
         valorResponsabilidade: data.valorResponsabilidade,
         motivo: data.motivo || undefined,
         responsavel: data.responsavel || undefined,
+        estabelecimentoId,
       });
     } else {
       await createPixPurchase({
@@ -139,6 +156,7 @@ export default function NovaCompraScreen() {
         valorResponsabilidade: data.valorResponsabilidade,
         motivo: data.motivo || undefined,
         responsavel: data.responsavel || undefined,
+        estabelecimentoId,
       });
     }
 
@@ -373,6 +391,30 @@ export default function NovaCompraScreen() {
           <XStack alignItems="center" gap="$2">
             <Text fontSize={14.5} fontWeight="600" color="$text">
               {categoriaNome ?? 'Nenhuma'}
+            </Text>
+            <ChevronRight size={16} color="#6C6C6D" />
+          </XStack>
+        </XStack>
+
+        <XStack
+          justifyContent="space-between"
+          alignItems="center"
+          paddingVertical={14}
+          borderTopWidth={1}
+          borderColor="$border"
+          onPress={() =>
+            router.push({
+              pathname: '/cartoes/nova-compra/estabelecimento',
+              params: { descricao: descricaoAtual },
+            })
+          }
+        >
+          <Text fontSize={13} color="$textSecondary">
+            Estabelecimento
+          </Text>
+          <XStack alignItems="center" gap="$2">
+            <Text fontSize={14.5} fontWeight="600" color="$text">
+              {estabelecimentoNome ?? 'Nenhum'}
             </Text>
             <ChevronRight size={16} color="#6C6C6D" />
           </XStack>

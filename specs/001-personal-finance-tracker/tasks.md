@@ -517,41 +517,41 @@ opcional de logotipo (FR-031 a FR-036). Depende de US9 e US3 já existirem.
 
 ### Tests for User Story 10
 
-- [ ] T112 [P] [US10] Testes unitários de `matchEstablishment`, `reevaluateUnassignedTransactions`,
+- [X] T112 [P] [US10] Testes unitários de `matchEstablishment`, `reevaluateUnassignedTransactions`,
       `suggestInitialPattern` em `tests/unit/domain/establishmentMatching.test.ts` — desempate por
       padrão mais longo e depois por `estabelecimentoCriadoEm` mais antigo (Assumption)
 
 ### Implementation for User Story 10
 
-- [ ] T113 [US10] Implementar `src/domain/establishmentMatching/matchEstablishment.ts`,
+- [X] T113 [US10] Implementar `src/domain/establishmentMatching/matchEstablishment.ts`,
       `reevaluateUnassignedTransactions.ts`, `suggestInitialPattern.ts` conforme
       `contracts/establishment-matching.md`
-- [ ] T114 [US10] Implementar `src/repositories/establishmentsRepository.ts`: CRUD de
+- [X] T114 [US10] Implementar `src/repositories/establishmentsRepository.ts`: CRUD de
       Estabelecimento + PadraoReconhecimento; ao adicionar um padrão, chamar
       `reevaluateUnassignedTransactions` e atualizar as Compras retornadas — **nunca sobrescrevendo
       uma associação com `estabelecimentoManual = true`** (FR-034, FR-035)
-- [ ] T115 [US10] Estender `src/repositories/purchasesRepository.ts` e a tela de edição de Compra:
+- [X] T115 [US10] Estender `src/repositories/purchasesRepository.ts` e a tela de edição de Compra:
       permitir associar ou remover manualmente o Estabelecimento de uma transação **já existente**
       (mesmo sem nenhum padrão reconhecido, ou para corrigir uma associação automática incorreta),
       sempre marcando `estabelecimentoManual = true` ao fazer isso — distinto de T118, que é a
       criação de um novo Estabelecimento (FR-034)
-- [ ] T116 [US10] Integrar `matchEstablishment` em `purchasesRepository.createPurchase` e
+- [X] T116 [US10] Integrar `matchEstablishment` em `purchasesRepository.createPurchase` e
       `csvImportRepository` — toda Compra nova ou importada passa pelo matching automático (FR-033)
-- [ ] T117 [US10] Implementar a busca best-effort de logotipo via Brandfetch CDN
+- [X] T117 [US10] Implementar a busca best-effort de logotipo via Brandfetch CDN
       (`https://cdn.brandfetch.io/{domain}`) + cache local via `expo-file-system`, salvando em
       `Estabelecimento.logoCachePath`; falha/timeout/offline **nunca bloqueia** e sempre recai no
       `iconeRespaldo` (FR-036, Princípio I)
-- [ ] T118 [US10] Construir `src/app/(tabs)/mais/estabelecimentos/index.tsx` (EstabelecimentosLista), com
+- [X] T118 [US10] Construir `src/app/(tabs)/mais/estabelecimentos/index.tsx` (EstabelecimentosLista), com
       FAB "+" para novo estabelecimento
-- [ ] T119 [US10] Construir `src/app/(tabs)/mais/estabelecimentos/[establishmentId].tsx`
+- [X] T119 [US10] Construir `src/app/(tabs)/mais/estabelecimentos/[establishmentId].tsx`
       (EstabelecimentoDetalhe) — reutilizada tanto para **criar um novo Estabelecimento** a partir
       do FAB "+" de T118 (FR-031) quanto para editar um existente: nome, ícone de respaldo
       (obrigatório), domínio opcional, lista de padrões
-- [ ] T120 [US10] Construir a criação de estabelecimento inline a partir da edição de uma
+- [X] T120 [US10] Construir a criação de estabelecimento inline a partir da edição de uma
       transação (`src/app/(tabs)/cartoes/nova-compra/estabelecimento.tsx`,
       `NovaCompraEstabelecimento.dc.html`), sugerindo o padrão inicial via `suggestInitialPattern`
       (FR-032)
-- [ ] T121 [US10] Atualizar `TransactionAvatar` (US9) para preferir `logoCachePath` >
+- [X] T121 [US10] Atualizar `TransactionAvatar` (US9) para preferir `logoCachePath` >
       `iconeRespaldo` > categoria > "Outros" (FR-030)
 
 **Checkpoint**: US10 completa e testável de forma independente.

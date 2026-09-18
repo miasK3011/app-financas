@@ -15,6 +15,7 @@ import {
   unlinkCashEntryFromCompra,
 } from '@/repositories/cashEntriesRepository';
 import { type Category, listCategories } from '@/repositories/categoriesRepository';
+import { type Establishment, listEstablishments } from '@/repositories/establishmentsRepository';
 import {
   getPurchase,
   listTagsForCompra,
@@ -36,9 +37,14 @@ export default function EditarTransacaoScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [establishments, setEstablishments] = useState<Establishment[]>([]);
   const [descricao, setDescricao] = useState('');
   const [comentario, setComentario] = useState('');
   const [categoriaId, setCategoriaId] = useState<string | undefined>(undefined);
+  const [estabelecimentoId, setEstabelecimentoId] = useState<string | undefined>(undefined);
+  const [originalEstabelecimentoId, setOriginalEstabelecimentoId] = useState<string | undefined>(
+    undefined,
+  );
   const [tagsText, setTagsText] = useState('');
   const [valorTotalOriginal, setValorTotalOriginal] = useState(0);
   const [valorResponsabilidade, setValorResponsabilidade] = useState<number | null>(null);
@@ -49,18 +55,22 @@ export default function EditarTransacaoScreen() {
       if (!compraId) return;
       (async () => {
         setLoading(true);
-        const [purchase, tagNomes, categoryList, entries] = await Promise.all([
+        const [purchase, tagNomes, categoryList, entries, establishmentList] = await Promise.all([
           getPurchase(compraId),
           listTagsForCompra(compraId),
           listCategories(),
           listCashEntriesLinkedToCompra(compraId),
+          listEstablishments(),
         ]);
         setCategories(categoryList);
         setLinkedEntries(entries);
+        setEstablishments(establishmentList);
         if (purchase) {
           setDescricao(purchase.descricao);
           setComentario(purchase.comentario ?? '');
           setCategoriaId(purchase.categoriaId ?? undefined);
+          setEstabelecimentoId(purchase.estabelecimentoId ?? undefined);
+          setOriginalEstabelecimentoId(purchase.estabelecimentoId ?? undefined);
           setValorTotalOriginal(purchase.valorTotalOriginal);
           setValorResponsabilidade(purchase.valorResponsabilidade);
         }
@@ -93,6 +103,14 @@ export default function EditarTransacaoScreen() {
       descricao,
       categoriaId: categoriaId ?? null,
       comentario: comentario || null,
+      // Só inclui `estabelecimentoId` quando o usuário de fato mexeu
+      // nele — sempre marca `estabelecimentoManual = true`
+      // (`updatePurchase`), então nunca deve ser enviado "por acaso"
+      // num save que só mudou outro campo, ou perderíamos o matching
+      // automático desta Compra para sempre (FR-034).
+      ...(estabelecimentoId !== originalEstabelecimentoId
+        ? { estabelecimentoId: estabelecimentoId ?? null }
+        : {}),
     });
     await setPurchaseTags(compraId, tagNomes);
     setSaving(false);
@@ -154,6 +172,40 @@ export default function EditarTransacaoScreen() {
                   icon={<Icon size={16} color={selected ? 'white' : '#1C1C1E'} />}
                 >
                   {category.nome}
+                </Button>
+              );
+            })}
+          </XStack>
+        </YStack>
+
+        <YStack gap="$2">
+          <Text fontSize={13} color="$textSecondary">
+            Estabelecimento
+          </Text>
+          <XStack flexWrap="wrap" gap="$2">
+            <Button
+              onPress={() => setEstabelecimentoId(undefined)}
+              size="$3"
+              backgroundColor={estabelecimentoId === undefined ? '$primary' : '$surface'}
+              color={estabelecimentoId === undefined ? 'white' : '$text'}
+              borderColor="$border"
+              borderWidth={1}
+            >
+              Nenhum
+            </Button>
+            {establishments.map((establishment) => {
+              const selected = estabelecimentoId === establishment.id;
+              return (
+                <Button
+                  key={establishment.id}
+                  onPress={() => setEstabelecimentoId(establishment.id)}
+                  size="$3"
+                  backgroundColor={selected ? '$primary' : '$surface'}
+                  color={selected ? 'white' : '$text'}
+                  borderColor="$border"
+                  borderWidth={1}
+                >
+                  {establishment.nomeExibicao}
                 </Button>
               );
             })}
