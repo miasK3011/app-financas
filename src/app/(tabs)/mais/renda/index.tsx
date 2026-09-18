@@ -2,11 +2,11 @@ import { useRouter } from 'expo-router';
 import { ChevronLeft, Plus, Trash2 } from 'lucide-react-native';
 import { useState } from 'react';
 import { ActivityIndicator } from 'react-native';
-import { Button, Input, ScrollView, Text, XStack, YStack } from 'tamagui';
+import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { Money } from '@/components/Money';
+import { MoneyInput } from '@/components/MoneyInput';
 import { Screen } from '@/components/Screen';
-import { reaisToCents } from '@/domain/shared/money';
 import { useIncome } from '@/hooks/useIncome';
 import { useMonthBalance } from '@/hooks/useMonthBalance';
 
@@ -19,17 +19,16 @@ export default function RendaScreen() {
   const { income, loading: incomeLoading, updateIncome } = useIncome(year, month);
   const { balance, entries, hasIncome, loading, removeEntry } = useMonthBalance(year, month);
   const [editingIncome, setEditingIncome] = useState(false);
-  const [incomeInput, setIncomeInput] = useState('');
+  const [incomeInput, setIncomeInput] = useState<number | undefined>(undefined);
 
   const isEmpty = !hasIncome && entries.length === 0;
 
   const handleSaveIncome = async () => {
-    const value = Number(incomeInput.replace(',', '.'));
-    if (!Number.isNaN(value) && value > 0) {
-      await updateIncome(reaisToCents(value), new Date());
+    if (incomeInput !== undefined && incomeInput > 0) {
+      await updateIncome(incomeInput, new Date());
     }
     setEditingIncome(false);
-    setIncomeInput('');
+    setIncomeInput(undefined);
   };
 
   return (
@@ -84,12 +83,10 @@ export default function RendaScreen() {
           </Text>
           {editingIncome ? (
             <XStack gap="$2" alignItems="center">
-              <Input
+              <MoneyInput
                 flex={1}
                 value={incomeInput}
-                onChangeText={setIncomeInput}
-                placeholder="Ex.: 3000"
-                keyboardType="decimal-pad"
+                onChangeValue={setIncomeInput}
                 borderColor="$border"
                 borderRadius="$md"
                 autoFocus

@@ -4,13 +4,13 @@ import { Controller, useForm } from 'react-hook-form';
 import { Button, Input, Text, YStack } from 'tamagui';
 import { z } from 'zod';
 
+import { MoneyInput } from '@/components/MoneyInput';
 import { Screen } from '@/components/Screen';
-import { reaisToCents } from '@/domain/shared/money';
 import { useMonthBalance } from '@/hooks/useMonthBalance';
 
 const formSchema = z.object({
   descricao: z.string().min(1),
-  valorReais: z.number().positive(),
+  valorCentavos: z.number().int().positive(),
 });
 
 export default function NovaEntradaAvulsaScreen() {
@@ -24,13 +24,13 @@ export default function NovaEntradaAvulsaScreen() {
     formState: { errors, isSubmitting },
   } = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { descricao: '', valorReais: undefined },
+    defaultValues: { descricao: '', valorCentavos: undefined },
   });
 
   const onSubmit = handleSubmit(async (data) => {
     await addEntry({
       descricao: data.descricao,
-      valor: reaisToCents(data.valorReais),
+      valor: data.valorCentavos,
       data: new Date(),
     });
     router.back();
@@ -73,21 +73,17 @@ export default function NovaEntradaAvulsaScreen() {
           </Text>
           <Controller
             control={control}
-            name="valorReais"
+            name="valorCentavos"
             render={({ field }) => (
-              <Input
-                value={field.value === undefined ? '' : String(field.value)}
-                onChangeText={(text) =>
-                  field.onChange(text === '' ? undefined : Number(text.replace(',', '.')))
-                }
-                placeholder="Ex.: 200"
-                keyboardType="decimal-pad"
+              <MoneyInput
+                value={field.value}
+                onChangeValue={field.onChange}
                 borderColor="$border"
                 borderRadius="$md"
               />
             )}
           />
-          {errors.valorReais && (
+          {errors.valorCentavos && (
             <Text fontSize={12} color="$error">
               Informe um valor maior que zero
             </Text>

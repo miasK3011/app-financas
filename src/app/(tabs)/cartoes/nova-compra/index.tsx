@@ -6,16 +6,17 @@ import { Controller, useForm } from 'react-hook-form';
 import { Button, Input, ScrollView, Text, XStack, YStack } from 'tamagui';
 import { z } from 'zod';
 
+import { DateField } from '@/components/DateField';
+import { MoneyInput } from '@/components/MoneyInput';
 import { Screen } from '@/components/Screen';
-import { reaisToCents } from '@/domain/shared/money';
 import { useCards } from '@/hooks/useCards';
 import { createCardPurchase, createPixPurchase } from '@/repositories/purchasesRepository';
 
 const formSchema = z
   .object({
     descricao: z.string().min(1),
-    valorReais: z.number().positive(),
-    dataCompra: z.string().min(1),
+    valorCentavos: z.number().int().positive(),
+    dataCompra: z.date(),
     formaPagamento: z.enum(['PIX', 'CARTAO']),
     cartaoId: z.string().optional(),
     parcelasTotal: z.number().int().min(1),
@@ -33,16 +34,6 @@ const formSchema = z
   });
 
 type FormValues = z.infer<typeof formSchema>;
-
-function todayAsBR(): string {
-  const today = new Date();
-  return `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
-}
-
-function parseBRDate(value: string): Date {
-  const [day, month, year] = value.split('/').map(Number);
-  return new Date(year, (month ?? 1) - 1, day ?? 1);
-}
 
 export default function NovaCompraScreen() {
   const router = useRouter();
@@ -67,8 +58,8 @@ export default function NovaCompraScreen() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       descricao: '',
-      valorReais: undefined,
-      dataCompra: todayAsBR(),
+      valorCentavos: undefined,
+      dataCompra: new Date(),
       formaPagamento: params.formaPagamento ?? (params.cartaoId ? 'CARTAO' : 'PIX'),
       cartaoId: params.cartaoId,
       parcelasTotal: 1,
@@ -100,8 +91,8 @@ export default function NovaCompraScreen() {
     if (data.formaPagamento === 'CARTAO') {
       await createCardPurchase({
         descricao: data.descricao,
-        valorTotalOriginal: reaisToCents(data.valorReais),
-        dataCompra: parseBRDate(data.dataCompra),
+        valorTotalOriginal: data.valorCentavos,
+        dataCompra: data.dataCompra,
         cartaoId: data.cartaoId!,
         parcelasTotal: data.parcelasTotal,
         parcelaAtual: data.parcelaAtual,
@@ -112,8 +103,8 @@ export default function NovaCompraScreen() {
     } else {
       await createPixPurchase({
         descricao: data.descricao,
-        valorTotalOriginal: reaisToCents(data.valorReais),
-        dataCompra: parseBRDate(data.dataCompra),
+        valorTotalOriginal: data.valorCentavos,
+        dataCompra: data.dataCompra,
         categoriaId,
         comentario: data.comentario || undefined,
         tagNomes,
@@ -172,21 +163,17 @@ export default function NovaCompraScreen() {
             </Text>
             <Controller
               control={control}
-              name="valorReais"
+              name="valorCentavos"
               render={({ field }) => (
-                <Input
-                  value={field.value === undefined ? '' : String(field.value)}
-                  onChangeText={(text) =>
-                    field.onChange(text === '' ? undefined : Number(text.replace(',', '.')))
-                  }
-                  placeholder="Ex.: 70"
-                  keyboardType="decimal-pad"
+                <MoneyInput
+                  value={field.value}
+                  onChangeValue={field.onChange}
                   borderColor="$border"
                   borderRadius="$md"
                 />
               )}
             />
-            {errors.valorReais && (
+            {errors.valorCentavos && (
               <Text fontSize={12} color="$error">
                 Valor inválido
               </Text>
@@ -201,10 +188,9 @@ export default function NovaCompraScreen() {
               control={control}
               name="dataCompra"
               render={({ field }) => (
-                <Input
+                <DateField
                   value={field.value}
-                  onChangeText={field.onChange}
-                  placeholder="DD/MM/AAAA"
+                  onChangeValue={field.onChange}
                   borderColor="$border"
                   borderRadius="$md"
                 />
