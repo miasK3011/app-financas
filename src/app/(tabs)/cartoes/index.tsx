@@ -5,6 +5,7 @@ import { Button, Card, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { Money } from '@/components/Money';
 import { Screen } from '@/components/Screen';
+import { useBestCard } from '@/hooks/useBestCard';
 import { useCards } from '@/hooks/useCards';
 import { useOpenInvoicesTotal } from '@/hooks/useInvoice';
 
@@ -12,6 +13,8 @@ export default function CartoesScreen() {
   const router = useRouter();
   const { cards, loading: cardsLoading } = useCards(true);
   const { total, loading: totalLoading } = useOpenInvoicesTotal();
+  const { suggestion: bestCard } = useBestCard();
+  const bestCardName = cards.find((card) => card.id === bestCard?.cardId)?.nome;
 
   return (
     <Screen>
@@ -36,6 +39,21 @@ export default function CartoesScreen() {
             <Money cents={total} fontSize={32} fontWeight="600" color="$text" marginTop="$2" />
           )}
         </Card>
+
+        {bestCard && bestCardName && (
+          <Card
+            backgroundColor="$infoBg"
+            borderColor="$border"
+            borderWidth={1}
+            borderRadius="$lg"
+            padding={16}
+          >
+            <Text fontSize={13} color="$infoDark">
+              Melhor cartão para comprar hoje: <Text fontWeight="700">{bestCardName}</Text> (vence
+              em {bestCard.daysUntilDue} dias)
+            </Text>
+          </Card>
+        )}
 
         <Button
           onPress={() => router.push('/cartoes/importar-csv')}

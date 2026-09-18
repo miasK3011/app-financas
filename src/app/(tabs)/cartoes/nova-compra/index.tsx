@@ -11,6 +11,7 @@ import { DateField } from '@/components/DateField';
 import { MoneyInput } from '@/components/MoneyInput';
 import { Screen } from '@/components/Screen';
 import { Stepper } from '@/components/Stepper';
+import { useBestCard } from '@/hooks/useBestCard';
 import { useCards } from '@/hooks/useCards';
 import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { createCardPurchase, createPixPurchase } from '@/repositories/purchasesRepository';
@@ -48,6 +49,7 @@ export default function NovaCompraScreen() {
     categoriaNome?: string;
   }>();
   const { cards } = useCards();
+  const { suggestion: bestCard } = useBestCard();
   const keyboardHeight = useKeyboardHeight();
   const [categoriaId, setCategoriaId] = useState<string | undefined>(params.categoriaId);
   const [categoriaNome, setCategoriaNome] = useState<string | undefined>(params.categoriaNome);
@@ -255,6 +257,32 @@ export default function NovaCompraScreen() {
                 <Text fontSize={12} color="$error">
                   Selecione um cartão
                 </Text>
+              )}
+              {cards.length > 1 && bestCard && bestCard.cardId !== selectedCartaoId && (
+                <XStack
+                  alignItems="center"
+                  justifyContent="space-between"
+                  backgroundColor="$infoBg"
+                  borderRadius="$md"
+                  paddingHorizontal={12}
+                  paddingVertical={10}
+                  marginTop="$1"
+                >
+                  <Text fontSize={12} color="$infoDark" flex={1}>
+                    Melhor hoje:{' '}
+                    {cards.find((card) => card.id === bestCard.cardId)?.nome ?? 'outro cartão'}{' '}
+                    (vence em {bestCard.daysUntilDue} dias)
+                  </Text>
+                  <Button
+                    onPress={() => setValue('cartaoId', bestCard.cardId)}
+                    size="$2"
+                    chromeless
+                    color="$infoDark"
+                    fontWeight="700"
+                  >
+                    Usar
+                  </Button>
+                </XStack>
               )}
             </YStack>
 

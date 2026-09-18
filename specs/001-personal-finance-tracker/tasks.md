@@ -361,13 +361,13 @@ FR-037) — pré-requisito visual para US10 e US11.
 
 **Independent Test**: conforme spec.md → User Story 5.
 
-- [ ] T080 [P] [US5] Testes unitários de `suggestBestCard` em `tests/unit/domain/bestCard.test.ts`:
+- [X] T080 [P] [US5] Testes unitários de `suggestBestCard` em `tests/unit/domain/bestCard.test.ts`:
       dois cartões com ciclos diferentes, cartão arquivado excluído do ranking (FR-025), empate
       exato resolvido por `criadoEm` mais antigo
-- [ ] T081 [US5] Implementar `src/domain/bestCard/suggestBestCard.ts` conforme
+- [X] T081 [US5] Implementar `src/domain/bestCard/suggestBestCard.ts` conforme
       `contracts/best-card.md`
-- [ ] T082 [P] [US5] Implementar o hook `src/hooks/useBestCard.ts`
-- [ ] T083 [US5] Exibir a sugestão de melhor cartão na tela `src/app/(tabs)/inicio/index.tsx` (Início) e/ou no
+- [X] T082 [P] [US5] Implementar o hook `src/hooks/useBestCard.ts`
+- [X] T083 [US5] Exibir a sugestão de melhor cartão na tela `src/app/(tabs)/inicio/index.tsx` (Início) e/ou no
       fluxo de Nova Compra, conforme `design-brief.md`
 
 **Checkpoint**: US5 completa e testável de forma independente.
