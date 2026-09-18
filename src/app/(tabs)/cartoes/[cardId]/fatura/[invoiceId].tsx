@@ -6,6 +6,7 @@ import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 import { Money } from '@/components/Money';
 import { Screen } from '@/components/Screen';
 import { StatusBadge } from '@/components/StatusBadge';
+import { TransactionAvatar } from '@/components/TransactionAvatar';
 import { useInvoice, useInvoicePurchases } from '@/hooks/useInvoice';
 
 const MONTH_NAMES = [
@@ -114,7 +115,12 @@ export default function FaturaDetalheScreen() {
                 borderColor="$border"
                 justifyContent="space-between"
                 alignItems="center"
+                gap="$3"
               >
+                <TransactionAvatar
+                  estabelecimento={row.estabelecimento}
+                  categoria={row.categoria}
+                />
                 <YStack flex={1}>
                   <Text fontSize={14.5} fontWeight="600" color="$text">
                     {row.compra.descricao}

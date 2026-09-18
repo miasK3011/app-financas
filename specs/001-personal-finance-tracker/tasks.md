@@ -298,16 +298,16 @@ FR-037) — pré-requisito visual para US10 e US11.
 
 **Independent Test**: conforme spec.md → User Story 9.
 
-- [ ] T067 [P] [US9] Implementar `src/repositories/categoriesRepository.ts`: CRUD de Categoria
+- [X] T067 [P] [US9] Implementar `src/repositories/categoriesRepository.ts`: CRUD de Categoria
       personalizada; `deleteCategory` atualiza em lote `Compra.categoriaId = NULL` para todas as
       compras que a usavam (FR-037); nunca permite excluir uma Categoria com `predefinida = true`
-- [ ] T068 [US9] Estender o formulário de Nova Compra (`src/app/(tabs)/cartoes/nova-compra/index.tsx`)
+- [X] T068 [US9] Estender o formulário de Nova Compra (`src/app/(tabs)/cartoes/nova-compra/index.tsx`)
       para permitir escolher uma Categoria (predefinida ou personalizada) — campo opcional (FR-029)
-- [ ] T069 [US9] Construir `src/app/(tabs)/mais/categorias/index.tsx` (Categorias · Main): lista de
+- [X] T069 [US9] Construir `src/app/(tabs)/mais/categorias/index.tsx` (Categorias · Main): lista de
       predefinidas + personalizadas
-- [ ] T070 [US9] Construir `src/app/(tabs)/mais/categorias/nova.tsx` (CategoriaCriar): nome + escolha de
+- [X] T070 [US9] Construir `src/app/(tabs)/mais/categorias/nova.tsx` (CategoriaCriar): nome + escolha de
       ícone lucide entre os disponíveis (FR-028)
-- [ ] T071 [P] [US9] Implementar `src/components/TransactionAvatar.tsx` com a ordem de prioridade
+- [X] T071 [P] [US9] Implementar `src/components/TransactionAvatar.tsx` com a ordem de prioridade
       **estabelecimento → categoria → ícone genérico "Outros"** (FR-030), para reuso em toda
       listagem de transações
 

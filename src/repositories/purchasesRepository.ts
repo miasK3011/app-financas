@@ -2,7 +2,15 @@ import { and, eq, gte, lt } from 'drizzle-orm';
 import { randomUUID } from 'expo-crypto';
 
 import { db } from '@/db/client';
-import { cartoes, compraTags, compras, faturas, parcelas } from '@/db/schema';
+import {
+  cartoes,
+  categorias,
+  compraTags,
+  compras,
+  estabelecimentos,
+  faturas,
+  parcelas,
+} from '@/db/schema';
 import { allocateInstallmentsToInvoices } from '@/domain/installments/allocateInstallmentsToInvoices';
 import { splitInstallments } from '@/domain/installments/splitInstallments';
 import { computeInvoiceStatus } from '@/domain/invoices/computeInvoiceStatus';
@@ -188,26 +196,49 @@ export type InvoicePurchaseRow = {
   valor: number;
   valorResponsabilidade: number;
   compra: Purchase;
+  /** Para `TransactionAvatar` (FR-030) — `null` até a Compra ter uma categoria. */
+  categoria: { icone: string } | null;
+  /** Idem — sempre `null` até a User Story 10 existir. */
+  estabelecimento: { logoCachePath: string | null; iconeRespaldo: string } | null;
 };
 
 /**
  * Compras (via sua Parcela) alocadas em uma Fatura específica — usado
  * pela tela Fatura · Detalhe. `valor`/`valorResponsabilidade` vêm da
  * Parcela (o que de fato recai nesta fatura), o resto vem da Compra.
+ * `categoria`/`estabelecimento` vêm via left join só para alimentar
+ * `TransactionAvatar` sem uma segunda consulta por linha.
  */
 export async function listPurchasesForInvoice(invoiceId: string): Promise<InvoicePurchaseRow[]> {
   const rows = await db
-    .select({ parcela: parcelas, compra: compras })
+    .select({
+      parcela: parcelas,
+      compra: compras,
+      categoria: { icone: categorias.icone },
+      estabelecimento: {
+        logoCachePath: estabelecimentos.logoCachePath,
+        iconeRespaldo: estabelecimentos.iconeRespaldo,
+      },
+    })
     .from(parcelas)
     .innerJoin(compras, eq(parcelas.compraId, compras.id))
+    .leftJoin(categorias, eq(compras.categoriaId, categorias.id))
+    .leftJoin(estabelecimentos, eq(compras.estabelecimentoId, estabelecimentos.id))
     .where(eq(parcelas.faturaId, invoiceId));
 
-  return rows.map(({ parcela, compra }) => ({
+  return rows.map(({ parcela, compra, categoria, estabelecimento }) => ({
     parcelaId: parcela.id,
     numero: parcela.numero,
     valor: parcela.valor,
     valorResponsabilidade: parcela.valorResponsabilidade,
     compra,
+    categoria: categoria?.icone ? { icone: categoria.icone } : null,
+    estabelecimento: estabelecimento?.iconeRespaldo
+      ? {
+          logoCachePath: estabelecimento.logoCachePath,
+          iconeRespaldo: estabelecimento.iconeRespaldo,
+        }
+      : null,
   }));
 }
 
