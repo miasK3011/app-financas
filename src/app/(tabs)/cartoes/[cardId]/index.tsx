@@ -55,9 +55,18 @@ export default function CartaoFaturasScreen() {
     );
   };
 
-  const sortedInvoices = [...invoices].sort(
-    (a, b) => b.referenciaAno - a.referenciaAno || b.referenciaMes - a.referenciaMes,
-  );
+  // Faturas "FUTURA" (parcelas já alocadas em meses que nem começaram
+  // a fechar) vão para o fim da lista, da mais próxima para a mais
+  // distante — as demais (ABERTA/FECHADA/PAGA) ficam no topo, da mais
+  // recente para a mais antiga.
+  const sortedInvoices = [...invoices].sort((a, b) => {
+    const aFutura = a.status === 'FUTURA';
+    const bFutura = b.status === 'FUTURA';
+    if (aFutura !== bFutura) return aFutura ? 1 : -1;
+
+    const order = b.referenciaAno - a.referenciaAno || b.referenciaMes - a.referenciaMes;
+    return aFutura ? -order : order;
+  });
 
   return (
     <Screen>

@@ -1,6 +1,7 @@
 import { computeInvoiceDates } from '@/domain/invoices/computeInvoiceDates';
 import { computeInvoiceStatus } from '@/domain/invoices/computeInvoiceStatus';
 import { computeInvoiceTotals } from '@/domain/invoices/computeInvoiceTotals';
+import { demoteFutureOpenInvoices } from '@/domain/invoices/demoteFutureOpenInvoices';
 import { resolveInvoicePeriod } from '@/domain/invoices/resolveInvoicePeriod';
 
 describe('resolveInvoicePeriod', () => {
@@ -92,6 +93,39 @@ describe('computeInvoiceStatus', () => {
       new Date(2026, 9, 10),
     );
     expect(status).toBe('ABERTA');
+  });
+});
+
+describe('demoteFutureOpenInvoices', () => {
+  it('keeps only the earliest-closing ABERTA invoice per card as ABERTA, demoting the rest to FUTURA', () => {
+    const result = demoteFutureOpenInvoices([
+      { id: '1', cartaoId: 'c1', dataFechamento: new Date(2026, 9, 10), status: 'ABERTA' },
+      { id: '2', cartaoId: 'c1', dataFechamento: new Date(2026, 10, 10), status: 'ABERTA' },
+      { id: '3', cartaoId: 'c1', dataFechamento: new Date(2026, 11, 10), status: 'ABERTA' },
+    ]);
+    expect(result.map((invoice) => invoice.status)).toEqual(['ABERTA', 'FUTURA', 'FUTURA']);
+  });
+
+  it('does not touch FECHADA/PAGA invoices, and treats each card independently', () => {
+    const result = demoteFutureOpenInvoices([
+      { id: '1', cartaoId: 'c1', dataFechamento: new Date(2026, 8, 10), status: 'FECHADA' },
+      { id: '2', cartaoId: 'c1', dataFechamento: new Date(2026, 9, 10), status: 'ABERTA' },
+      { id: '3', cartaoId: 'c2', dataFechamento: new Date(2026, 9, 10), status: 'ABERTA' },
+      { id: '4', cartaoId: 'c2', dataFechamento: new Date(2026, 10, 10), status: 'ABERTA' },
+    ]);
+    expect(result.map((invoice) => invoice.status)).toEqual([
+      'FECHADA',
+      'ABERTA',
+      'ABERTA',
+      'FUTURA',
+    ]);
+  });
+
+  it('is a no-op when a card has a single open invoice', () => {
+    const result = demoteFutureOpenInvoices([
+      { id: '1', cartaoId: 'c1', dataFechamento: new Date(2026, 9, 10), status: 'ABERTA' },
+    ]);
+    expect(result[0].status).toBe('ABERTA');
   });
 });
 

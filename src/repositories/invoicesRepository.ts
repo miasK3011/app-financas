@@ -6,6 +6,7 @@ import { cartoes, faturas, parcelas } from '@/db/schema';
 import { computeInvoiceDates } from '@/domain/invoices/computeInvoiceDates';
 import { computeInvoiceStatus, type InvoiceStatus } from '@/domain/invoices/computeInvoiceStatus';
 import { computeInvoiceTotals } from '@/domain/invoices/computeInvoiceTotals';
+import { demoteFutureOpenInvoices } from '@/domain/invoices/demoteFutureOpenInvoices';
 
 export type Invoice = typeof faturas.$inferSelect;
 
@@ -67,7 +68,8 @@ export async function listInvoicesForCardWithTotals(
   today: Date = new Date(),
 ): Promise<InvoiceWithTotals[]> {
   const rows = await listInvoicesForCard(cardId);
-  return Promise.all(rows.map((invoice) => withTotals(invoice, today)));
+  const withStatus = await Promise.all(rows.map((invoice) => withTotals(invoice, today)));
+  return demoteFutureOpenInvoices(withStatus);
 }
 
 export async function getInvoice(invoiceId: string): Promise<Invoice | undefined> {
@@ -76,15 +78,19 @@ export async function getInvoice(invoiceId: string): Promise<Invoice | undefined
 }
 
 /**
- * Fatura + status derivado + totais agregados das suas Parcelas
- * (FR-011, FR-053) — nunca uma coluna própria, sempre somado na hora.
+ * Fatura + status derivado (já com `demoteFutureOpenInvoices` — ver
+ * `listInvoicesForCardWithTotals`) + totais agregados das suas
+ * Parcelas (FR-011, FR-053) — nunca uma coluna própria, sempre somado
+ * na hora.
  */
 export async function getInvoiceWithTotals(
   invoiceId: string,
   today: Date = new Date(),
 ): Promise<InvoiceWithTotals | undefined> {
   const invoice = await getInvoice(invoiceId);
-  return invoice ? withTotals(invoice, today) : undefined;
+  if (!invoice) return undefined;
+  const cardInvoices = await listInvoicesForCardWithTotals(invoice.cartaoId, today);
+  return cardInvoices.find((item) => item.id === invoiceId);
 }
 
 export async function markInvoiceAsPaid(invoiceId: string): Promise<void> {
@@ -94,7 +100,7 @@ export async function markInvoiceAsPaid(invoiceId: string): Promise<void> {
     .where(eq(faturas.id, invoiceId));
 }
 
-export type InvoiceWithTotals = Invoice & {
+export type InvoiceWithTotals = Omit<Invoice, 'status'> & {
   status: InvoiceStatus;
   total: number;
   totalResponsabilidade: number;
@@ -107,16 +113,19 @@ async function withTotals(invoice: Invoice, today: Date): Promise<InvoiceWithTot
 }
 
 /**
- * Todas as faturas ainda não pagas (`ABERTA` ou `FECHADA` na exibição),
- * de todos os cartões — base do card "Total das faturas abertas" em
- * Cartões · Main.
+ * Todas as faturas ainda não pagas e já em andamento (`ABERTA` ou
+ * `FECHADA` na exibição), de todos os cartões — base do card "Total
+ * das faturas abertas" em Cartões · Main. Exclui `FUTURA` (faturas de
+ * parcelas ainda não iniciadas, ver `demoteFutureOpenInvoices`) — elas
+ * ainda não devem contar como gasto em aberto.
  */
 export async function listOpenInvoicesWithTotals(
   today: Date = new Date(),
 ): Promise<InvoiceWithTotals[]> {
   const allInvoices = await db.select().from(faturas);
   const withStatus = await Promise.all(allInvoices.map((invoice) => withTotals(invoice, today)));
-  return withStatus.filter((invoice) => invoice.status !== 'PAGA');
+  const demoted = demoteFutureOpenInvoices(withStatus);
+  return demoted.filter((invoice) => invoice.status !== 'PAGA' && invoice.status !== 'FUTURA');
 }
 
 /**
