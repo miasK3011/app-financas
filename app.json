@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "app-financas",
-    "slug": "app-financas",
+    "name": "Trocadin",
+    "slug": "trocadin-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -11,6 +11,7 @@
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "package": "com.neemiascalebe.trocadin",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -40,6 +41,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f76a670d-bece-4d88-8537-9e2fd6ec2f0b"
+      }
+    },
+    "owner": "trocadin"
   }
 }
