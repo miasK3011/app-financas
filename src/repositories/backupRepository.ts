@@ -1,5 +1,6 @@
 import * as DocumentPicker from 'expo-document-picker';
 import { File, Paths } from 'expo-file-system';
+import { readAsStringAsync } from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 
 import { db } from '@/db/client';
@@ -137,11 +138,18 @@ export async function exportBackupToFile(): Promise<void> {
  * usuário cancelar — a validação em si (`readAndValidateBackupFile`)
  * fica separada para a tela `BackupConfirmar` poder rodá-la de novo
  * sem reabrir o seletor.
+ *
+ * `copyToCacheDirectory: false` é deliberado: em testes reais no
+ * dispositivo, a cópia para o cache (o padrão) produziu um arquivo sem
+ * permissão de leitura para o próprio app rodando via Expo Go (`file
+ * isn't readable`, tanto na API nova quanto na legada de
+ * expo-file-system — bug da cópia em si, não de qual API lê depois).
+ * Ler direto da URI original do seletor evita essa cópia problemática.
  */
 export async function pickBackupFileUri(): Promise<string | null> {
   const result = await DocumentPicker.getDocumentAsync({
     type: 'application/json',
-    copyToCacheDirectory: true,
+    copyToCacheDirectory: false,
   });
   if (result.canceled || !result.assets?.[0]) {
     return null;
@@ -150,17 +158,81 @@ export async function pickBackupFileUri(): Promise<string | null> {
 }
 
 /**
+ * Bug conhecido do Android (não específico deste app): ao escolher um
+ * arquivo pelo atalho rápido "Downloads" na lateral do seletor de
+ * arquivos do sistema, o Android às vezes devolve uma URI no formato
+ * `content://com.android.providers.downloads.documents/document/msf:…`
+ * que nenhum app consegue reabrir depois — nem a API nova nem a legada
+ * do `expo-file-system` — porque o próprio `DownloadStorageProvider`
+ * recusa o acesso ("Permission Denial… requires ACTION_OPEN_DOCUMENT").
+ * O contorno é sempre do lado do usuário: escolher o arquivo navegando
+ * até "Este dispositivo" (ou um app gerenciador de arquivos) em vez do
+ * atalho "Downloads".
+ */
+function isKnownDownloadsShortcutBug(uri: string): boolean {
+  return uri.includes('com.android.providers.downloads.documents') && uri.includes('msf:');
+}
+
+/**
+ * Lê o conteúdo textual de uma URI de arquivo. Tenta a API nova
+ * (`File.text()`) primeiro; alguns provedores de arquivo do Android
+ * devolvem uma URI `content://` que a API nova ainda não lê de forma
+ * confiável em todo fabricante/versão — cai para a API legada
+ * (`expo-file-system/legacy`, ainda mantida e testada há anos com
+ * exatamente esse tipo de URI) se a primeira tentativa falhar.
+ */
+async function readFileText(uri: string): Promise<string> {
+  try {
+    return await new File(uri).text();
+  } catch (newApiError) {
+    try {
+      return await readAsStringAsync(uri);
+    } catch (legacyApiError) {
+      if (isKnownDownloadsShortcutBug(uri)) {
+        throw new Error(
+          'Este arquivo foi selecionado pelo atalho "Downloads" do seletor do Android, que tem ' +
+            'um bug conhecido do sistema e impede a leitura por qualquer app. Tente selecionar ' +
+            'o arquivo de novo navegando até "Este dispositivo" → pasta Download (ou por um ' +
+            'app gerenciador de arquivos), em vez do atalho rápido "Downloads".',
+        );
+      }
+      throw new Error(
+        `${(newApiError as Error).message} / ${(legacyApiError as Error).message}`,
+      );
+    }
+  }
+}
+
+/**
  * T064, parte 2: lê e valida o conteúdo de um arquivo de backup ANTES
  * de qualquer escrita no banco — nunca tenta "consertar" um arquivo
- * malformado (contracts/backup.md).
+ * malformado (contracts/backup.md). Erros de leitura e de parsing são
+ * reportados com mensagens distintas e com o motivo original do
+ * sistema operacional, para dar um diagnóstico acionável em vez de um
+ * "arquivo inválido" genérico.
  */
 export async function readAndValidateBackupFile(uri: string): Promise<ValidateBackupResult> {
+  let text: string;
+  try {
+    text = await readFileText(uri);
+  } catch (error) {
+    console.error('[backup] falha ao ler arquivo selecionado', uri, error);
+    return {
+      valid: false,
+      reason: `Não foi possível ler o arquivo selecionado: ${(error as Error).message}`,
+    };
+  }
+
   let raw: unknown;
   try {
-    const text = await new File(uri).text();
     raw = JSON.parse(text);
-  } catch {
-    return { valid: false, reason: 'Não foi possível ler o arquivo selecionado como JSON' };
+  } catch (error) {
+    console.error('[backup] falha ao interpretar o JSON do arquivo', error);
+    return {
+      valid: false,
+      reason: `O arquivo selecionado não é um JSON válido: ${(error as Error).message}`,
+    };
   }
+
   return validateBackupFile(raw);
 }
