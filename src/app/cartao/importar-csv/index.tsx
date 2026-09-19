@@ -44,7 +44,7 @@ export default function ImportarCsvScreen() {
     try {
       const result = await importCsv(cartaoId, formato, pickedFile.name, pickedFile.text);
       router.replace({
-        pathname: '/cartoes/importar-csv/resultado',
+        pathname: '/cartao/importar-csv/resultado',
         params: {
           totalLinhas: String(result.totalLinhas),
           linhasImportadas: String(result.linhasImportadas),
