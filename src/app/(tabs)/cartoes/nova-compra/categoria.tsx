@@ -28,7 +28,11 @@ export default function NovaCompraCategoriaScreen() {
   const handleSelect = (category: Category) => {
     router.dismissTo({
       pathname: '/cartoes/nova-compra',
-      params: { categoriaId: category.id, categoriaNome: category.nome },
+      params: {
+        categoriaId: category.id,
+        categoriaNome: category.nome,
+        categoriaIcone: category.icone,
+      },
     });
   };
 

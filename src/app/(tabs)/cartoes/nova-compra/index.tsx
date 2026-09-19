@@ -1,6 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+import * as LucideIcons from 'lucide-react-native';
+import { ChevronRight, CircleCheck, Shapes, X } from 'lucide-react-native';
+import type { ComponentType } from 'react';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
@@ -9,6 +11,7 @@ import { z } from 'zod';
 import { AppInput } from '@/components/AppInput';
 import { DateField } from '@/components/DateField';
 import { FormCard } from '@/components/FormCard';
+import { IconAvatar } from '@/components/IconAvatar';
 import { Money } from '@/components/Money';
 import { MoneyInput } from '@/components/MoneyInput';
 import { Screen } from '@/components/Screen';
@@ -19,7 +22,14 @@ import { requiresMotivoResponsavelFields } from '@/domain/expenseSplitting/requi
 import { useBestCard } from '@/hooks/useBestCard';
 import { useCards } from '@/hooks/useCards';
 import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
+import {
+  getEstablishment,
+  matchEstablishmentForDescription,
+} from '@/repositories/establishmentsRepository';
 import { createCardPurchase, createPixPurchase } from '@/repositories/purchasesRepository';
+
+type IconProps = { size?: number; color?: string };
+const icons = LucideIcons as unknown as Record<string, ComponentType<IconProps>>;
 
 const formSchema = z
   .object({
@@ -64,6 +74,7 @@ export default function NovaCompraScreen() {
     formaPagamento?: 'PIX' | 'CARTAO';
     categoriaId?: string;
     categoriaNome?: string;
+    categoriaIcone?: string;
     estabelecimentoId?: string;
     estabelecimentoNome?: string;
   }>();
@@ -72,12 +83,20 @@ export default function NovaCompraScreen() {
   const keyboardHeight = useKeyboardHeight();
   const [categoriaId, setCategoriaId] = useState<string | undefined>(params.categoriaId);
   const [categoriaNome, setCategoriaNome] = useState<string | undefined>(params.categoriaNome);
+  const [categoriaIcone, setCategoriaIcone] = useState<string | undefined>(params.categoriaIcone);
   const [estabelecimentoId, setEstabelecimentoId] = useState<string | undefined>(
     params.estabelecimentoId,
   );
   const [estabelecimentoNome, setEstabelecimentoNome] = useState<string | undefined>(
     params.estabelecimentoNome,
   );
+  // NovaCompra.dc.html § "Organização": banner "Reconhecemos X — associar
+  // a Y?" quando a descrição bate com um Estabelecimento já conhecido e o
+  // usuário ainda não escolheu um manualmente (FR-033).
+  const [estabelecimentoSugerido, setEstabelecimentoSugerido] = useState<{
+    id: string;
+    nome: string;
+  } | null>(null);
   // NovaCompra.dc.html: por padrão a responsabilidade é 100% do valor,
   // só-leitura; "Dividir compra" revela o campo editável (issue #10).
   const [splitting, setSplitting] = useState(false);
@@ -113,8 +132,9 @@ export default function NovaCompraScreen() {
     if (params.categoriaId) {
       setCategoriaId(params.categoriaId);
       setCategoriaNome(params.categoriaNome);
+      setCategoriaIcone(params.categoriaIcone);
     }
-  }, [params.categoriaId, params.categoriaNome]);
+  }, [params.categoriaId, params.categoriaNome, params.categoriaIcone]);
 
   useEffect(() => {
     if (params.estabelecimentoId) {
@@ -129,6 +149,30 @@ export default function NovaCompraScreen() {
   const valorCentavos = watch('valorCentavos');
   const valorResponsabilidade = watch('valorResponsabilidade');
   const descricaoAtual = watch('descricao');
+
+  useEffect(() => {
+    if (estabelecimentoId || !descricaoAtual || descricaoAtual.trim().length < 3) {
+      setEstabelecimentoSugerido(null);
+      return;
+    }
+    let cancelled = false;
+    const timeout = setTimeout(async () => {
+      const matchedId = await matchEstablishmentForDescription(descricaoAtual);
+      if (cancelled) return;
+      if (!matchedId) {
+        setEstabelecimentoSugerido(null);
+        return;
+      }
+      const establishment = await getEstablishment(matchedId);
+      if (!cancelled && establishment) {
+        setEstabelecimentoSugerido({ id: establishment.id, nome: establishment.nomeExibicao });
+      }
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, [descricaoAtual, estabelecimentoId]);
 
   const onSubmit = handleSubmit(async (data) => {
     const tagNomes = data.tags ?? [];
@@ -178,7 +222,7 @@ export default function NovaCompraScreen() {
             backgroundColor="$surface"
             borderColor="$border"
             borderWidth={1}
-            icon={<ChevronLeft size={18} />}
+            icon={<X size={18} />}
           />
           <Text fontFamily="$heading" fontSize={18} fontWeight="600" color="$text">
             Nova compra
@@ -376,73 +420,6 @@ export default function NovaCompraScreen() {
           )}
         </FormCard>
 
-        <FormCard title="Organização">
-          <XStack
-            justifyContent="space-between"
-            alignItems="center"
-            onPress={() =>
-              router.push({
-                pathname: '/cartoes/nova-compra/categoria',
-                params: { categoriaId, categoriaNome },
-              })
-            }
-          >
-            <Text fontSize={13} color="$textSecondary">
-              Categoria
-            </Text>
-            <XStack alignItems="center" gap="$2">
-              <Text fontSize={14.5} fontWeight="600" color="$text">
-                {categoriaNome ?? 'Nenhuma'}
-              </Text>
-              <ChevronRight size={16} color="#6C6C6D" />
-            </XStack>
-          </XStack>
-
-          <XStack
-            justifyContent="space-between"
-            alignItems="center"
-            onPress={() =>
-              router.push({
-                pathname: '/cartoes/nova-compra/estabelecimento',
-                params: { descricao: descricaoAtual },
-              })
-            }
-          >
-            <Text fontSize={13} color="$textSecondary">
-              Estabelecimento
-            </Text>
-            <XStack alignItems="center" gap="$2">
-              <Text fontSize={14.5} fontWeight="600" color="$text">
-                {estabelecimentoNome ?? 'Nenhum'}
-              </Text>
-              <ChevronRight size={16} color="#6C6C6D" />
-            </XStack>
-          </XStack>
-
-          <YStack gap="$2">
-            <Text fontSize={13} color="$textSecondary">
-              Tags
-            </Text>
-            <Controller
-              control={control}
-              name="tags"
-              render={({ field }) => (
-                <TagInput value={field.value ?? []} onChange={field.onChange} />
-              )}
-            />
-          </YStack>
-        </FormCard>
-
-        <FormCard title="Comentário">
-          <Controller
-            control={control}
-            name="comentario"
-            render={({ field }) => (
-              <AppInput value={field.value} onChangeText={field.onChange} placeholder="Opcional" />
-            )}
-          />
-        </FormCard>
-
         <FormCard title="Divisão de responsabilidade">
           {!splitting ? (
             <XStack justifyContent="space-between" alignItems="center">
@@ -553,6 +530,126 @@ export default function NovaCompraScreen() {
               </Button>
             </>
           )}
+        </FormCard>
+
+        <FormCard title="Organização">
+          <YStack gap="$2">
+            <Text fontSize={13} color="$textSecondary">
+              Categoria
+            </Text>
+            <XStack
+              backgroundColor="$bg"
+              borderColor="$border"
+              borderWidth={1}
+              borderRadius="$md"
+              paddingVertical={9}
+              paddingHorizontal={13}
+              alignItems="center"
+              justifyContent="space-between"
+              gap="$2"
+              onPress={() =>
+                router.push({
+                  pathname: '/cartoes/nova-compra/categoria',
+                  params: { categoriaId, categoriaNome, categoriaIcone },
+                })
+              }
+            >
+              <XStack alignItems="center" gap="$2.5">
+                {categoriaIcone && (
+                  <IconAvatar icon={icons[categoriaIcone] ?? Shapes} iconName={categoriaIcone} size={30} />
+                )}
+                <Text fontSize={14.5} fontWeight="600" color="$text">
+                  {categoriaNome ?? 'Nenhuma'}
+                </Text>
+              </XStack>
+              <ChevronRight size={17} color="#6C6C6D" />
+            </XStack>
+          </YStack>
+
+          <YStack gap="$2">
+            <Text fontSize={13} color="$textSecondary">
+              Estabelecimento
+            </Text>
+            <XStack
+              backgroundColor="$bg"
+              borderColor="$border"
+              borderWidth={1}
+              borderRadius="$md"
+              paddingVertical={9}
+              paddingHorizontal={13}
+              alignItems="center"
+              justifyContent="space-between"
+              gap="$2"
+              onPress={() =>
+                router.push({
+                  pathname: '/cartoes/nova-compra/estabelecimento',
+                  params: { descricao: descricaoAtual },
+                })
+              }
+            >
+              <Text fontSize={14.5} fontWeight="600" color="$text">
+                {estabelecimentoNome ?? 'Nenhum'}
+              </Text>
+              <ChevronRight size={17} color="#6C6C6D" />
+            </XStack>
+          </YStack>
+
+          {estabelecimentoSugerido && (
+            <XStack
+              backgroundColor="$primaryLight"
+              borderRadius="$md"
+              padding={10}
+              alignItems="center"
+              gap="$2.5"
+            >
+              <CircleCheck size={18} color="#234F3E" />
+              <Text flex={1} fontSize={12.5} color="$primaryDark">
+                Reconhecemos &quot;{descricaoAtual}&quot; — associar a{' '}
+                <Text fontWeight="700" color="$primaryDark">
+                  {estabelecimentoSugerido.nome}
+                </Text>
+                ?
+              </Text>
+              <Button
+                onPress={() => {
+                  setEstabelecimentoId(estabelecimentoSugerido.id);
+                  setEstabelecimentoNome(estabelecimentoSugerido.nome);
+                  setEstabelecimentoSugerido(null);
+                }}
+                size="$2"
+                backgroundColor="$primary"
+                color="white"
+                fontWeight="700"
+                fontSize={12}
+                borderRadius={999}
+              >
+                Usar
+              </Button>
+            </XStack>
+          )}
+
+          <YStack gap="$2">
+            <Text fontSize={13} color="$textSecondary">
+              Tags
+            </Text>
+            <Controller
+              control={control}
+              name="tags"
+              render={({ field }) => (
+                <TagInput value={field.value ?? []} onChange={field.onChange} />
+              )}
+            />
+          </YStack>
+        </FormCard>
+
+        <FormCard title="Comentário">
+          <Controller
+            control={control}
+            name="comentario"
+            render={({ field }) => (
+              <AppInput value={field.value} onChangeText={field.onChange} placeholder="Opcional" />
+            )}
+          />
         </FormCard>
       </ScrollView>
     </Screen>
