@@ -3,6 +3,7 @@ import { randomUUID } from 'expo-crypto';
 import { Directory, File, Paths } from 'expo-file-system';
 import { z } from 'zod';
 
+import { BRANDFETCH_CLIENT_ID } from '@/config/brandfetch';
 import { db } from '@/db/client';
 import { compras, estabelecimentos, padroesReconhecimento } from '@/db/schema';
 import { matchEstablishment } from '@/domain/establishmentMatching/matchEstablishment';
@@ -162,25 +163,43 @@ export async function deletePattern(id: string): Promise<void> {
 
 const LOGO_FETCH_TIMEOUT_MS = 5000;
 
+const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.svg', '.webp', '.gif'];
+
 /**
  * FR-036/Princípio I: busca best-effort do logotipo via Brandfetch CDN
  * — falha, timeout ou offline nunca bloqueiam nem lançam, apenas
  * mantêm `logoCachePath = null` (o app recai no `iconeRespaldo`).
  * Chamada de forma "fire and forget" pela tela de Estabelecimento, sem
  * travar o salvamento.
+ *
+ * Sem `BRANDFETCH_CLIENT_ID` configurado, a API sempre responde com um
+ * redirect (200 final) pra uma página de erro em vez de rejeitar com um
+ * status HTTP de erro — `downloadFileAsync` não lança nesse caso, e sem
+ * a checagem de extensão abaixo o app cacharia essa página como se
+ * fosse o logotipo, quebrando o fallback pro `iconeRespaldo` de vez.
  */
 export async function fetchAndCacheLogo(establishmentId: string, dominio: string): Promise<void> {
+  if (!BRANDFETCH_CLIENT_ID) return;
+
   try {
     const destinationDir = new Directory(Paths.cache, 'logos');
     if (!destinationDir.exists) destinationDir.create({ intermediates: true });
 
-    const download = File.downloadFileAsync(`https://cdn.brandfetch.io/${dominio}`, destinationDir);
+    const download = File.downloadFileAsync(
+      `https://cdn.brandfetch.io/${dominio}?c=${BRANDFETCH_CLIENT_ID}`,
+      destinationDir,
+    );
     const timeout = new Promise<null>((resolve) =>
       setTimeout(() => resolve(null), LOGO_FETCH_TIMEOUT_MS),
     );
 
     const file = await Promise.race([download, timeout]);
     if (!file) return;
+
+    if (!IMAGE_EXTENSIONS.includes(file.extension.toLowerCase())) {
+      file.delete();
+      return;
+    }
 
     await db
       .update(estabelecimentos)

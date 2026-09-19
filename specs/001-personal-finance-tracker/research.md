@@ -20,7 +20,7 @@ Todas as incertezas técnicas levantadas pelo Technical Context e pela seção A
   verificadas.
 - **Alternatives considered**: (a) Testar tudo via Detox/Maestro em um device/emulador Android —
   mantido apenas para os testes de integração dos repositórios e do fluxo de migrations (poucos
-  cenários, caros de rodar); (b) usar `better-sqlite3` no lugar do `expo-sqlite` só nos testes — 
+  cenários, caros de rodar); (b) usar `better-sqlite3` no lugar do `expo-sqlite` só nos testes —
   rejeitado por introduzir um segundo driver de banco divergente do runtime real, violando o
   espírito do Princípio II (stack fixa); (c) não testar a camada de repositório automatizada
   nenhuma vez — rejeitado por FR-011/FR-015 (somas de fatura/saldo) serem críticos o bastante para
@@ -94,15 +94,22 @@ Todas as incertezas técnicas levantadas pelo Technical Context e pela seção A
 ## Decisão: Busca de logotipo (Brandfetch) sem backend
 
 - **Decision**: Usar o serviço público de logotipo por domínio da Brandfetch
-  (`https://cdn.brandfetch.io/{domain}`) como fonte best-effort de imagem, baixando o resultado com
-  `fetch` + `expo-file-system` para o diretório de cache do app quando uma busca é disparada
+  (`https://cdn.brandfetch.io/{domain}?c={client_id}`) como fonte best-effort de imagem, baixando o
+  resultado com `expo-file-system` para o diretório de cache do app quando uma busca é disparada
   (usuário informa/edita o domínio de um Estabelecimento e há conexão disponível), salvando o
   caminho do arquivo local em `Estabelecimento.logoCachePath`. Falha de rede, timeout ou resposta
-  não-imagem faz o app silenciosamente manter o ícone de respaldo — nunca lança erro visível.
-- **Rationale**: Não exige backend próprio nem gerenciamento de chave de API para o caso de uso
-  mínimo (uma imagem por domínio), respeitando o Princípio I (rede só para enriquecimento, nunca
-  bloqueante) e o Princípio V (sem infraestrutura extra). O resultado cacheado localmente garante
-  uso offline subsequente (FR-036).
+  não-imagem (checado pela extensão do arquivo baixado) faz o app silenciosamente manter o ícone de
+  respaldo — nunca lança erro visível.
+- **Atualização (2026-09-19)**: a Brandfetch passou a exigir um `client_id` gratuito (query param
+  `c`) em toda chamada à CDN — sem ele, a API responde com um redirect para uma página de erro em
+  vez da imagem (o que quebrava silenciosamente o fallback, já que não era um status HTTP de erro).
+  `BRANDFETCH_CLIENT_ID` em `src/config/brandfetch.ts` fica `null` até o usuário se cadastrar
+  gratuitamente em developers.brandfetch.com e preencher o valor; com `null`, a busca nem é
+  disparada (best-effort, sem tentativa fadada a falhar).
+- **Rationale**: O client ID é um identificador público (não um segredo de backend a gerenciar em
+  servidor), então continua sem exigir backend próprio, respeitando o Princípio I (rede só para
+  enriquecimento, nunca bloqueante) e o Princípio V (sem infraestrutura extra). O resultado cacheado
+  localmente garante uso offline subsequente (FR-036).
 - **Alternatives considered**: Brandfetch Brand API completa (dados estruturados, exige API key) —
   rejeitada por ser mais poder do que o necessário (só precisamos da imagem do logotipo) e por
   introduzir gestão de credencial para um app sem backend; Clearbit Logo API — mesma categoria de
@@ -155,9 +162,9 @@ Todas as incertezas técnicas levantadas pelo Technical Context e pela seção A
 ## Decisão: Backup local (exportar/importar)
 
 - **Decision**: O backup é um único arquivo JSON (`.json`) contendo `{ schemaVersion, exportedAt,
-  data: { cartoes, faturas, compras, parcelas, tags, assinaturas, configuracoesRenda,
-  entradasAvulsas, reservas, lancamentosReserva, categorias, estabelecimentos,
-  padroesReconhecimento, metaConsumoIdeal } }`, serializado a partir de uma leitura completa de
+data: { cartoes, faturas, compras, parcelas, tags, assinaturas, configuracoesRenda,
+entradasAvulsas, reservas, lancamentosReserva, categorias, estabelecimentos,
+padroesReconhecimento, metaConsumoIdeal } }`, serializado a partir de uma leitura completa de
   todas as tabelas via repositórios. Exportação usa `expo-file-system` para escrever o arquivo em
   cache e `expo-sharing` para o usuário salvar/compartilhar; importação usa
   `expo-document-picker` para selecionar o arquivo, valida `schemaVersion` e a forma geral do JSON
@@ -188,16 +195,16 @@ Todas as incertezas técnicas levantadas pelo Technical Context e pela seção A
 
 ## Resumo de dependências novas a adicionar ao projeto
 
-| Pacote | Uso |
-|---|---|
-| `expo-router` | Navegação por arquivo |
-| `@tamagui/core`, `@tamagui/config`, `tamagui` | UI (já decidido na constituição) |
-| `drizzle-orm`, `drizzle-kit` | ORM + geração de migrations (já decidido na constituição) |
-| `expo-sqlite` | Driver de banco local (já decidido na constituição) |
-| `lucide-react-native`, `react-native-svg` | Ícones (já confirmado com o usuário) |
-| `date-fns` | Aritmética de datas/calendário |
-| `react-hook-form`, `zod` | Formulários e validação |
-| `papaparse` | Parsing de CSV |
-| `expo-file-system`, `expo-sharing`, `expo-document-picker` | Backup export/import, upload de CSV |
-| `expo-crypto` | Geração de UUID |
-| `jest-expo`, `@testing-library/react-native` | Testes |
+| Pacote                                                     | Uso                                                       |
+| ---------------------------------------------------------- | --------------------------------------------------------- |
+| `expo-router`                                              | Navegação por arquivo                                     |
+| `@tamagui/core`, `@tamagui/config`, `tamagui`              | UI (já decidido na constituição)                          |
+| `drizzle-orm`, `drizzle-kit`                               | ORM + geração de migrations (já decidido na constituição) |
+| `expo-sqlite`                                              | Driver de banco local (já decidido na constituição)       |
+| `lucide-react-native`, `react-native-svg`                  | Ícones (já confirmado com o usuário)                      |
+| `date-fns`                                                 | Aritmética de datas/calendário                            |
+| `react-hook-form`, `zod`                                   | Formulários e validação                                   |
+| `papaparse`                                                | Parsing de CSV                                            |
+| `expo-file-system`, `expo-sharing`, `expo-document-picker` | Backup export/import, upload de CSV                       |
+| `expo-crypto`                                              | Geração de UUID                                           |
+| `jest-expo`, `@testing-library/react-native`               | Testes                                                    |
