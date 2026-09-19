@@ -10,7 +10,6 @@ export default function MaisStackLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="renda/index" />
-      <Stack.Screen name="renda/historico" />
       <Stack.Screen name="renda/nova-entrada" options={{ presentation: 'modal' }} />
       <Stack.Screen name="categorias/index" />
       <Stack.Screen name="categorias/nova" options={{ presentation: 'modal' }} />

@@ -3,7 +3,7 @@ import { randomUUID } from 'expo-crypto';
 import { z } from 'zod';
 
 import { db } from '@/db/client';
-import { entradasAvulsas } from '@/db/schema';
+import { compras, entradasAvulsas } from '@/db/schema';
 
 import { recomputeResponsibility } from './purchasesRepository';
 
@@ -45,6 +45,35 @@ export async function listCashEntriesForMonth(year: number, month: number): Prom
     .select()
     .from(entradasAvulsas)
     .where(and(gte(entradasAvulsas.data, monthStart), lt(entradasAvulsas.data, monthEnd)));
+}
+
+export type CashEntryWithLinkedPurchase = CashEntry & { compraVinculadaDescricao: string | null };
+
+/**
+ * Renda & Entradas · Main: mesma lista de `listCashEntriesForMonth`, mas
+ * com a descrição da Compra vinculada (se houver), pro sublabel
+ * "vinculada a X" do mockup — sem isso, a entrada vinculada não se
+ * distingue visualmente de uma avulsa comum.
+ */
+export async function listCashEntriesForMonthWithLinkedPurchase(
+  year: number,
+  month: number,
+): Promise<CashEntryWithLinkedPurchase[]> {
+  const monthStart = new Date(year, month - 1, 1);
+  const monthEnd = new Date(year, month, 1);
+  const rows = await db
+    .select({
+      entrada: entradasAvulsas,
+      compraVinculadaDescricao: compras.descricao,
+    })
+    .from(entradasAvulsas)
+    .leftJoin(compras, eq(entradasAvulsas.compraVinculadaId, compras.id))
+    .where(and(gte(entradasAvulsas.data, monthStart), lt(entradasAvulsas.data, monthEnd)));
+
+  return rows.map(({ entrada, compraVinculadaDescricao }) => ({
+    ...entrada,
+    compraVinculadaDescricao: compraVinculadaDescricao ?? null,
+  }));
 }
 
 export async function listAllCashEntries(): Promise<CashEntry[]> {
