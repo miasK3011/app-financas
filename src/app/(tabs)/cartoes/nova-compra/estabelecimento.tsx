@@ -10,7 +10,7 @@ import { AppInput } from '@/components/AppInput';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { TransactionAvatar } from '@/components/TransactionAvatar';
-import { CATEGORY_ICON_OPTIONS } from '@/domain/shared/categoryIcons';
+import { CATEGORY_ICON_OPTIONS, getIconColors } from '@/domain/shared/categoryIcons';
 import { suggestInitialPattern } from '@/domain/establishmentMatching/suggestInitialPattern';
 import {
   addPattern,
@@ -108,6 +108,7 @@ export default function NovaCompraEstabelecimentoScreen() {
               {CATEGORY_ICON_OPTIONS.map((iconName) => {
                 const Icon = icons[iconName];
                 const selected = iconeRespaldo === iconName;
+                const { bg, fg } = getIconColors(iconName);
                 return (
                   <Button
                     key={iconName}
@@ -115,10 +116,10 @@ export default function NovaCompraEstabelecimentoScreen() {
                     width={48}
                     height={48}
                     circular
-                    backgroundColor={selected ? '$primary' : '$surface'}
-                    borderColor="$border"
-                    borderWidth={1}
-                    icon={<Icon size={20} color={selected ? 'white' : '#1C1C1E'} />}
+                    backgroundColor={bg}
+                    borderColor={selected ? '$primary' : 'transparent'}
+                    borderWidth={2}
+                    icon={<Icon size={20} color={fg} />}
                   />
                 );
               })}

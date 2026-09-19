@@ -6,6 +6,7 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
+import { IconAvatar } from '@/components/IconAvatar';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { type Category, deleteCategory, listCategories } from '@/repositories/categoriesRepository';
@@ -82,7 +83,7 @@ export default function CategoriasScreen() {
                   justifyContent="space-between"
                 >
                   <XStack alignItems="center" gap="$3">
-                    <Icon size={20} color="#1C1C1E" />
+                    <IconAvatar icon={Icon} iconName={category.icone} size={36} />
                     <Text fontSize={15} fontWeight="600" color="$text">
                       {category.nome}
                     </Text>

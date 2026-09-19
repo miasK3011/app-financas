@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { ScrollView, Text, XStack, YStack } from 'tamagui';
 
+import { IconAvatar } from '@/components/IconAvatar';
 import { Screen } from '@/components/Screen';
 import { type Category, listCategories } from '@/repositories/categoriesRepository';
 
@@ -55,7 +56,7 @@ export default function NovaCompraCategoriaScreen() {
                 gap="$3"
                 onPress={() => handleSelect(category)}
               >
-                <Icon size={20} color="#1C1C1E" />
+                <IconAvatar icon={Icon} iconName={category.icone} size={36} />
                 <Text fontSize={15} fontWeight="600" color="$text">
                   {category.nome}
                 </Text>

@@ -2,7 +2,8 @@ import * as LucideIcons from 'lucide-react-native';
 import { Shapes } from 'lucide-react-native';
 import type { ComponentType } from 'react';
 import { Image } from 'react-native';
-import { XStack } from 'tamagui';
+
+import { IconAvatar } from '@/components/IconAvatar';
 
 type IconProps = { size?: number; color?: string };
 const icons = LucideIcons as unknown as Record<string, ComponentType<IconProps>>;
@@ -36,16 +37,5 @@ export function TransactionAvatar({
   const iconName = estabelecimento?.iconeRespaldo ?? categoria?.icone;
   const Icon = (iconName && icons[iconName]) || Shapes;
 
-  return (
-    <XStack
-      width={size}
-      height={size}
-      borderRadius={size / 2}
-      backgroundColor="$primaryLight"
-      alignItems="center"
-      justifyContent="center"
-    >
-      <Icon size={size * 0.5} color="#234F3E" />
-    </XStack>
-  );
+  return <IconAvatar icon={Icon} iconName={iconName} size={size} />;
 }
