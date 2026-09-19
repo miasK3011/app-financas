@@ -565,15 +565,15 @@ cadastrada, sem aplicação automática (FR-019 a FR-021).
 
 **Independent Test**: conforme spec.md → User Story 7.
 
-- [ ] T122 [P] [US7] Implementar `src/repositories/reservesRepository.ts`: CRUD de Reserva
+- [X] T122 [P] [US7] Implementar `src/repositories/reservesRepository.ts`: CRUD de Reserva
       (nome + taxa de rendimento mensal opcional); saldo **sempre derivado** como soma de
       `LancamentoReserva.valor` (nunca uma coluna própria)
-- [ ] T123 [US7] Implementar `src/repositories/reserveEntriesRepository.ts`: criar
+- [X] T123 [US7] Implementar `src/repositories/reserveEntriesRepository.ts`: criar
       `LancamentoReserva` do tipo `DEPOSITO`, `RETIRADA` ou `RENDIMENTO_MANUAL`; **nenhum código
       gera `RENDIMENTO_AUTOMATICO` nesta versão** (Princípio V / Assumption)
-- [ ] T124 [US7] Construir `src/app/(tabs)/reservas/index.tsx` (Reservas · Main): lista de reservas +
+- [X] T124 [US7] Construir `src/app/(tabs)/reservas/index.tsx` (Reservas · Main): lista de reservas +
       saldo de cada uma, com FAB "+" para nova reserva
-- [ ] T125 [US7] Construir `src/app/(tabs)/reservas/[reserveId].tsx` (ReservaDetalhe) — reutilizada
+- [X] T125 [US7] Construir `src/app/(tabs)/reservas/[reserveId].tsx` (ReservaDetalhe) — reutilizada
       tanto para **criar uma nova Reserva** (nome + taxa de rendimento mensal opcional, a partir do
       FAB "+" de T124 — FR-019, FR-021) quanto para exibir uma existente: saldo, taxa configurada
       (exibida, **não aplicada automaticamente** — FR-021), histórico de lançamentos, formulário de
