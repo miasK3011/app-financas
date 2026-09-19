@@ -219,13 +219,15 @@ completo).
 
 **Purpose**: validação final e qualidade transversal.
 
-- [ ] T030 Rodar `quickstart.md` de ponta a ponta num Android real (Expo Go), incluindo a "Checagem
-      de consistência entre telas" (Gastos da Início == Total gasto de Compras para o mesmo mês)
-- [ ] T031 [P] Revisão final: confirmar que nenhuma lista de transação desta feature usa wrapper
-      `card` com borda/fundo (FR-018) e que a visão de mês futuro não introduziu nenhum selo/banner
-      além do especificado em FR-014 — conferir contra o canvas de referência citado em spec.md
-- [ ] T032 Atualizar `specs/002-central-de-compras/checklists/requirements.md` com o status final
-      de implementação
+- [ ] T030 **Bloqueado — precisa de dispositivo Android real** (sem SDK/emulador neste ambiente).
+      Rodar `quickstart.md` de ponta a ponta num Android real (Expo Go), incluindo a "Checagem de
+      consistência entre telas" (Gastos da Início == Total gasto de Compras para o mesmo mês) e o
+      gesto de swipe do `MonthNavigator` (não testável fora de um device real)
+- [X] T031 [P] Revisão final concluída: `grep` confirma um único `<Card` em
+      `(tabs)/compras/index.tsx` (o bloco de resumo) — nenhuma lista usa wrapper com borda/fundo
+      (FR-018); a visão de mês futuro só usa o rótulo "Previsto para [mês]" no resumo, sem selo ou
+      banner adicional (FR-014); `(tabs)/mais/index.tsx` também sem `Card` nas linhas de menu
+- [X] T032 Status final registrado abaixo e no `checklists/requirements.md`
 
 ---
 
