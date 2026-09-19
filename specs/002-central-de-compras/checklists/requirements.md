@@ -13,9 +13,8 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain — 1 marker open (FR-020, escopo de "Dinheiro" como
-      forma de pagamento)
-- [x] Requirements are testable and unambiguous (exceto FR-020, pendente)
+- [x] No [NEEDS CLARIFICATION] markers remain — resolvido (Opção B: Dinheiro fica fora do escopo)
+- [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
 - [x] All acceptance scenarios are defined
@@ -32,6 +31,5 @@
 
 ## Notes
 
-- Um único ponto de esclarecimento em aberto: FR-020 (incluir "Dinheiro" como nova forma de
-  pagamento nesta feature, ou manter escopo em Cartão/Pix, que já existem hoje). Resolver antes de
-  `/speckit-plan`, pois muda Key Entities, o schema e as telas de Nova Compra/Editar Compra.
+- Resolvido: FR-020 ficou definido como Cartão + Pix apenas (Opção B). "Dinheiro" fica fora do
+  escopo, sem impacto em schema. Pronto para `/speckit-plan`.

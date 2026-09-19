@@ -16,8 +16,8 @@ Hoje o usuário só enxerga uma lista curta de "transações recentes" na tela I
 via Pix, por exemplo, aparece ali por pouco tempo e depois não existe mais nenhum lugar no app para
 encontrá-la — o app parece um gerenciador de faturas de cartão, não um controle financeiro completo.
 Com esta história, o usuário abre a tela "Compras" e vê, num só lugar, todas as compras do mês
-corrente, não importa se foram pagas no cartão, via Pix, ou (se decidido no Key Entities/Assumptions)
-em dinheiro — incluindo o total gasto no mês e quanto disso foi em cada forma de pagamento.
+corrente, não importa se foram pagas no cartão ou via Pix — incluindo o total gasto no mês e quanto
+disso foi em cada forma de pagamento.
 
 **Why this priority**: É o motivo da feature existir — resolve diretamente a queixa de que compras
 fora do cartão "somem" do app. Sem esta história as demais não têm razão de ser.
@@ -145,7 +145,7 @@ confirmar que Assinaturas e Reservas aparecem lá como itens de lista, dentro da
   estabelecimento, categoria, forma de pagamento (incluindo o nome do cartão quando for compra no
   cartão), o valor, um selo indicando a forma de pagamento, e — quando a compra for parcelada — o
   indicador da parcela atual sobre o total (ex.: "2/4").
-- **FR-012**: Ao selecionar um filtro de forma de pagamento (Todos, Cartão, Pix, ...), a lista de
+- **FR-012**: Ao selecionar um filtro de forma de pagamento (Todos, Cartão, Pix), a lista de
   transações DEVE mostrar apenas as correspondentes; "Todos" DEVE voltar a mostrar todas.
 - **FR-013**: Ao mostrar um mês futuro com parcelas previstas, a tela Compras DEVE exibir um resumo
   "Previsto para [mês]" com o total dessas parcelas, e a lista organizada por fatura de cartão (nome
@@ -165,14 +165,10 @@ confirmar que Assinaturas e Reservas aparecem lá como itens de lista, dentro da
   card continuam reservados para resumos com um número em destaque.
 - **FR-019**: Toda a tela Compras DEVE reutilizar as cores, tipografia e componentes visuais já
   estabelecidos no restante do app, sem introduzir um estilo visual novo.
-- **FR-020**: O sistema DEVE suportar exibir e filtrar compras feitas em dinheiro como uma forma de
-  pagamento própria na tela Compras [NEEDS CLARIFICATION: hoje o app só tem `Pix` e `Cartão` como
-  formas de pagamento possíveis ao cadastrar uma compra (não existe opção "Dinheiro" em nenhum
-  formulário nem no schema). Adicionar "Dinheiro" nesta feature exige migração de banco + um novo
-  campo na tela de Nova Compra/Editar Compra, além de tudo o que consome `formaPagamento` hoje
-  (estatísticas, sugestão de melhor cartão, etc.). É pra incluir Dinheiro como forma de pagamento
-  nova nesta mesma feature, ou a tela Compras deve nascer só com Cartão e Pix (as duas formas que já
-  existem hoje), deixando Dinheiro para uma feature futura?]
+- **FR-020**: A tela Compras e seus filtros DEVEM cobrir exatamente as formas de pagamento hoje
+  suportadas pelo cadastro de compra: Cartão e Pix. "Dinheiro" como forma de pagamento fica fora do
+  escopo desta feature (ver Assumptions) — nenhuma migração de schema ou mudança no formulário de
+  Nova Compra/Editar Compra é necessária para o filtro ou o resumo por forma de pagamento.
 
 ### Key Entities
 
@@ -215,3 +211,6 @@ confirmar que Assinaturas e Reservas aparecem lá como itens de lista, dentro da
 - A reorganização da navegação (FR-001 a FR-003) não altera nenhum comportamento interno das telas
   de Assinaturas, Reservas, Renda, Categorias, Estabelecimentos ou Backup — apenas onde elas são
   alcançadas a partir da navegação principal.
+- "Dinheiro" como forma de pagamento (mockup inicial incluía essa opção) fica fora do escopo desta
+  feature — decisão explícita do usuário, para não acoplar a entrega da tela Compras a uma migração
+  de schema. Fica registrado como candidato a uma feature futura.
