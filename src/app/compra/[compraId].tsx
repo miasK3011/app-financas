@@ -316,7 +316,7 @@ export default function EditarTransacaoScreen() {
                 </YStack>
                 <Button
                   onPress={() =>
-                    router.push(`/cartoes/nova-compra/divisao-manual?compraId=${compraId}`)
+                    router.push(`/nova-compra/divisao-manual?compraId=${compraId}`)
                   }
                   size="$2"
                   chromeless
@@ -329,7 +329,7 @@ export default function EditarTransacaoScreen() {
 
               <Button
                 onPress={() =>
-                  router.push(`/cartoes/nova-compra/divisao-vinculada?compraId=${compraId}`)
+                  router.push(`/nova-compra/divisao-vinculada?compraId=${compraId}`)
                 }
                 backgroundColor="$primaryLight"
                 borderColor="$primary"
@@ -361,7 +361,7 @@ export default function EditarTransacaoScreen() {
               gap="$2"
               onPress={() =>
                 router.push({
-                  pathname: '/cartoes/nova-compra/categoria',
+                  pathname: '/nova-compra/categoria',
                   params: { categoriaId, returnTo: 'editar-compra', compraId },
                 })
               }
@@ -398,7 +398,7 @@ export default function EditarTransacaoScreen() {
               gap="$2"
               onPress={() =>
                 router.push({
-                  pathname: '/cartoes/nova-compra/estabelecimento',
+                  pathname: '/nova-compra/estabelecimento',
                   params: { descricao, returnTo: 'editar-compra', compraId },
                 })
               }

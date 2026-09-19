@@ -128,7 +128,7 @@ export default function FaturaDetalheScreen() {
                   borderColor="$border"
                   alignItems="center"
                   gap="$3"
-                  onPress={() => router.push(`/cartoes/compra/${row.compra.id}`)}
+                  onPress={() => router.push(`/compra/${row.compra.id}`)}
                 >
                   <TransactionAvatar
                     estabelecimento={row.estabelecimento}

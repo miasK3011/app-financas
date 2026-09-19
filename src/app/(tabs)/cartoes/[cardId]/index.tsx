@@ -199,7 +199,7 @@ export default function CartaoFaturasScreen() {
       {!card?.arquivadoEm && (
         <PrimaryButton
           onPress={() =>
-            router.push({ pathname: '/cartoes/nova-compra', params: { cartaoId: cardId } })
+            router.push({ pathname: '/nova-compra', params: { cartaoId: cardId } })
           }
           position="absolute"
           bottom={24}

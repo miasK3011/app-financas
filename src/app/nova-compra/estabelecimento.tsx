@@ -62,13 +62,13 @@ export default function NovaCompraEstabelecimentoScreen() {
   const handleSelect = (establishment: Establishment) => {
     if (returnTo === 'editar-compra' && compraId) {
       router.dismissTo({
-        pathname: '/cartoes/compra/[compraId]',
+        pathname: '/compra/[compraId]',
         params: { compraId, estabelecimentoId: establishment.id },
       });
       return;
     }
     router.dismissTo({
-      pathname: '/cartoes/nova-compra',
+      pathname: '/nova-compra',
       params: {
         estabelecimentoId: establishment.id,
         estabelecimentoNome: establishment.nomeExibicao,

@@ -35,13 +35,13 @@ export default function NovaCompraCategoriaScreen() {
   const handleSelect = (category: Category) => {
     if (returnTo === 'editar-compra' && compraId) {
       router.dismissTo({
-        pathname: '/cartoes/compra/[compraId]',
+        pathname: '/compra/[compraId]',
         params: { compraId, categoriaId: category.id },
       });
       return;
     }
     router.dismissTo({
-      pathname: '/cartoes/nova-compra',
+      pathname: '/nova-compra',
       params: {
         categoriaId: category.id,
         categoriaNome: category.nome,

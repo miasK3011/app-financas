@@ -549,7 +549,7 @@ export default function NovaCompraScreen() {
               gap="$2"
               onPress={() =>
                 router.push({
-                  pathname: '/cartoes/nova-compra/categoria',
+                  pathname: '/nova-compra/categoria',
                   params: { categoriaId, categoriaNome, categoriaIcone },
                 })
               }
@@ -582,7 +582,7 @@ export default function NovaCompraScreen() {
               gap="$2"
               onPress={() =>
                 router.push({
-                  pathname: '/cartoes/nova-compra/estabelecimento',
+                  pathname: '/nova-compra/estabelecimento',
                   params: { descricao: descricaoAtual },
                 })
               }
