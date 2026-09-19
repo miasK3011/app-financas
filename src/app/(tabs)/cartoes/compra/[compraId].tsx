@@ -10,6 +10,7 @@ import { AppInput } from '@/components/AppInput';
 import { Money } from '@/components/Money';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
+import { TagInput } from '@/components/TagInput';
 import {
   type CashEntry,
   listCashEntriesLinkedToCompra,
@@ -46,7 +47,7 @@ export default function EditarTransacaoScreen() {
   const [originalEstabelecimentoId, setOriginalEstabelecimentoId] = useState<string | undefined>(
     undefined,
   );
-  const [tagsText, setTagsText] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
   const [valorTotalOriginal, setValorTotalOriginal] = useState(0);
   const [valorResponsabilidade, setValorResponsabilidade] = useState<number | null>(null);
   const [linkedEntries, setLinkedEntries] = useState<CashEntry[]>([]);
@@ -75,7 +76,7 @@ export default function EditarTransacaoScreen() {
           setValorTotalOriginal(purchase.valorTotalOriginal);
           setValorResponsabilidade(purchase.valorResponsabilidade);
         }
-        setTagsText(tagNomes.join(', '));
+        setTags(tagNomes);
         setLoading(false);
       })();
     }, [compraId]),
@@ -95,10 +96,6 @@ export default function EditarTransacaoScreen() {
   const handleSave = async () => {
     if (!compraId) return;
     setSaving(true);
-    const tagNomes = tagsText
-      .split(',')
-      .map((tag) => tag.trim())
-      .filter(Boolean);
 
     await updatePurchase(compraId, {
       descricao,
@@ -113,7 +110,7 @@ export default function EditarTransacaoScreen() {
         ? { estabelecimentoId: estabelecimentoId ?? null }
         : {}),
     });
-    await setPurchaseTags(compraId, tagNomes);
+    await setPurchaseTags(compraId, tags);
     setSaving(false);
     router.back();
   };
@@ -215,13 +212,9 @@ export default function EditarTransacaoScreen() {
 
         <YStack gap="$2">
           <Text fontSize={13} color="$textSecondary">
-            Tags (separadas por vírgula)
+            Tags
           </Text>
-          <AppInput
-            value={tagsText}
-            onChangeText={setTagsText}
-            placeholder="Ex.: Trabalho, Presente"
-          />
+          <TagInput value={tags} onChange={setTags} />
         </YStack>
 
         <YStack gap="$2">

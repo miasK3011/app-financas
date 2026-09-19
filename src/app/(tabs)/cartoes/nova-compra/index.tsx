@@ -14,6 +14,7 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { SegmentedControl } from '@/components/SegmentedControl';
 import { Stepper } from '@/components/Stepper';
+import { TagInput } from '@/components/TagInput';
 import { requiresMotivoResponsavelFields } from '@/domain/expenseSplitting/requiresMotivoResponsavelFields';
 import { useBestCard } from '@/hooks/useBestCard';
 import { useCards } from '@/hooks/useCards';
@@ -29,7 +30,7 @@ const formSchema = z
     cartaoId: z.string().optional(),
     parcelasTotal: z.number().int().min(1),
     parcelaAtual: z.number().int().min(1),
-    tagsText: z.string().optional(),
+    tags: z.array(z.string()).optional(),
     comentario: z.string().optional(),
     valorResponsabilidade: z.number().int().optional(),
     motivo: z.string().optional(),
@@ -98,7 +99,7 @@ export default function NovaCompraScreen() {
       cartaoId: params.cartaoId,
       parcelasTotal: 1,
       parcelaAtual: 1,
-      tagsText: '',
+      tags: [],
       comentario: '',
       valorResponsabilidade: undefined,
       motivo: '',
@@ -130,10 +131,7 @@ export default function NovaCompraScreen() {
   const descricaoAtual = watch('descricao');
 
   const onSubmit = handleSubmit(async (data) => {
-    const tagNomes = (data.tagsText ?? '')
-      .split(',')
-      .map((tag) => tag.trim())
-      .filter(Boolean);
+    const tagNomes = data.tags ?? [];
 
     if (data.formaPagamento === 'CARTAO') {
       await createCardPurchase({
@@ -412,18 +410,12 @@ export default function NovaCompraScreen() {
 
         <YStack gap="$2">
           <Text fontSize={13} color="$textSecondary">
-            Tags (separadas por vírgula)
+            Tags
           </Text>
           <Controller
             control={control}
-            name="tagsText"
-            render={({ field }) => (
-              <AppInput
-                value={field.value}
-                onChangeText={field.onChange}
-                placeholder="Ex.: Trabalho, Presente"
-              />
-            )}
+            name="tags"
+            render={({ field }) => <TagInput value={field.value ?? []} onChange={field.onChange} />}
           />
         </YStack>
 

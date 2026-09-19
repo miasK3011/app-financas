@@ -11,6 +11,7 @@ import { MoneyInput } from '@/components/MoneyInput';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { SegmentedControl } from '@/components/SegmentedControl';
+import { TagInput } from '@/components/TagInput';
 import { type Category, listCategories } from '@/repositories/categoriesRepository';
 import { useCards } from '@/hooks/useCards';
 import {
@@ -47,7 +48,7 @@ export default function AssinaturaEditarScreen() {
   const [cartaoId, setCartaoId] = useState<string | undefined>(undefined);
   const [diaCobranca, setDiaCobranca] = useState<number | undefined>(undefined);
   const [categoriaId, setCategoriaId] = useState<string | undefined>(undefined);
-  const [tagsText, setTagsText] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -73,7 +74,7 @@ export default function AssinaturaEditarScreen() {
           setDiaCobranca(subscription.diaCobranca);
           setCategoriaId(subscription.categoriaId ?? undefined);
         }
-        setTagsText(tagNomes.join(', '));
+        setTags(tagNomes);
         setLoading(false);
       })();
     }, [isNew, subscriptionId]),
@@ -89,10 +90,6 @@ export default function AssinaturaEditarScreen() {
   const handleSave = async () => {
     if (!canSave || valor === undefined || diaCobranca === undefined) return;
     setSaving(true);
-    const tagNomes = tagsText
-      .split(',')
-      .map((tag) => tag.trim())
-      .filter(Boolean);
 
     if (isNew) {
       await createSubscription({
@@ -102,7 +99,7 @@ export default function AssinaturaEditarScreen() {
         cartaoId: formaPagamento === 'CARTAO' ? cartaoId : undefined,
         diaCobranca,
         categoriaId,
-        tagNomes,
+        tagNomes: tags,
       });
     } else {
       await updateSubscription(subscriptionId, {
@@ -113,7 +110,7 @@ export default function AssinaturaEditarScreen() {
         diaCobranca,
         categoriaId: categoriaId ?? null,
       });
-      await setSubscriptionTags(subscriptionId, tagNomes);
+      await setSubscriptionTags(subscriptionId, tags);
     }
 
     setSaving(false);
@@ -266,13 +263,9 @@ export default function AssinaturaEditarScreen() {
 
         <YStack gap="$2">
           <Text fontSize={13} color="$textSecondary">
-            Tags (separadas por vírgula)
+            Tags
           </Text>
-          <AppInput
-            value={tagsText}
-            onChangeText={setTagsText}
-            placeholder="Ex.: Lazer, Trabalho"
-          />
+          <TagInput value={tags} onChange={setTags} />
         </YStack>
 
         <PrimaryButton
