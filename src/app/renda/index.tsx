@@ -387,7 +387,7 @@ export default function RendaScreen() {
       </ScrollView>
 
       <PrimaryButton
-        onPress={() => router.push('/mais/renda/nova-entrada')}
+        onPress={() => router.push('/renda/nova-entrada')}
         position="absolute"
         bottom={24}
         right={20}

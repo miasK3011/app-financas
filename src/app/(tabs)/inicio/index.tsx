@@ -133,7 +133,7 @@ export default function InicioScreen() {
           )}
           <XStack gap="$2" marginTop="$2">
             <Button
-              onPress={() => router.push('/mais/renda/nova-entrada')}
+              onPress={() => router.push('/renda/nova-entrada')}
               size="$3"
               backgroundColor="$primaryLight"
               color="$primaryDark"
@@ -145,7 +145,7 @@ export default function InicioScreen() {
               Adicionar Saldo
             </Button>
             <Button
-              onPress={() => router.push('/mais/renda')}
+              onPress={() => router.push('/renda')}
               size="$3"
               backgroundColor="transparent"
               borderColor="$border"
@@ -179,7 +179,7 @@ export default function InicioScreen() {
                       borderRadius="$md"
                       padding={14}
                       gap="$2"
-                      onPress={() => router.push(`/cartoes/${invoice.cartaoId}`)}
+                      onPress={() => router.push(`/cartao/${invoice.cartaoId}`)}
                     >
                       <XStack alignItems="center" justifyContent="space-between">
                         <Text fontSize={13} fontWeight="600" color="$text">
@@ -213,7 +213,7 @@ export default function InicioScreen() {
             padding={16}
             gap="$3"
             alignItems="center"
-            onPress={() => router.push(`/cartoes/${bestCard.cardId}`)}
+            onPress={() => router.push(`/cartao/${bestCard.cardId}`)}
           >
             <XStack
               width={40}

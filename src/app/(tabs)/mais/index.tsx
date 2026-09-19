@@ -2,10 +2,10 @@ import { Link } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
 const ITEMS: {
-  href: '/mais/renda' | '/mais/categorias' | '/mais/estabelecimentos' | '/mais/backup';
+  href: '/renda' | '/mais/categorias' | '/mais/estabelecimentos' | '/mais/backup';
   label: string;
 }[] = [
-  { href: '/mais/renda', label: 'Renda & Entradas' },
+  { href: '/renda', label: 'Renda & Entradas' },
   { href: '/mais/categorias', label: 'Categorias' },
   { href: '/mais/estabelecimentos', label: 'Estabelecimentos' },
   { href: '/mais/backup', label: 'Backup' },
