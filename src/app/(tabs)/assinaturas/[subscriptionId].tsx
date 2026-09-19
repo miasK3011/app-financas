@@ -10,6 +10,7 @@ import { AppInput } from '@/components/AppInput';
 import { MoneyInput } from '@/components/MoneyInput';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
+import { SegmentedControl } from '@/components/SegmentedControl';
 import { type Category, listCategories } from '@/repositories/categoriesRepository';
 import { useCards } from '@/hooks/useCards';
 import {
@@ -204,30 +205,14 @@ export default function AssinaturaEditarScreen() {
           <Text fontSize={13} color="$textSecondary">
             Forma de pagamento
           </Text>
-          <XStack gap="$2">
-            <Button
-              flex={1}
-              onPress={() => setFormaPagamento('PIX')}
-              backgroundColor={formaPagamento === 'PIX' ? '$primary' : '$surface'}
-              color={formaPagamento === 'PIX' ? 'white' : '$text'}
-              borderColor="$border"
-              borderWidth={1}
-              fontWeight="700"
-            >
-              Pix
-            </Button>
-            <Button
-              flex={1}
-              onPress={() => setFormaPagamento('CARTAO')}
-              backgroundColor={formaPagamento === 'CARTAO' ? '$primary' : '$surface'}
-              color={formaPagamento === 'CARTAO' ? 'white' : '$text'}
-              borderColor="$border"
-              borderWidth={1}
-              fontWeight="700"
-            >
-              Cartão
-            </Button>
-          </XStack>
+          <SegmentedControl
+            options={[
+              { value: 'PIX', label: 'Pix' },
+              { value: 'CARTAO', label: 'Cartão' },
+            ]}
+            value={formaPagamento}
+            onChange={setFormaPagamento}
+          />
         </YStack>
 
         {formaPagamento === 'CARTAO' && (

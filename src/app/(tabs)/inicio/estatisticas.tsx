@@ -10,6 +10,7 @@ import { AppInput } from '@/components/AppInput';
 import { Money } from '@/components/Money';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
+import { SegmentedControl } from '@/components/SegmentedControl';
 import type { PeriodKind } from '@/domain/statistics/types';
 import { useStatistics } from '@/hooks/useStatistics';
 import { type Category, listCategories } from '@/repositories/categoriesRepository';
@@ -76,23 +77,14 @@ export default function EstatisticasScreen() {
       </XStack>
 
       <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
-        <XStack gap="$2">
-          {(Object.keys(PERIOD_LABELS) as PeriodKind[]).map((kind) => (
-            <Button
-              key={kind}
-              flex={1}
-              size="$3"
-              onPress={() => setPeriod(kind)}
-              backgroundColor={period === kind ? '$primary' : '$surface'}
-              color={period === kind ? 'white' : '$text'}
-              borderColor="$border"
-              borderWidth={1}
-              fontWeight="700"
-            >
-              {PERIOD_LABELS[kind]}
-            </Button>
-          ))}
-        </XStack>
+        <SegmentedControl
+          options={(Object.keys(PERIOD_LABELS) as PeriodKind[]).map((kind) => ({
+            value: kind,
+            label: PERIOD_LABELS[kind],
+          }))}
+          value={period}
+          onChange={setPeriod}
+        />
 
         {loading || !stats ? (
           <ActivityIndicator style={{ marginTop: 24 }} />

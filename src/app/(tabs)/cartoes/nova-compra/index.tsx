@@ -12,6 +12,7 @@ import { Money } from '@/components/Money';
 import { MoneyInput } from '@/components/MoneyInput';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
+import { SegmentedControl } from '@/components/SegmentedControl';
 import { Stepper } from '@/components/Stepper';
 import { requiresMotivoResponsavelFields } from '@/domain/expenseSplitting/requiresMotivoResponsavelFields';
 import { useBestCard } from '@/hooks/useBestCard';
@@ -253,30 +254,14 @@ export default function NovaCompraScreen() {
           <Text fontSize={13} color="$textSecondary">
             Forma de pagamento
           </Text>
-          <XStack gap="$2">
-            <Button
-              flex={1}
-              onPress={() => setValue('formaPagamento', 'PIX')}
-              backgroundColor={formaPagamento === 'PIX' ? '$primary' : '$surface'}
-              color={formaPagamento === 'PIX' ? 'white' : '$text'}
-              borderColor="$border"
-              borderWidth={1}
-              fontWeight="700"
-            >
-              Pix
-            </Button>
-            <Button
-              flex={1}
-              onPress={() => setValue('formaPagamento', 'CARTAO')}
-              backgroundColor={formaPagamento === 'CARTAO' ? '$primary' : '$surface'}
-              color={formaPagamento === 'CARTAO' ? 'white' : '$text'}
-              borderColor="$border"
-              borderWidth={1}
-              fontWeight="700"
-            >
-              Cartão
-            </Button>
-          </XStack>
+          <SegmentedControl
+            options={[
+              { value: 'PIX', label: 'Pix' },
+              { value: 'CARTAO', label: 'Cartão' },
+            ]}
+            value={formaPagamento}
+            onChange={(next) => setValue('formaPagamento', next)}
+          />
         </YStack>
 
         {formaPagamento === 'CARTAO' && (

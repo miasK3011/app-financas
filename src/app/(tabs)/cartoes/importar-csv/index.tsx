@@ -6,6 +6,7 @@ import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
+import { SegmentedControl } from '@/components/SegmentedControl';
 import {
   type CsvFormat,
   importCsv,
@@ -107,30 +108,14 @@ export default function ImportarCsvScreen() {
           <Text fontSize={13} color="$textSecondary">
             Formato do arquivo
           </Text>
-          <XStack gap="$2">
-            <Button
-              flex={1}
-              onPress={() => setFormato('GENERICO')}
-              backgroundColor={formato === 'GENERICO' ? '$primary' : '$surface'}
-              color={formato === 'GENERICO' ? 'white' : '$text'}
-              borderColor="$border"
-              borderWidth={1}
-              fontWeight="700"
-            >
-              Genérico
-            </Button>
-            <Button
-              flex={1}
-              onPress={() => setFormato('NUBANK')}
-              backgroundColor={formato === 'NUBANK' ? '$primary' : '$surface'}
-              color={formato === 'NUBANK' ? 'white' : '$text'}
-              borderColor="$border"
-              borderWidth={1}
-              fontWeight="700"
-            >
-              Nubank
-            </Button>
-          </XStack>
+          <SegmentedControl
+            options={[
+              { value: 'GENERICO', label: 'Genérico' },
+              { value: 'NUBANK', label: 'Nubank' },
+            ]}
+            value={formato}
+            onChange={setFormato}
+          />
           <Text fontSize={12} color="$textTertiary">
             {FORMAT_HELP[formato]}
           </Text>
