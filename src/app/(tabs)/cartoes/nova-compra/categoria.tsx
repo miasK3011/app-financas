@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
 import { Shapes } from 'lucide-react-native';
 import type { ComponentType } from 'react';
@@ -15,6 +15,13 @@ const icons = LucideIcons as unknown as Record<string, ComponentType<IconProps>>
 
 export default function NovaCompraCategoriaScreen() {
   const router = useRouter();
+  // Reaproveitada por Editar Compra (`[compraId].tsx`) — `returnTo`
+  // distingue pra qual tela `dismissTo`, já que os dois fluxos usam este
+  // mesmo picker (issue #5: "era pra ser parecida com a de Nova Compra").
+  const { returnTo, compraId } = useLocalSearchParams<{
+    returnTo?: string;
+    compraId?: string;
+  }>();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,6 +33,13 @@ export default function NovaCompraCategoriaScreen() {
   }, []);
 
   const handleSelect = (category: Category) => {
+    if (returnTo === 'editar-compra' && compraId) {
+      router.dismissTo({
+        pathname: '/cartoes/compra/[compraId]',
+        params: { compraId, categoriaId: category.id },
+      });
+      return;
+    }
     router.dismissTo({
       pathname: '/cartoes/nova-compra',
       params: {

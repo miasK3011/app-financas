@@ -1,13 +1,14 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
-import { Shapes, X } from 'lucide-react-native';
+import { ChevronRight, Shapes, X } from 'lucide-react-native';
 import type { ComponentType } from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { AppInput } from '@/components/AppInput';
 import { FormCard } from '@/components/FormCard';
+import { IconAvatar } from '@/components/IconAvatar';
 import { Money } from '@/components/Money';
 import { Screen } from '@/components/Screen';
 import { TagInput } from '@/components/TagInput';
@@ -40,8 +41,14 @@ const icons = LucideIcons as unknown as Record<string, ComponentType<IconProps>>
  */
 export default function EditarTransacaoScreen() {
   const router = useRouter();
-  const { compraId } = useLocalSearchParams<{ compraId: string }>();
+  const params = useLocalSearchParams<{
+    compraId: string;
+    categoriaId?: string;
+    estabelecimentoId?: string;
+  }>();
+  const { compraId } = params;
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [establishments, setEstablishments] = useState<Establishment[]>([]);
@@ -58,35 +65,69 @@ export default function EditarTransacaoScreen() {
   const [valorResponsabilidade, setValorResponsabilidade] = useState<number | null>(null);
   const [linkedEntries, setLinkedEntries] = useState<CashEntry[]>([]);
 
+  // A Divisão de responsabilidade (`divisao-manual`/`divisao-vinculada`,
+  // empurradas a partir daqui) grava direto no banco — por isso
+  // valorResponsabilidade/linkedEntries precisam recarregar a cada foco
+  // (useFocusEffect, não useEffect: ver mesmo comentário em
+  // useCards.ts). Descrição/categoria/estabelecimento/tags, porém, só
+  // existem localmente até "Salvar" — recarregá-los do banco a cada
+  // foco (inclusive ao voltar do picker de Categoria/Estabelecimento,
+  // que só devolve via params, nunca grava) apagaria a seleção que o
+  // usuário acabou de fazer. Por isso só são inicializados uma vez.
   useFocusEffect(
     useCallback(() => {
       if (!compraId) return;
       (async () => {
-        setLoading(true);
-        const [purchase, tagNomes, categoryList, entries, establishmentList] = await Promise.all([
+        const [purchase, entries] = await Promise.all([
           getPurchase(compraId),
-          listTagsForCompra(compraId),
-          listCategories(),
           listCashEntriesLinkedToCompra(compraId),
-          listEstablishments(),
         ]);
-        setCategories(categoryList);
         setLinkedEntries(entries);
-        setEstablishments(establishmentList);
         if (purchase) {
-          setDescricao(purchase.descricao);
-          setComentario(purchase.comentario ?? '');
-          setCategoriaId(purchase.categoriaId ?? undefined);
-          setEstabelecimentoId(purchase.estabelecimentoId ?? undefined);
-          setOriginalEstabelecimentoId(purchase.estabelecimentoId ?? undefined);
-          setValorTotalOriginal(purchase.valorTotalOriginal);
-          setDataCompra(purchase.dataCompra);
           setValorResponsabilidade(purchase.valorResponsabilidade);
         }
-        setTags(tagNomes);
         setLoading(false);
       })();
     }, [compraId]),
+  );
+
+  useEffect(() => {
+    if (!compraId || initialized) return;
+    (async () => {
+      const [purchase, tagNomes, categoryList, establishmentList] = await Promise.all([
+        getPurchase(compraId),
+        listTagsForCompra(compraId),
+        listCategories(),
+        listEstablishments(),
+      ]);
+      setCategories(categoryList);
+      setEstablishments(establishmentList);
+      if (purchase) {
+        setDescricao(purchase.descricao);
+        setComentario(purchase.comentario ?? '');
+        setCategoriaId(purchase.categoriaId ?? undefined);
+        setEstabelecimentoId(purchase.estabelecimentoId ?? undefined);
+        setOriginalEstabelecimentoId(purchase.estabelecimentoId ?? undefined);
+        setValorTotalOriginal(purchase.valorTotalOriginal);
+        setDataCompra(purchase.dataCompra);
+      }
+      setTags(tagNomes);
+      setInitialized(true);
+    })();
+  }, [compraId, initialized]);
+
+  // Volta do picker de Categoria/Estabelecimento (`dismissTo` com
+  // `returnTo: 'editar-compra'` — ver categoria.tsx/estabelecimento.tsx).
+  useEffect(() => {
+    if (params.categoriaId !== undefined) setCategoriaId(params.categoriaId);
+  }, [params.categoriaId]);
+  useEffect(() => {
+    if (params.estabelecimentoId !== undefined) setEstabelecimentoId(params.estabelecimentoId);
+  }, [params.estabelecimentoId]);
+
+  const selectedCategory = categories.find((category) => category.id === categoriaId);
+  const selectedEstablishment = establishments.find(
+    (establishment) => establishment.id === estabelecimentoId,
   );
 
   const hasLinkedEntries = linkedEntries.length > 0;
@@ -122,7 +163,7 @@ export default function EditarTransacaoScreen() {
     router.back();
   };
 
-  if (loading) {
+  if (loading || !initialized) {
     return (
       <Screen>
         <YStack flex={1} alignItems="center" justifyContent="center">
@@ -308,25 +349,36 @@ export default function EditarTransacaoScreen() {
             <Text fontSize={13} color="$textSecondary">
               Categoria
             </Text>
-            <XStack flexWrap="wrap" gap="$2">
-              {categories.map((category) => {
-                const Icon = icons[category.icone] ?? Shapes;
-                const selected = categoriaId === category.id;
-                return (
-                  <Button
-                    key={category.id}
-                    onPress={() => setCategoriaId(selected ? undefined : category.id)}
-                    size="$3"
-                    backgroundColor={selected ? '$primary' : '$surface'}
-                    color={selected ? 'white' : '$text'}
-                    borderColor="$border"
-                    borderWidth={1}
-                    icon={<Icon size={16} color={selected ? 'white' : '#1C1C1E'} />}
-                  >
-                    {category.nome}
-                  </Button>
-                );
-              })}
+            <XStack
+              backgroundColor="$bg"
+              borderColor="$border"
+              borderWidth={1}
+              borderRadius="$md"
+              paddingVertical={9}
+              paddingHorizontal={13}
+              alignItems="center"
+              justifyContent="space-between"
+              gap="$2"
+              onPress={() =>
+                router.push({
+                  pathname: '/cartoes/nova-compra/categoria',
+                  params: { categoriaId, returnTo: 'editar-compra', compraId },
+                })
+              }
+            >
+              <XStack alignItems="center" gap="$2.5">
+                {selectedCategory && (
+                  <IconAvatar
+                    icon={icons[selectedCategory.icone] ?? Shapes}
+                    iconName={selectedCategory.icone}
+                    size={30}
+                  />
+                )}
+                <Text fontSize={14.5} fontWeight="600" color="$text">
+                  {selectedCategory?.nome ?? 'Nenhuma'}
+                </Text>
+              </XStack>
+              <ChevronRight size={17} color="#6C6C6D" />
             </XStack>
           </YStack>
 
@@ -334,33 +386,27 @@ export default function EditarTransacaoScreen() {
             <Text fontSize={13} color="$textSecondary">
               Estabelecimento
             </Text>
-            <XStack flexWrap="wrap" gap="$2">
-              <Button
-                onPress={() => setEstabelecimentoId(undefined)}
-                size="$3"
-                backgroundColor={estabelecimentoId === undefined ? '$primary' : '$surface'}
-                color={estabelecimentoId === undefined ? 'white' : '$text'}
-                borderColor="$border"
-                borderWidth={1}
-              >
-                Nenhum
-              </Button>
-              {establishments.map((establishment) => {
-                const selected = estabelecimentoId === establishment.id;
-                return (
-                  <Button
-                    key={establishment.id}
-                    onPress={() => setEstabelecimentoId(establishment.id)}
-                    size="$3"
-                    backgroundColor={selected ? '$primary' : '$surface'}
-                    color={selected ? 'white' : '$text'}
-                    borderColor="$border"
-                    borderWidth={1}
-                  >
-                    {establishment.nomeExibicao}
-                  </Button>
-                );
-              })}
+            <XStack
+              backgroundColor="$bg"
+              borderColor="$border"
+              borderWidth={1}
+              borderRadius="$md"
+              paddingVertical={9}
+              paddingHorizontal={13}
+              alignItems="center"
+              justifyContent="space-between"
+              gap="$2"
+              onPress={() =>
+                router.push({
+                  pathname: '/cartoes/nova-compra/estabelecimento',
+                  params: { descricao, returnTo: 'editar-compra', compraId },
+                })
+              }
+            >
+              <Text fontSize={14.5} fontWeight="600" color="$text">
+                {selectedEstablishment?.nomeExibicao ?? 'Nenhum'}
+              </Text>
+              <ChevronRight size={17} color="#6C6C6D" />
             </XStack>
           </YStack>
 
