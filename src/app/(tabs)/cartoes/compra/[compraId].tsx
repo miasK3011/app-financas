@@ -1,16 +1,17 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import * as LucideIcons from 'lucide-react-native';
-import { ChevronLeft, Shapes, X } from 'lucide-react-native';
+import { Shapes, X } from 'lucide-react-native';
 import type { ComponentType } from 'react';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { AppInput } from '@/components/AppInput';
+import { FormCard } from '@/components/FormCard';
 import { Money } from '@/components/Money';
-import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { TagInput } from '@/components/TagInput';
+import { formatBRL } from '@/domain/shared/money';
 import {
   type CashEntry,
   listCashEntriesLinkedToCompra,
@@ -29,9 +30,13 @@ type IconProps = { size?: number; color?: string };
 const icons = LucideIcons as unknown as Record<string, ComponentType<IconProps>>;
 
 /**
- * T079: edição de descrição, categoria, comentário e tags de uma
- * transação já existente — inclusive uma importada via CSV (FR-007).
- * Nunca toca em valor/parcelamento (ver `updatePurchase`).
+ * T079/NovaCompraDivisaoManual.dc.html + NovaCompraDivisaoVinculada.dc.html
+ * ("Editar Compra" nos dois estados de divisão): edição de descrição,
+ * categoria, comentário e tags de uma transação já existente —
+ * inclusive uma importada via CSV (FR-007). Valor/data são somente
+ * leitura aqui: `updatePurchase` nunca toca em `Parcela.valor` (não há
+ * recálculo de parcelamento implementado) — ver comentário em
+ * `purchasesRepository.updatePurchase`.
  */
 export default function EditarTransacaoScreen() {
   const router = useRouter();
@@ -49,6 +54,7 @@ export default function EditarTransacaoScreen() {
   );
   const [tags, setTags] = useState<string[]>([]);
   const [valorTotalOriginal, setValorTotalOriginal] = useState(0);
+  const [dataCompra, setDataCompra] = useState<Date>();
   const [valorResponsabilidade, setValorResponsabilidade] = useState<number | null>(null);
   const [linkedEntries, setLinkedEntries] = useState<CashEntry[]>([]);
 
@@ -74,6 +80,7 @@ export default function EditarTransacaoScreen() {
           setEstabelecimentoId(purchase.estabelecimentoId ?? undefined);
           setOriginalEstabelecimentoId(purchase.estabelecimentoId ?? undefined);
           setValorTotalOriginal(purchase.valorTotalOriginal);
+          setDataCompra(purchase.dataCompra);
           setValorResponsabilidade(purchase.valorResponsabilidade);
         }
         setTags(tagNomes);
@@ -127,115 +134,71 @@ export default function EditarTransacaoScreen() {
 
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']}>
-      <XStack alignItems="center" gap="$3" padding={20} paddingBottom={0}>
+      <XStack alignItems="center" justifyContent="space-between" padding={20} paddingBottom={0}>
+        <XStack alignItems="center" gap="$3">
+          <Button
+            onPress={() => router.back()}
+            circular
+            size="$3"
+            backgroundColor="$surface"
+            borderColor="$border"
+            borderWidth={1}
+            icon={<X size={18} />}
+          />
+          <Text fontFamily="$heading" fontSize={18} fontWeight="600" color="$text">
+            Editar compra
+          </Text>
+        </XStack>
         <Button
-          onPress={() => router.back()}
-          circular
-          size="$3"
-          backgroundColor="$surface"
-          borderColor="$border"
-          borderWidth={1}
-          icon={<ChevronLeft size={18} />}
-        />
-        <Text fontFamily="$heading" fontSize={18} fontWeight="600" color="$text">
-          Editar transação
-        </Text>
+          onPress={handleSave}
+          disabled={saving}
+          chromeless
+          color="$primary"
+          fontWeight="700"
+          fontSize={15}
+        >
+          Salvar
+        </Button>
       </XStack>
 
       <ScrollView contentContainerStyle={{ padding: 20, gap: 18 }}>
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Descrição
-          </Text>
-          <AppInput value={descricao} onChangeText={setDescricao} />
-        </YStack>
+        <FormCard title="Detalhes">
+          <YStack gap="$2">
+            <Text fontSize={13} color="$textSecondary">
+              Descrição
+            </Text>
+            <AppInput value={descricao} onChangeText={setDescricao} />
+          </YStack>
 
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Categoria
-          </Text>
-          <XStack flexWrap="wrap" gap="$2">
-            {categories.map((category) => {
-              const Icon = icons[category.icone] ?? Shapes;
-              const selected = categoriaId === category.id;
-              return (
-                <Button
-                  key={category.id}
-                  onPress={() => setCategoriaId(selected ? undefined : category.id)}
-                  size="$3"
-                  backgroundColor={selected ? '$primary' : '$surface'}
-                  color={selected ? 'white' : '$text'}
-                  borderColor="$border"
-                  borderWidth={1}
-                  icon={<Icon size={16} color={selected ? 'white' : '#1C1C1E'} />}
-                >
-                  {category.nome}
-                </Button>
-              );
-            })}
+          <XStack gap="$3">
+            <YStack flex={1} gap="$2">
+              <Text fontSize={13} color="$textSecondary">
+                Valor
+              </Text>
+              <AppInput
+                value={formatBRL(valorTotalOriginal)}
+                pointerEvents="none"
+                opacity={0.7}
+              />
+            </YStack>
+            <YStack flex={1} gap="$2">
+              <Text fontSize={13} color="$textSecondary">
+                Data
+              </Text>
+              <AppInput
+                value={
+                  dataCompra
+                    ? `${dataCompra.getDate()}/${dataCompra.getMonth() + 1}/${dataCompra.getFullYear()}`
+                    : ''
+                }
+                pointerEvents="none"
+                opacity={0.7}
+              />
+            </YStack>
           </XStack>
-        </YStack>
+        </FormCard>
 
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Estabelecimento
-          </Text>
-          <XStack flexWrap="wrap" gap="$2">
-            <Button
-              onPress={() => setEstabelecimentoId(undefined)}
-              size="$3"
-              backgroundColor={estabelecimentoId === undefined ? '$primary' : '$surface'}
-              color={estabelecimentoId === undefined ? 'white' : '$text'}
-              borderColor="$border"
-              borderWidth={1}
-            >
-              Nenhum
-            </Button>
-            {establishments.map((establishment) => {
-              const selected = estabelecimentoId === establishment.id;
-              return (
-                <Button
-                  key={establishment.id}
-                  onPress={() => setEstabelecimentoId(establishment.id)}
-                  size="$3"
-                  backgroundColor={selected ? '$primary' : '$surface'}
-                  color={selected ? 'white' : '$text'}
-                  borderColor="$border"
-                  borderWidth={1}
-                >
-                  {establishment.nomeExibicao}
-                </Button>
-              );
-            })}
-          </XStack>
-        </YStack>
-
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Tags
-          </Text>
-          <TagInput value={tags} onChange={setTags} />
-        </YStack>
-
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Comentário
-          </Text>
-          <AppInput value={comentario} onChangeText={setComentario} placeholder="Opcional" />
-        </YStack>
-
-        <YStack
-          backgroundColor="$surface"
-          borderColor="$border"
-          borderWidth={1}
-          borderRadius="$lg"
-          padding={18}
-          gap="$3"
-        >
-          <Text fontSize={12} fontWeight="700" color="$textTertiary" textTransform="uppercase">
-            Divisão de responsabilidade
-          </Text>
-
+        <FormCard title="Divisão de responsabilidade">
           {hasLinkedEntries ? (
             <>
               {linkedEntries.map((entry) => (
@@ -338,17 +301,80 @@ export default function EditarTransacaoScreen() {
               </Button>
             </>
           )}
-        </YStack>
+        </FormCard>
 
-        <PrimaryButton
-          onPress={handleSave}
-          disabled={saving}
-          color="white"
-          fontWeight="700"
-          borderRadius={999}
-        >
-          Salvar alterações
-        </PrimaryButton>
+        <FormCard title="Organização">
+          <YStack gap="$2">
+            <Text fontSize={13} color="$textSecondary">
+              Categoria
+            </Text>
+            <XStack flexWrap="wrap" gap="$2">
+              {categories.map((category) => {
+                const Icon = icons[category.icone] ?? Shapes;
+                const selected = categoriaId === category.id;
+                return (
+                  <Button
+                    key={category.id}
+                    onPress={() => setCategoriaId(selected ? undefined : category.id)}
+                    size="$3"
+                    backgroundColor={selected ? '$primary' : '$surface'}
+                    color={selected ? 'white' : '$text'}
+                    borderColor="$border"
+                    borderWidth={1}
+                    icon={<Icon size={16} color={selected ? 'white' : '#1C1C1E'} />}
+                  >
+                    {category.nome}
+                  </Button>
+                );
+              })}
+            </XStack>
+          </YStack>
+
+          <YStack gap="$2">
+            <Text fontSize={13} color="$textSecondary">
+              Estabelecimento
+            </Text>
+            <XStack flexWrap="wrap" gap="$2">
+              <Button
+                onPress={() => setEstabelecimentoId(undefined)}
+                size="$3"
+                backgroundColor={estabelecimentoId === undefined ? '$primary' : '$surface'}
+                color={estabelecimentoId === undefined ? 'white' : '$text'}
+                borderColor="$border"
+                borderWidth={1}
+              >
+                Nenhum
+              </Button>
+              {establishments.map((establishment) => {
+                const selected = estabelecimentoId === establishment.id;
+                return (
+                  <Button
+                    key={establishment.id}
+                    onPress={() => setEstabelecimentoId(establishment.id)}
+                    size="$3"
+                    backgroundColor={selected ? '$primary' : '$surface'}
+                    color={selected ? 'white' : '$text'}
+                    borderColor="$border"
+                    borderWidth={1}
+                  >
+                    {establishment.nomeExibicao}
+                  </Button>
+                );
+              })}
+            </XStack>
+          </YStack>
+
+          <YStack gap="$2">
+            <Text fontSize={13} color="$textSecondary">
+              Tags
+            </Text>
+            <TagInput value={tags} onChange={setTags} />
+          </YStack>
+        </FormCard>
+
+        <FormCard title="Comentário">
+          <AppInput value={comentario} onChangeText={setComentario} placeholder="Opcional" />
+        </FormCard>
       </ScrollView>
     </Screen>
   );
