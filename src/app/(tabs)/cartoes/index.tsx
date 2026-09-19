@@ -57,8 +57,8 @@ export default function CartoesScreen() {
             padding={16}
           >
             <Text fontSize={13} color="$infoDark">
-              Melhor cartão para comprar hoje: <Text fontWeight="700">{bestCardName}</Text> (vence
-              em {bestCard.daysUntilDue} dias)
+              Melhor cartão para comprar hoje: <Text fontWeight="700">{bestCardName}</Text> (fecha
+              em {bestCard.daysUntilClosing} dias)
             </Text>
           </Card>
         )}

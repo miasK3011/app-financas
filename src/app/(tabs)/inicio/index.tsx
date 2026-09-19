@@ -233,7 +233,7 @@ export default function InicioScreen() {
                 <Text fontWeight="700" color="$textSecondary">
                   {bestCardName}
                 </Text>{' '}
-                — fecha em {bestCard.daysUntilDue} dias, maior prazo para pagar
+                — próxima fatura fecha em {bestCard.daysUntilClosing} dias, maior prazo até lá
               </Text>
             </YStack>
           </XStack>

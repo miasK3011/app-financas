@@ -3,7 +3,7 @@ import { suggestBestCard } from '@/domain/bestCard/suggestBestCard';
 const today = new Date(2026, 9, 5); // 05/10/2026
 
 describe('suggestBestCard', () => {
-  it('picks the card whose invoice due date is furthest in the future', () => {
+  it('picks the card whose next closing date is furthest in the future', () => {
     const closesSoon = {
       id: 'card-early',
       diaFechamento: 6, // fecha amanhã — vence dia 13 (mesmo mês, diaVencimento >= diaFechamento)
@@ -21,6 +21,30 @@ describe('suggestBestCard', () => {
 
     const result = suggestBestCard([closesSoon, closesLater], today);
     expect(result?.cardId).toBe('card-late');
+  });
+
+  it('ranks by proximity to closing, not by total carência until due date (issue #11)', () => {
+    // Fechou ontem (04/10) — melhor dia de compra é fechamento + 1. Este cartão
+    // deve ganhar mesmo tendo uma carência bem mais curta (e por isso um
+    // vencimento bem mais próximo) que o outro cartão.
+    const justClosedShortGrace = {
+      id: 'card-just-closed',
+      diaFechamento: 4, // fechou ontem — próximo fechamento: 04/11
+      diaVencimento: 5, // carência de 1 dia — vence 05/11
+      arquivadoEm: null,
+      criadoEm: new Date(2026, 0, 1),
+    };
+    const farFromClosingHugeGrace = {
+      id: 'card-far-from-closing',
+      diaFechamento: 31, // fecha só daqui a 26 dias — próximo fechamento: 31/10
+      diaVencimento: 30, // carência de 30 dias — vence 30/11, data mais tardia que 05/11, mas
+      // seu PRÓXIMO fechamento (31/10) é mais cedo que o do outro cartão (04/11)
+      arquivadoEm: null,
+      criadoEm: new Date(2026, 0, 1),
+    };
+
+    const result = suggestBestCard([justClosedShortGrace, farFromClosingHugeGrace], today);
+    expect(result?.cardId).toBe('card-just-closed');
   });
 
   it('excludes archived cards from the ranking (FR-025)', () => {

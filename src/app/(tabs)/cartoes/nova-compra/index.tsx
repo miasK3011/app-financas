@@ -316,7 +316,7 @@ export default function NovaCompraScreen() {
                     <Text fontSize={12} color="$infoDark" flex={1}>
                       Melhor hoje:{' '}
                       {cards.find((card) => card.id === bestCard.cardId)?.nome ?? 'outro cartão'}{' '}
-                      (vence em {bestCard.daysUntilDue} dias)
+                      (fecha em {bestCard.daysUntilClosing} dias)
                     </Text>
                     <Button
                       onPress={() => setValue('cartaoId', bestCard.cardId)}

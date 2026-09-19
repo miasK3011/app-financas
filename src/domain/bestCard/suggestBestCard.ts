@@ -11,15 +11,20 @@ export type BestCardCandidate = {
 
 export type BestCardSuggestion = {
   cardId: string;
-  dueDate: Date;
-  daysUntilDue: number;
+  closingDate: Date;
+  daysUntilClosing: number;
 };
 
 /**
- * FR-012/FR-025: cartão cuja fatura de uma compra feita hoje venceria
- * mais tarde — maior prazo total até o pagamento. Cartões arquivados
- * nunca entram no ranking. Empate exato resolvido pelo cadastro mais
- * antigo (`criadoEm`), para ser determinístico (contracts/best-card.md).
+ * FR-012/FR-025: cartão cujo fechamento de uma compra feita hoje cai mais
+ * longe no futuro — melhor dia de compra é sempre fechamento + 1, então o
+ * cartão que fechou mais recentemente (maior `daysUntilClosing`) é o
+ * melhor. Ranqueia pela data de FECHAMENTO, não de vencimento: dois
+ * cartões com carências (fechamento→vencimento) diferentes não devem
+ * mudar esse ranking — só importa a proximidade ao próprio fechamento de
+ * cada cartão. Cartões arquivados nunca entram no ranking. Empate exato
+ * resolvido pelo cadastro mais antigo (`criadoEm`), para ser
+ * determinístico (contracts/best-card.md).
  */
 export function suggestBestCard(
   cards: BestCardCandidate[],
@@ -28,20 +33,20 @@ export function suggestBestCard(
   const active = cards.filter((card) => card.arquivadoEm === null);
   if (active.length === 0) return null;
 
-  const withDueDate = active.map((card) => {
+  const withClosingDate = active.map((card) => {
     const { year, month } = resolveInvoicePeriod(card.diaFechamento, today);
-    const { dataVencimento } = computeInvoiceDates(card, year, month);
-    return { card, dueDate: dataVencimento };
+    const { dataFechamento } = computeInvoiceDates(card, year, month);
+    return { card, closingDate: dataFechamento };
   });
 
-  const best = withDueDate.reduce((best, current) => {
-    if (current.dueDate.getTime() > best.dueDate.getTime()) return current;
-    if (current.dueDate.getTime() < best.dueDate.getTime()) return best;
+  const best = withClosingDate.reduce((best, current) => {
+    if (current.closingDate.getTime() > best.closingDate.getTime()) return current;
+    if (current.closingDate.getTime() < best.closingDate.getTime()) return best;
     return current.card.criadoEm.getTime() < best.card.criadoEm.getTime() ? current : best;
   });
 
-  const millisecondsUntilDue = best.dueDate.getTime() - today.getTime();
-  const daysUntilDue = Math.ceil(millisecondsUntilDue / (24 * 60 * 60 * 1000));
+  const millisecondsUntilClosing = best.closingDate.getTime() - today.getTime();
+  const daysUntilClosing = Math.ceil(millisecondsUntilClosing / (24 * 60 * 60 * 1000));
 
-  return { cardId: best.card.id, dueDate: best.dueDate, daysUntilDue };
+  return { cardId: best.card.id, closingDate: best.closingDate, daysUntilClosing };
 }
