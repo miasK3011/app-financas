@@ -75,3 +75,16 @@
   compra; a responsabilidade é só uma lente informativa/estatística, registrada em Assumptions.
   Checklist revalidado — todos os itens continuam passando, nenhum `[NEEDS CLARIFICATION]`
   restante.
+- 2026-09-18: **implementação concluída (T132)** — as 12 User Stories de `tasks.md` (Fases 1–14)
+  estão implementadas, com `tsc`/`eslint`/`npm test` limpos a cada fase. Build de preview (EAS,
+  APK) instalada e testada no dia a dia pelo usuário; 7 bugs/imperfeições reportados em uso real
+  triados (issues #4–#10 no GitHub) — 4 corrigidos (fechamento de fatura, cor de botão pressionado,
+  cor de texto de input, header de Fatura·Detalhe rolando), 3 documentados para decisão/refatoração
+  futura (fidelidade visual geral, botões travados após Activity externa no Android, redesenho da
+  divisão de responsabilidade). Da Fase 15 (Polish), os itens que dependem de execução em
+  dispositivo Android real (T126 quickstart end-to-end, T128 testes de integração on-device,
+  T129 medição de tempo de boot) **não puderam ser executados neste ambiente** (sem SDK/emulador
+  Android) — ficam pendentes de validação pelo usuário no próprio aparelho. T127 (contraste) e
+  T130/T134 (fidelidade visual) foram auditados estaticamente contra o código; T131 (Constitution
+  Check) confirmado: única chamada de rede é a busca best-effort de logotipo via Brandfetch,
+  non-blocking com timeout.

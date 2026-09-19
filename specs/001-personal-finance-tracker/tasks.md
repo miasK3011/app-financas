@@ -587,22 +587,29 @@ cadastrada, sem aplicação automática (FR-019 a FR-021).
 
 **Purpose**: Validação final e qualidade transversal a todas as stories.
 
-- [ ] T126 [P] Rodar `quickstart.md` de ponta a ponta em um dispositivo Android real via Expo Go,
-      conferindo os 7 cenários
-- [ ] T127 [P] Revisão de contraste/acessibilidade da implementação real contra os tokens
-      validados em `design-brief.md` (WCAG já computado na fase de design — confirmar que os
-      componentes Tamagui construídos batem com esses valores)
-- [ ] T128 [P] Testes de integração em `tests/integration/` (on-device) para: migrations rodando
-      do zero em um banco limpo, e round-trip completo de backup export→import (FR-024)
-- [ ] T129 Medir tempo de boot+migrations e tempo de abertura das listagens principais contra as
-      metas do Technical Context (`plan.md`: <500ms boot, <100ms listagens)
-- [ ] T130 [P] Revisar cada tela construída contra os canvases aprovados em `design-brief.md`
-      para fidelidade visual
-- [ ] T131 Revisão final da Constitution Check (`plan.md`) contra o código entregue: confirmar que
-      nenhuma chamada de rede além da busca de logotipo Brandfetch foi introduzida, e que ela
-      permanece best-effort/não-bloqueante
-- [ ] T132 Registrar em `specs/001-personal-finance-tracker/checklists/requirements.md` a entrada
-      final de "implementação concluída"
+- [ ] T126 [P] **Bloqueado — precisa de dispositivo Android real** (sem SDK/emulador neste
+      ambiente). Rodar `quickstart.md` de ponta a ponta via Expo Go, conferindo os 7 cenários
+- [X] T127 (parcial) [P] Revisão estática de contraste concluída: hex de `textSecondary`/
+      `textTertiary` em `src/theme/colors.ts` conferidos contra `design-brief.md` §3.1 — os
+      valores implementados divergem dos hex literais do brief e o fazem por um motivo correto
+      (os do brief reprovam WCAG AA ~2.8:1 para `textTertiary`; os implementados passam ~5.3:1),
+      documentado em comentário no próprio arquivo. Confirmação visual em tela real ainda
+      pendente de dispositivo
+- [ ] T128 [P] **Bloqueado — precisa de dispositivo Android real** (`expo-sqlite` não roda sob
+      Jest/node puro; por isso `tests/integration/` já está em `testPathIgnorePatterns` desde a
+      Fase 1). Testes de integração on-device: migrations do zero em banco limpo, round-trip de
+      backup export→import (FR-024)
+- [ ] T129 **Bloqueado — precisa de dispositivo Android real**. Medir tempo de boot+migrations e
+      abertura das listagens principais contra as metas do Technical Context (`plan.md`: <500ms
+      boot, <100ms listagens)
+- [X] T130 Auditoria tela-a-tela concluída contra os canvases/`design/*.dc.html` (mesmo escopo de
+      T134/issue #5) — achados registrados como comentário na issue
+      [#5](https://github.com/miasK3011/app-financas/issues/5)
+- [X] T131 Revisão final da Constitution Check confirmada: única chamada de rede é
+      `establishmentsRepository.fetchAndCacheLogo` (Brandfetch CDN), com timeout de 5s via
+      `Promise.race` e `try/catch` que nunca propaga erro — best-effort/não-bloqueante como exigido
+- [X] T132 Registrada em `specs/001-personal-finance-tracker/checklists/requirements.md` a entrada
+      final de "implementação concluída" (2026-09-18), com o status real de cada pendência
 
 ### Bugs/imperfeições reportados em teste real (build Trocadin, 2026-09-18)
 
@@ -612,8 +619,9 @@ Expo Go pela primeira vez) — issues no GitHub têm o diagnóstico completo de 
 - [X] T133 Corrigir `computeInvoiceStatus` marcando fatura `FECHADA` a partir de qualquer horário
       do próprio dia de fechamento (comparação de timestamp em vez de dia de calendário) —
       [#4](https://github.com/miasK3011/app-financas/issues/4)
-- [ ] T134 Auditoria de fidelidade visual tela-a-tela contra `design/*.dc.html` (mesmo escopo de
-      T130, tratado como issue própria por ter sido reportado separadamente) —
+- [X] T134 Auditoria de fidelidade visual tela-a-tela contra `design/*.dc.html` concluída (mesmo
+      escopo de T130); achados publicados como comentário na issue — decisão de quais divergências
+      corrigir agora vs. depois fica com o usuário —
       [#5](https://github.com/miasK3011/app-financas/issues/5)
 - [ ] T135 Investigar botões travados (sem resposta a toque) depois de o app voltar de uma
       Activity externa no Android (ex.: seletor de arquivo) — precisa de reprodução em

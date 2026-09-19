@@ -23,6 +23,12 @@ export const colors = {
   surface: '#FFFFFF',
   border: '#E7E5E2',
   text: '#1C1C1E',
+  /**
+   * T127: valores deliberadamente mais escuros que os hex literais do
+   * design-brief.md §3.1 (`#6B6B6E`/`#9A9A9C`) — aqueles reprovam WCAG AA
+   * para texto normal sobre `$surface`/`$bg` (contraste ~5.3:1 e ~2.8:1);
+   * estes passam com folga (~6.8:1 e ~5.3:1). Manter estes valores.
+   */
   textSecondary: '#5B5B5E',
   textTertiary: '#6C6C6D',
 } as const;
