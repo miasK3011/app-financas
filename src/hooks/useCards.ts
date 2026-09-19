@@ -6,6 +6,7 @@ import {
   type Card,
   type CardInput,
   createCard,
+  getCard,
   listActiveCards,
   listAllCards,
 } from '@/repositories/cardsRepository';
@@ -55,4 +56,28 @@ export function useCards(includeArchived = false) {
   );
 
   return { cards, loading, refresh, create, archive };
+}
+
+/** Um único cartão (nome/dia de fechamento/vencimento) — usado por telas que dependem de um `cardId` de rota. */
+export function useCard(cardId: string | undefined) {
+  const [card, setCard] = useState<Card>();
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    if (!cardId) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setCard(await getCard(cardId));
+    setLoading(false);
+  }, [cardId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
+
+  return { card, loading, refresh };
 }

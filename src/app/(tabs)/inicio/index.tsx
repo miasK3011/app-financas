@@ -319,7 +319,7 @@ export default function InicioScreen() {
                   borderColor="$border"
                   alignItems="center"
                   gap="$3"
-                  onPress={() => router.push(`/cartoes/compra/${row.compra.id}`)}
+                  onPress={() => router.push(`/compra/${row.compra.id}`)}
                 >
                   <TransactionAvatar
                     estabelecimento={row.estabelecimento}
@@ -348,7 +348,7 @@ export default function InicioScreen() {
       </ScrollView>
 
       <PrimaryButton
-        onPress={() => router.push('/cartoes/nova-compra')}
+        onPress={() => router.push('/nova-compra')}
         position="absolute"
         bottom={24}
         right={20}

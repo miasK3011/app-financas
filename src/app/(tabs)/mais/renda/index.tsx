@@ -223,7 +223,7 @@ export default function RendaScreen() {
 
         <Button
           onPress={() =>
-            router.push({ pathname: '/cartoes/nova-compra', params: { formaPagamento: 'PIX' } })
+            router.push({ pathname: '/nova-compra', params: { formaPagamento: 'PIX' } })
           }
           backgroundColor="$surface"
           borderColor="$border"

@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Archive, ChevronLeft, ChevronRight, Plus } from 'lucide-react-native';
+import { Archive, ChevronLeft, ChevronRight, Plus, Upload } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
@@ -72,24 +72,21 @@ export default function CartaoFaturasScreen() {
 
   return (
     <Screen>
-      <XStack alignItems="center" gap="$3" padding={20} paddingBottom={0}>
-        <Button
-          onPress={() => router.back()}
-          circular
-          size="$3"
-          backgroundColor="$surface"
-          borderColor="$border"
-          borderWidth={1}
-          icon={<ChevronLeft size={18} />}
-        />
-        <YStack flex={1}>
-          <Text fontFamily="$heading" fontSize={18} fontWeight="600" color="$text">
+      <XStack alignItems="center" justifyContent="space-between" padding={20} paddingBottom={0}>
+        <XStack alignItems="center" gap="$3">
+          <Button
+            onPress={() => router.back()}
+            circular
+            size="$3"
+            backgroundColor="$surface"
+            borderColor="$border"
+            borderWidth={1}
+            icon={<ChevronLeft size={18} />}
+          />
+          <Text fontFamily="$heading" fontSize={19} fontWeight="600" color="$text">
             {card?.nome ?? 'Cartão'}
           </Text>
-          <Text fontSize={12} color="$textTertiary">
-            Fecha dia {card?.diaFechamento} · Vence dia {card?.diaVencimento}
-          </Text>
-        </YStack>
+        </XStack>
         {!card?.arquivadoEm && (
           <Button
             onPress={handleArchive}
@@ -104,6 +101,38 @@ export default function CartaoFaturasScreen() {
       </XStack>
 
       <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
+        <XStack
+          backgroundColor="$surface"
+          borderColor="$border"
+          borderWidth={1}
+          borderRadius="$lg"
+          padding={18}
+          alignItems="center"
+          justifyContent="space-between"
+          gap="$3"
+        >
+          <Text fontSize={13} color="$textSecondary">
+            Fecha dia {card?.diaFechamento} · Vence dia {card?.diaVencimento}
+          </Text>
+          {!card?.arquivadoEm && (
+            <Button
+              onPress={() =>
+                router.push({ pathname: '/cartoes/importar-csv', params: { cartaoId: cardId } })
+              }
+              size="$3"
+              backgroundColor="$primaryLight"
+              color="$primaryDark"
+              borderWidth={0}
+              borderRadius={999}
+              fontSize={12.5}
+              fontWeight="600"
+              icon={<Upload size={15} color="#234F3E" />}
+            >
+              Importar CSV
+            </Button>
+          )}
+        </XStack>
+
         {loading ? (
           <ActivityIndicator style={{ marginTop: 24 }} />
         ) : sortedInvoices.length === 0 ? (
@@ -112,45 +141,57 @@ export default function CartaoFaturasScreen() {
           </Text>
         ) : (
           <YStack>
-            {sortedInvoices.map((invoice, index) => (
-              <XStack
-                key={invoice.id}
-                paddingVertical={14}
-                borderTopWidth={index === 0 ? 0 : 1}
-                borderColor="$border"
-                alignItems="center"
-                justifyContent="space-between"
-                onPress={() => router.push(`/cartoes/${cardId}/fatura/${invoice.id}`)}
-              >
-                <YStack>
-                  <Text fontSize={15} fontWeight="600" color="$text">
-                    {MONTH_NAMES[invoice.referenciaMes - 1]} {invoice.referenciaAno}
-                  </Text>
-                  <XStack marginTop={4}>
-                    <StatusBadge status={invoice.status} />
-                  </XStack>
-                </YStack>
-                <XStack alignItems="center" gap="$2">
-                  <YStack alignItems="flex-end">
-                    <Money cents={invoice.total} fontSize={15} fontWeight="600" color="$text" />
-                    {shouldShowResponsibilitySummary(invoice) && (
-                      <XStack gap="$1">
-                        <Text fontSize={11} color="$textTertiary">
-                          Você paga:
-                        </Text>
+            <Text fontSize={15} fontWeight="600" color="$text" marginBottom="$3">
+              Faturas
+            </Text>
+            {sortedInvoices.map((invoice, index) => {
+              const isFuture = invoice.status === 'FUTURA';
+              const showResponsibility =
+                invoice.status === 'ABERTA' && shouldShowResponsibilitySummary(invoice);
+
+              return (
+                <XStack
+                  key={invoice.id}
+                  paddingVertical={16}
+                  borderTopWidth={index === 0 ? 0 : 1}
+                  borderColor="$border"
+                  alignItems="center"
+                  gap="$3"
+                  onPress={() => router.push(`/cartoes/${cardId}/fatura/${invoice.id}`)}
+                >
+                  <YStack flex={1}>
+                    <Text fontSize={15} fontWeight="600" color={isFuture ? '$textSecondary' : '$text'}>
+                      {MONTH_NAMES[invoice.referenciaMes - 1]} {invoice.referenciaAno}
+                    </Text>
+                    {showResponsibility && (
+                      <Text fontSize={12.5} color="$textTertiary" marginTop={2}>
+                        Sua responsabilidade:{' '}
                         <Money
                           cents={invoice.totalResponsabilidade}
-                          fontSize={11}
-                          fontWeight="700"
+                          fontSize={12.5}
                           color="$textTertiary"
                         />
-                      </XStack>
+                      </Text>
                     )}
+                    {isFuture && (
+                      <Text fontSize={12.5} color="$textTertiary" marginTop={2}>
+                        Prevista · parcelas já alocadas
+                      </Text>
+                    )}
+                  </YStack>
+                  <YStack alignItems="flex-end" gap="$1.5">
+                    {!isFuture && <StatusBadge status={invoice.status} />}
+                    <Money
+                      cents={invoice.total}
+                      fontSize={17}
+                      fontWeight="600"
+                      color={isFuture ? '$textSecondary' : invoice.status === 'ABERTA' ? '$info' : '$text'}
+                    />
                   </YStack>
                   <ChevronRight size={16} color="#6C6C6D" />
                 </XStack>
-              </XStack>
-            ))}
+              );
+            })}
           </YStack>
         )}
       </ScrollView>
@@ -158,7 +199,7 @@ export default function CartaoFaturasScreen() {
       {!card?.arquivadoEm && (
         <PrimaryButton
           onPress={() =>
-            router.push({ pathname: '/cartoes/nova-compra', params: { cartaoId: cardId } })
+            router.push({ pathname: '/nova-compra', params: { cartaoId: cardId } })
           }
           position="absolute"
           bottom={24}

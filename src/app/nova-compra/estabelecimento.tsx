@@ -30,7 +30,14 @@ const icons = LucideIcons as unknown as Record<string, ComponentType<IconProps>>
  */
 export default function NovaCompraEstabelecimentoScreen() {
   const router = useRouter();
-  const { descricao } = useLocalSearchParams<{ descricao?: string }>();
+  // Reaproveitada por Editar Compra (`[compraId].tsx`) — `returnTo`
+  // distingue pra qual tela `dismissTo`, já que os dois fluxos usam este
+  // mesmo picker (issue #5: "era pra ser parecida com a de Nova Compra").
+  const { descricao, returnTo, compraId } = useLocalSearchParams<{
+    descricao?: string;
+    returnTo?: string;
+    compraId?: string;
+  }>();
   const [establishments, setEstablishments] = useState<Establishment[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -53,8 +60,15 @@ export default function NovaCompraEstabelecimentoScreen() {
   }, [creating, descricao]);
 
   const handleSelect = (establishment: Establishment) => {
+    if (returnTo === 'editar-compra' && compraId) {
+      router.dismissTo({
+        pathname: '/compra/[compraId]',
+        params: { compraId, estabelecimentoId: establishment.id },
+      });
+      return;
+    }
     router.dismissTo({
-      pathname: '/cartoes/nova-compra',
+      pathname: '/nova-compra',
       params: {
         estabelecimentoId: establishment.id,
         estabelecimentoNome: establishment.nomeExibicao,
