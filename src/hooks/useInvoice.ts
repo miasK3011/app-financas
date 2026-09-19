@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import {
   type InvoiceWithTotals,
   getInvoiceWithTotals,
+  listInvoicesDueInMonth,
   listInvoicesForCardWithTotals,
   listOpenInvoicesWithTotals,
   markInvoiceAsPaid,
@@ -143,4 +144,24 @@ export function useOpenInvoicesByCard() {
   );
 
   return { totalsByCard, loading, refresh };
+}
+
+/** Início · Main ("Faturas do mês"): faturas de todos os cartões que vencem no (ano, mês) dado. */
+export function useInvoicesDueInMonth(year: number, month: number) {
+  const [invoices, setInvoices] = useState<InvoiceWithTotals[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    setInvoices(await listInvoicesDueInMonth(year, month));
+    setLoading(false);
+  }, [year, month]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
+
+  return { invoices, loading, refresh };
 }

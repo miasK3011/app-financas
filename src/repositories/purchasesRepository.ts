@@ -1,4 +1,4 @@
-import { and, eq, gte, lt } from 'drizzle-orm';
+import { and, desc, eq, gte, lt } from 'drizzle-orm';
 import { randomUUID } from 'expo-crypto';
 
 import { db } from '@/db/client';
@@ -453,4 +453,45 @@ export async function listTagsForCompra(compraId: string): Promise<string[]> {
 export async function setPurchaseTags(compraId: string, tagNomes: string[]): Promise<void> {
   await db.delete(compraTags).where(eq(compraTags.compraId, compraId));
   await attachTagsToCompra(compraId, tagNomes);
+}
+
+export type RecentPurchaseRow = {
+  compra: Purchase;
+  categoria: { icone: string; nome: string } | null;
+  estabelecimento: {
+    logoCachePath: string | null;
+    iconeRespaldo: string;
+    nomeExibicao: string;
+  } | null;
+};
+
+/** Início · Main (Main.dc.html § "Transações recentes"): últimas Compras, mais recente primeiro. */
+export async function listRecentPurchases(limit: number): Promise<RecentPurchaseRow[]> {
+  const rows = await db
+    .select({
+      compra: compras,
+      categoria: { icone: categorias.icone, nome: categorias.nome },
+      estabelecimento: {
+        logoCachePath: estabelecimentos.logoCachePath,
+        iconeRespaldo: estabelecimentos.iconeRespaldo,
+        nomeExibicao: estabelecimentos.nomeExibicao,
+      },
+    })
+    .from(compras)
+    .leftJoin(categorias, eq(compras.categoriaId, categorias.id))
+    .leftJoin(estabelecimentos, eq(compras.estabelecimentoId, estabelecimentos.id))
+    .orderBy(desc(compras.dataCompra))
+    .limit(limit);
+
+  return rows.map(({ compra, categoria, estabelecimento }) => ({
+    compra,
+    categoria: categoria?.icone ? { icone: categoria.icone, nome: categoria.nome ?? '' } : null,
+    estabelecimento: estabelecimento?.iconeRespaldo
+      ? {
+          logoCachePath: estabelecimento.logoCachePath,
+          iconeRespaldo: estabelecimento.iconeRespaldo,
+          nomeExibicao: estabelecimento.nomeExibicao ?? '',
+        }
+      : null,
+  }));
 }
