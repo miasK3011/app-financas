@@ -11,4 +11,4 @@
  * um segredo de backend — não muda a decisão de `research.md` de não
  * precisar de servidor próprio para essa feature.
  */
-export const BRANDFETCH_CLIENT_ID: string | null = null;
+export const BRANDFETCH_CLIENT_ID: string | null = '1idXHH6hC6CQZzRtOVR';
