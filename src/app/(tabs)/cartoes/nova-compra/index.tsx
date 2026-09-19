@@ -271,7 +271,7 @@ export default function NovaCompraScreen() {
           <XStack gap="$3">
             <YStack flex={1} gap="$2">
               <Text fontSize={13} color="$textSecondary">
-                Valor (R$)
+                Valor
               </Text>
               <Controller
                 control={control}
@@ -378,7 +378,7 @@ export default function NovaCompraScreen() {
               <XStack gap="$3">
                 <YStack flex={1} gap="$2">
                   <Text fontSize={13} color="$textSecondary">
-                    Nº de parcelas
+                    Parcelas
                   </Text>
                   <Controller
                     control={control}
