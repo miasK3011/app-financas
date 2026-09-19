@@ -39,6 +39,13 @@
 `/speckit-implement` concluiu as 29 tarefas de código de `tasks.md` (T001–T029, Setup/Foundational/
 US1/US2/US3) — `npx tsc --noEmit` e `npx eslint` limpos, suíte `npx jest` com 135 testes passando
 (14 novos, cobrindo `groupByDay`/`computeBreakdown`/`computeMonthRange`). T031/T032 (revisão final e
-este registro) concluídas. T030 (rodar `quickstart.md` de ponta a ponta, incluindo o gesto de swipe)
-segue **bloqueada — precisa de dispositivo Android real**, sem SDK/emulador neste ambiente; é o
-próximo passo antes de considerar a feature pronta para uso.
+este registro) concluídas.
+
+**2026-09-19 (mesmo dia), pós-implementação — bug real encontrado em dispositivo:** a tela Compras
+quebrava ao abrir. Causa: `MonthNavigator` usa `GestureDetector`/`Gesture.Pan` do
+`react-native-gesture-handler` (novo nesta feature — nenhuma outra tela do app usava essa API antes),
+que exige a árvore inteira dentro de um `GestureHandlerRootView`; o `expo-router` não adiciona isso
+sozinho, e o wrapper nunca tinha sido necessário até agora. Corrigido em `src/app/_layout.tsx`.
+Usuário confirmou em dispositivo real que o app funciona depois da correção (T030, parcial — ver
+`tasks.md`). Registrado também na memória do projeto para não repetir o problema numa próxima feature
+que introduza gestos.

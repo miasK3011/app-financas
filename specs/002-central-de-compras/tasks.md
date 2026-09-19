@@ -219,10 +219,11 @@ completo).
 
 **Purpose**: validação final e qualidade transversal.
 
-- [ ] T030 **Bloqueado — precisa de dispositivo Android real** (sem SDK/emulador neste ambiente).
-      Rodar `quickstart.md` de ponta a ponta num Android real (Expo Go), incluindo a "Checagem de
-      consistência entre telas" (Gastos da Início == Total gasto de Compras para o mesmo mês) e o
-      gesto de swipe do `MonthNavigator` (não testável fora de um device real)
+- [X] T030 (parcial) Usuário confirmou em dispositivo real que o app funciona após a correção do
+      `GestureHandlerRootView` (tela Compras abre sem erro). Corrigido em separado deste plano — ver
+      `checklists/requirements.md`. Passagem cenário-a-cenário completa do `quickstart.md` (incluindo
+      confirmar o gesto de swipe especificamente, e a checagem de consistência Início×Compras) ainda
+      não relatada em detalhe pelo usuário.
 - [X] T031 [P] Revisão final concluída: `grep` confirma um único `<Card` em
       `(tabs)/compras/index.tsx` (o bloco de resumo) — nenhuma lista usa wrapper com borda/fundo
       (FR-018); a visão de mês futuro só usa o rótulo "Previsto para [mês]" no resumo, sem selo ou
