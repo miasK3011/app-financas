@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import { ChevronRight, Layers, Repeat, Store, Tag, UploadCloud, Wallet } from 'lucide-react-native';
 import type { ComponentType } from 'react';
 import { ScrollView, Text, XStack, YStack } from 'tamagui';
@@ -7,7 +7,7 @@ import { IconAvatar } from '@/components/IconAvatar';
 import { Screen } from '@/components/Screen';
 
 type MenuItem = {
-  href: string;
+  href: Href;
   label: string;
   subtitle: string;
   icon: ComponentType<{ size?: number; color?: string }>;
@@ -108,7 +108,7 @@ export default function MaisScreen() {
             <YStack>
               {section.items.map((item, index) => (
                 <XStack
-                  key={item.href}
+                  key={item.label}
                   paddingVertical={14}
                   borderTopWidth={index === 0 ? 0 : 1}
                   borderColor="$border"
