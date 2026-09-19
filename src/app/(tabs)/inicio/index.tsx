@@ -47,7 +47,13 @@ export default function InicioScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
-        <Text fontFamily="$heading" fontSize={24} fontWeight="600" color="$text">
+        <Text
+          fontFamily="$heading"
+          fontSize={27}
+          fontWeight="600"
+          letterSpacing={-0.3}
+          color="$text"
+        >
           Início
         </Text>
 

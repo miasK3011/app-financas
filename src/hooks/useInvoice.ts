@@ -115,3 +115,32 @@ export function useOpenInvoicesTotal() {
 
   return { total, loading, refresh };
 }
+
+/**
+ * Soma das faturas ainda não pagas, agrupada por cartão — Cartões·Main
+ * (Main.dc.html) mostra o valor da fatura ao lado de cada cartão na
+ * lista, não só o total geral.
+ */
+export function useOpenInvoicesByCard() {
+  const [totalsByCard, setTotalsByCard] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    const openInvoices = await listOpenInvoicesWithTotals();
+    const totals: Record<string, number> = {};
+    for (const invoice of openInvoices) {
+      totals[invoice.cartaoId] = (totals[invoice.cartaoId] ?? 0) + invoice.total;
+    }
+    setTotalsByCard(totals);
+    setLoading(false);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
+
+  return { totalsByCard, loading, refresh };
+}

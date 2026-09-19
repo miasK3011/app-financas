@@ -1,5 +1,5 @@
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Plus } from 'lucide-react-native';
+import { ChevronRight, PiggyBank, Plus } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { ScrollView, Text, XStack, YStack } from 'tamagui';
@@ -37,7 +37,13 @@ export default function ReservasScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
-        <Text fontFamily="$heading" fontSize={24} fontWeight="600" color="$text">
+        <Text
+          fontFamily="$heading"
+          fontSize={27}
+          fontWeight="600"
+          letterSpacing={-0.3}
+          color="$text"
+        >
           Reservas
         </Text>
 
@@ -58,8 +64,19 @@ export default function ReservasScreen() {
                 justifyContent="space-between"
                 alignItems="center"
                 onPress={() => router.push(`/reservas/${reserve.id}`)}
+                gap="$3"
               >
-                <YStack>
+                <XStack
+                  width={42}
+                  height={42}
+                  borderRadius="$md"
+                  backgroundColor="$primaryLight"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <PiggyBank size={20} color="#234F3E" />
+                </XStack>
+                <YStack flex={1}>
                   <Text fontSize={15} fontWeight="600" color="$text">
                     {reserve.nome}
                   </Text>
@@ -69,7 +86,14 @@ export default function ReservasScreen() {
                     </Text>
                   )}
                 </YStack>
-                <Money cents={reserve.balance} fontSize={15} fontWeight="600" color="$text" />
+                <Money
+                  cents={reserve.balance}
+                  fontFamily="$heading"
+                  fontSize={17}
+                  fontWeight="600"
+                  color="$text"
+                />
+                <ChevronRight size={16} color="#6C6C6D" />
               </XStack>
             ))}
           </YStack>

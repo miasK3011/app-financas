@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Plus } from 'lucide-react-native';
+import { ChevronRight, CreditCard, Plus } from 'lucide-react-native';
 import { ActivityIndicator } from 'react-native';
 import { Button, Card, ScrollView, Text, XStack, YStack } from 'tamagui';
 
@@ -8,19 +8,26 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { useBestCard } from '@/hooks/useBestCard';
 import { useCards } from '@/hooks/useCards';
-import { useOpenInvoicesTotal } from '@/hooks/useInvoice';
+import { useOpenInvoicesByCard, useOpenInvoicesTotal } from '@/hooks/useInvoice';
 
 export default function CartoesScreen() {
   const router = useRouter();
   const { cards, loading: cardsLoading } = useCards(true);
   const { total, loading: totalLoading } = useOpenInvoicesTotal();
+  const { totalsByCard } = useOpenInvoicesByCard();
   const { suggestion: bestCard } = useBestCard();
   const bestCardName = cards.find((card) => card.id === bestCard?.cardId)?.nome;
 
   return (
     <Screen>
       <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
-        <Text fontFamily="$heading" fontSize={24} fontWeight="600" color="$text">
+        <Text
+          fontFamily="$heading"
+          fontSize={27}
+          fontWeight="600"
+          letterSpacing={-0.3}
+          color="$text"
+        >
           Cartões
         </Text>
 
@@ -90,8 +97,19 @@ export default function CartoesScreen() {
                   alignItems="center"
                   onPress={() => router.push(`/cartoes/${card.id}`)}
                   opacity={card.arquivadoEm ? 0.5 : 1}
+                  gap="$3"
                 >
-                  <YStack>
+                  <XStack
+                    width={42}
+                    height={42}
+                    borderRadius="$md"
+                    backgroundColor="$primaryLight"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <CreditCard size={20} color="#234F3E" />
+                  </XStack>
+                  <YStack flex={1}>
                     <Text fontSize={15} fontWeight="600" color="$text">
                       {card.nome}
                     </Text>
@@ -100,6 +118,16 @@ export default function CartoesScreen() {
                       {card.arquivadoEm ? ' · Arquivado' : ''}
                     </Text>
                   </YStack>
+                  {totalsByCard[card.id] !== undefined && (
+                    <Money
+                      cents={totalsByCard[card.id]}
+                      fontFamily="$heading"
+                      fontSize={17}
+                      fontWeight="600"
+                      color="$text"
+                    />
+                  )}
+                  <ChevronRight size={16} color="#6C6C6D" />
                 </XStack>
               ))}
             </YStack>
