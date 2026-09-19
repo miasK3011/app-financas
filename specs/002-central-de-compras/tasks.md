@@ -32,7 +32,7 @@ Structure para a árvore completa desta feature.
 **Purpose**: confirmar pré-condições antes de qualquer story — esta feature não introduz nenhuma
 dependência nova.
 
-- [ ] T001 Confirmar em `package.json` que `react-native-gesture-handler`, `react-native-reanimated`
+- [X] T001 Confirmar em `package.json` que `react-native-gesture-handler`, `react-native-reanimated`
       e `date-fns` já estão presentes (estão — usados pelo gesto de swipe do `MonthNavigator` e pela
       aritmética de mês); escolher o ícone Lucide da aba Compras (ex.: `Receipt`, consistente com os
       demais ícones de `src/app/(tabs)/_layout.tsx`) para uso em T008
@@ -46,7 +46,7 @@ disto estar pronto.
 
 **⚠️ CRITICAL**: nenhuma tarefa de User Story pode começar antes desta fase estar completa.
 
-- [ ] T002 [P] Criar `src/domain/purchasesOverview/types.ts` com os tipos de `data-model.md`:
+- [X] T002 [P] Criar `src/domain/purchasesOverview/types.ts` com os tipos de `data-model.md`:
       `PurchaseListRow` (campos: `parcelaId`, `compraId`, `descricao`, `categoria`, `valor` — "valor
       desta parcela/ocorrência, não o total original quando parcelado" —, `formaPagamento` (`'CARTAO'
       | 'PIX'`), `nomeCartao` — "presente apenas quando `formaPagamento = 'CARTAO'`" —, `parcela`
@@ -54,20 +54,20 @@ disto estar pronto.
       `dataCompra`), `PaymentBreakdown` (`total`, `porFormaPagamento[]`), `MonthRange` (`earliest`,
       `latest`, ambos `{ year; month } | undefined`), `MonthOverview` (`year`, `month`, `kind: 'atual'
       | 'passado' | 'futuro-previsto'`, `breakdown`, `groupedByDay`, `groupedByInvoice`, `range`)
-- [ ] T003 [P] Implementar `src/domain/purchasesOverview/groupByDay.ts` — `groupByDay(rows:
+- [X] T003 [P] Implementar `src/domain/purchasesOverview/groupByDay.ts` — `groupByDay(rows:
       PurchaseListRow[], today: Date)`: agrupa por dia calendário de `row.dataCompra`; rótulo `"Hoje"`
       quando `isToday`, `"Ontem"` quando `isYesterday` (`date-fns`), senão `"{d} de {mês por
       extenso}"`; grupos e linhas dentro de cada grupo ordenados do mais recente para o mais antigo
       (contracts/purchases-overview.md)
-- [ ] T004 [P] Implementar `src/domain/purchasesOverview/paymentBreakdown.ts` —
+- [X] T004 [P] Implementar `src/domain/purchasesOverview/paymentBreakdown.ts` —
       `computeBreakdown(rows: PurchaseListRow[])`: soma `valor` de todas as linhas em `total`; agrupa
       a soma por `formaPagamento`, "omitindo do array qualquer forma de pagamento com soma zero"
       (contracts/purchases-overview.md)
-- [ ] T005 Testes unitários de `groupByDay` e `computeBreakdown` em
+- [X] T005 Testes unitários de `groupByDay` e `computeBreakdown` em
       `tests/unit/domain/purchasesOverview.test.ts`: rótulos "Hoje"/"Ontem"/data por extenso e
       ordenação (groupByDay); soma total, soma por forma de pagamento, e omissão de forma com total
       zero (computeBreakdown) — depende de T002, T003, T004
-- [ ] T006 Estender `src/repositories/purchasesRepository.ts` com `listPurchasesForMonth(year:
+- [X] T006 Estender `src/repositories/purchasesRepository.ts` com `listPurchasesForMonth(year:
       number, month: number): Promise<PurchaseListRow[]>` per `contracts/purchases-overview.md`:
       `Period` via `resolvePeriod('MENSAL', new Date(year, month - 1, 15)).current`; duas queries no
       padrão de `listParcelasForPeriod` (Pix: `parcelas` `INNER JOIN compras` com `faturaId IS NULL` e
@@ -75,7 +75,7 @@ disto estar pronto.
       JOIN cartoes` com `faturas.dataVencimento` no período), ambas com `LEFT JOIN categorias`; "dia"
       de cada linha = `compras.dataCompra` (Pix) ou `faturas.dataVencimento` (Cartão); ordenar do
       mais recente para o mais antigo — depende de T002
-- [ ] T007 [P] Criar `src/components/PaymentMethodBadge.tsx` — pequeno selo circular sobreposto
+- [X] T007 [P] Criar `src/components/PaymentMethodBadge.tsx` — pequeno selo circular sobreposto
       (ícone de cartão para `CARTAO`, ícone de raio para `PIX`), e um wrapper `PurchaseAvatar` que
       combina `TransactionAvatar` (já existente, `src/components/TransactionAvatar.tsx`) com este
       selo, recebendo `categoria`, `estabelecimento` e `formaPagamento`
