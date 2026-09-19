@@ -96,7 +96,7 @@ export function useCardInvoices(cardId: string | undefined) {
   return { invoices, loading, refresh };
 }
 
-/** Soma de todas as faturas ainda não pagas, de todos os cartões (Cartões · Main). */
+/** Soma das faturas com status ABERTA, de todos os cartões (Cartões · Main). */
 export function useOpenInvoicesTotal() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -118,7 +118,7 @@ export function useOpenInvoicesTotal() {
 }
 
 /**
- * Soma das faturas ainda não pagas, agrupada por cartão — Cartões·Main
+ * Soma das faturas com status ABERTA, agrupada por cartão — Cartões·Main
  * (Main.dc.html) mostra o valor da fatura ao lado de cada cartão na
  * lista, não só o total geral.
  */

@@ -113,11 +113,11 @@ async function withTotals(invoice: Invoice, today: Date): Promise<InvoiceWithTot
 }
 
 /**
- * Todas as faturas ainda não pagas e já em andamento (`ABERTA` ou
- * `FECHADA` na exibição), de todos os cartões — base do card "Total
- * das faturas abertas" em Cartões · Main. Exclui `FUTURA` (faturas de
- * parcelas ainda não iniciadas, ver `demoteFutureOpenInvoices`) — elas
- * ainda não devem contar como gasto em aberto.
+ * Faturas com status `ABERTA` (ainda dentro do ciclo, antes do
+ * fechamento) de todos os cartões — base do card "Total das faturas
+ * abertas" em Cartões · Main. Exclui `FECHADA` (já fechou, aguardando
+ * pagamento — não é mais "aberta"), `PAGA` e `FUTURA` (faturas de
+ * parcelas ainda não iniciadas, ver `demoteFutureOpenInvoices`).
  */
 export async function listOpenInvoicesWithTotals(
   today: Date = new Date(),
@@ -125,7 +125,7 @@ export async function listOpenInvoicesWithTotals(
   const allInvoices = await db.select().from(faturas);
   const withStatus = await Promise.all(allInvoices.map((invoice) => withTotals(invoice, today)));
   const demoted = demoteFutureOpenInvoices(withStatus);
-  return demoted.filter((invoice) => invoice.status !== 'PAGA' && invoice.status !== 'FUTURA');
+  return demoted.filter((invoice) => invoice.status === 'ABERTA');
 }
 
 /**
