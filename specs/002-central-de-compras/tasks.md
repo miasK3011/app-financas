@@ -188,23 +188,23 @@ organizada em seções.
 
 ### Implementation for User Story 3
 
-- [ ] T025 [US3] Mover `src/app/(tabs)/assinaturas/index.tsx` e
+- [X] T025 [US3] Mover `src/app/(tabs)/assinaturas/index.tsx` e
       `src/app/(tabs)/assinaturas/[subscriptionId].tsx` para `src/app/(tabs)/mais/assinaturas/`
       (mesmo conteúdo, nenhuma mudança de comportamento interno); atualizar
       `router.push('/assinaturas/nova')` (dentro do `index.tsx` movido) para
       `router.push('/mais/assinaturas/nova')`
-- [ ] T026 [US3] Mover `src/app/(tabs)/reservas/index.tsx` e
+- [X] T026 [US3] Mover `src/app/(tabs)/reservas/index.tsx` e
       `src/app/(tabs)/reservas/[reserveId].tsx` para `src/app/(tabs)/mais/reservas/`; atualizar
       `router.push('/reservas/nova')` para `router.push('/mais/reservas/nova')`
-- [ ] T027 [US3] Em `src/app/(tabs)/mais/_layout.tsx`, adicionar `<Stack.Screen
+- [X] T027 [US3] Em `src/app/(tabs)/mais/_layout.tsx`, adicionar `<Stack.Screen
       name="assinaturas/index" />`, `<Stack.Screen name="assinaturas/[subscriptionId]"
       options={{ presentation: 'modal' }} />` e o par equivalente para `reservas/*`
-- [ ] T028 [US3] Remover `src/app/(tabs)/assinaturas/_layout.tsx` e
+- [X] T028 [US3] Remover `src/app/(tabs)/assinaturas/_layout.tsx` e
       `src/app/(tabs)/reservas/_layout.tsx` (não são mais stacks próprios); remover as entradas
       `<Tabs.Screen name="assinaturas" .../>` e `<Tabs.Screen name="reservas" .../>` de
       `src/app/(tabs)/_layout.tsx` — resultado final: exatamente 4 abas, "Início, Cartões, Compras,
       Mais — nesta ordem" (FR-001, FR-002)
-- [ ] T029 [US3] Reescrever `src/app/(tabs)/mais/index.tsx` com 3 seções: "Planejamento" (Renda &
+- [X] T029 [US3] Reescrever `src/app/(tabs)/mais/index.tsx` com 3 seções: "Planejamento" (Renda &
       Entradas → `/renda`, Assinaturas → `/mais/assinaturas`, Reservas → `/mais/reservas`),
       "Organização" (Categorias → `/mais/categorias`, Estabelecimentos → `/mais/estabelecimentos`),
       "Dados" (Backup → `/mais/backup`) — lista simples (avatar + nome + subtítulo + chevron),

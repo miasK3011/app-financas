@@ -84,7 +84,7 @@ export default function AssinaturasScreen() {
                   borderColor="$border"
                   justifyContent="space-between"
                   alignItems="center"
-                  onPress={() => router.push(`/assinaturas/${subscription.id}`)}
+                  onPress={() => router.push(`/mais/assinaturas/${subscription.id}`)}
                   gap="$3"
                 >
                   <TransactionAvatar
@@ -119,7 +119,7 @@ export default function AssinaturasScreen() {
       </ScrollView>
 
       <PrimaryButton
-        onPress={() => router.push('/assinaturas/nova')}
+        onPress={() => router.push('/mais/assinaturas/nova')}
         position="absolute"
         bottom={24}
         right={20}
