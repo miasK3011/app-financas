@@ -637,10 +637,12 @@ Expo Go pela primeira vez) — issues no GitHub têm o diagnóstico completo de 
       tinha o bug de rolar junto do conteúdo); reconstrução do padding inferior do header em
       todas as telas (via um `ScreenHeader` compartilhado) fica em aberto —
       [#9](https://github.com/miasK3011/app-financas/issues/9)
-- [ ] T139 Redesenhar "Divisão de responsabilidade" pra bater com `NovaCompra.dc.html`: estado
-      padrão somente-leitura "100% do valor" + botão "Dividir compra" (hoje o campo já vem sempre
-      editável), e adicionar uma ação explícita de "remover divisão"/voltar a 100% (não existe em
-      nenhuma tela nem em nenhum mockup hoje) — [#10](https://github.com/miasK3011/app-financas/issues/10)
+- [X] T139 Redesenhado "Divisão de responsabilidade" em Nova Compra pra bater com
+      `NovaCompra.dc.html`: estado padrão somente-leitura "R$ X (100% do valor)" + botão "Dividir
+      compra" que revela o campo editável, com "Cancelar divisão" pra voltar ao estado padrão
+      inline; em Editar Transação/Divisão Manual (compra já existente), adicionado o botão
+      explícito "Remover divisão (voltar a 100%)" que faltava em toda tela e mockup —
+      [#10](https://github.com/miasK3011/app-financas/issues/10)
 
 ---
 

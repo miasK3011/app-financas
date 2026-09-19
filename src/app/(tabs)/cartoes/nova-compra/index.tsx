@@ -8,6 +8,7 @@ import { z } from 'zod';
 
 import { AppInput } from '@/components/AppInput';
 import { DateField } from '@/components/DateField';
+import { Money } from '@/components/Money';
 import { MoneyInput } from '@/components/MoneyInput';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
@@ -75,6 +76,9 @@ export default function NovaCompraScreen() {
   const [estabelecimentoNome, setEstabelecimentoNome] = useState<string | undefined>(
     params.estabelecimentoNome,
   );
+  // NovaCompra.dc.html: por padrão a responsabilidade é 100% do valor,
+  // só-leitura; "Dividir compra" revela o campo editável (issue #10).
+  const [splitting, setSplitting] = useState(false);
 
   const {
     control,
@@ -460,61 +464,117 @@ export default function NovaCompraScreen() {
           gap="$3"
         >
           <Text fontSize={12} fontWeight="700" color="$textTertiary" textTransform="uppercase">
-            Divisão de responsabilidade (opcional)
+            Divisão de responsabilidade
           </Text>
-          <Controller
-            control={control}
-            name="valorResponsabilidade"
-            render={({ field, fieldState }) => (
-              <MoneyInput
-                value={field.value}
-                onChangeValue={field.onChange}
-                error={Boolean(fieldState.error)}
-                placeholder="Deixe em branco para usar o valor total"
-              />
-            )}
-          />
-          {errors.valorResponsabilidade && (
-            <Text fontSize={12} color="$error">
-              {errors.valorResponsabilidade.message}
-            </Text>
-          )}
 
-          {requiresMotivoResponsavelFields(valorResponsabilidade ?? null, valorCentavos ?? 0) && (
-            <XStack gap="$3">
-              <YStack flex={1} gap="$2">
-                <Text fontSize={13} color="$textSecondary">
-                  Motivo (opcional)
+          {!splitting ? (
+            <XStack justifyContent="space-between" alignItems="center">
+              <YStack gap="$1">
+                <Text fontSize={12.5} color="$textSecondary">
+                  Sua responsabilidade
                 </Text>
-                <Controller
-                  control={control}
-                  name="motivo"
-                  render={({ field }) => (
-                    <AppInput
-                      value={field.value}
-                      onChangeText={field.onChange}
-                      placeholder="Ex.: Dividimos a conta"
-                    />
-                  )}
-                />
+                <XStack alignItems="baseline" gap="$2">
+                  <Money
+                    cents={valorCentavos ?? 0}
+                    fontFamily="$heading"
+                    fontSize={17}
+                    fontWeight="600"
+                    color="$text"
+                  />
+                  <Text fontSize={12} color="$textTertiary">
+                    (100% do valor)
+                  </Text>
+                </XStack>
               </YStack>
-              <YStack flex={1} gap="$2">
-                <Text fontSize={13} color="$textSecondary">
-                  Responsável (opcional)
-                </Text>
-                <Controller
-                  control={control}
-                  name="responsavel"
-                  render={({ field }) => (
-                    <AppInput
-                      value={field.value}
-                      onChangeText={field.onChange}
-                      placeholder="Ex.: Maria"
-                    />
-                  )}
-                />
-              </YStack>
+              <Button
+                onPress={() => setSplitting(true)}
+                size="$2"
+                borderRadius={999}
+                backgroundColor="$surface"
+                borderColor="$border"
+                borderWidth={1}
+                color="$primary"
+                fontWeight="700"
+              >
+                Dividir compra
+              </Button>
             </XStack>
+          ) : (
+            <>
+              <Controller
+                control={control}
+                name="valorResponsabilidade"
+                render={({ field, fieldState }) => (
+                  <MoneyInput
+                    value={field.value}
+                    onChangeValue={field.onChange}
+                    error={Boolean(fieldState.error)}
+                    placeholder="Valor que você vai pagar"
+                  />
+                )}
+              />
+              {errors.valorResponsabilidade && (
+                <Text fontSize={12} color="$error">
+                  {errors.valorResponsabilidade.message}
+                </Text>
+              )}
+
+              {requiresMotivoResponsavelFields(
+                valorResponsabilidade ?? null,
+                valorCentavos ?? 0,
+              ) && (
+                <XStack gap="$3">
+                  <YStack flex={1} gap="$2">
+                    <Text fontSize={13} color="$textSecondary">
+                      Motivo (opcional)
+                    </Text>
+                    <Controller
+                      control={control}
+                      name="motivo"
+                      render={({ field }) => (
+                        <AppInput
+                          value={field.value}
+                          onChangeText={field.onChange}
+                          placeholder="Ex.: Dividimos a conta"
+                        />
+                      )}
+                    />
+                  </YStack>
+                  <YStack flex={1} gap="$2">
+                    <Text fontSize={13} color="$textSecondary">
+                      Responsável (opcional)
+                    </Text>
+                    <Controller
+                      control={control}
+                      name="responsavel"
+                      render={({ field }) => (
+                        <AppInput
+                          value={field.value}
+                          onChangeText={field.onChange}
+                          placeholder="Ex.: Maria"
+                        />
+                      )}
+                    />
+                  </YStack>
+                </XStack>
+              )}
+
+              <Button
+                onPress={() => {
+                  setValue('valorResponsabilidade', undefined);
+                  setValue('motivo', '');
+                  setValue('responsavel', '');
+                  setSplitting(false);
+                }}
+                size="$2"
+                chromeless
+                alignSelf="flex-start"
+                color="$error"
+                fontWeight="600"
+              >
+                Cancelar divisão
+              </Button>
+            </>
           )}
         </YStack>
 

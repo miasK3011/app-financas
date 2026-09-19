@@ -96,6 +96,22 @@ export default function NovaCompraDivisaoManualScreen() {
             De um total de{' '}
             <Money cents={valorTotalOriginal} fontSize={12.5} color="$textTertiary" />
           </Text>
+          {valorResponsabilidade !== valorTotalOriginal && (
+            <Button
+              onPress={() => {
+                setValorResponsabilidade(valorTotalOriginal);
+                setMotivo('');
+                setResponsavel('');
+              }}
+              size="$2"
+              chromeless
+              alignSelf="flex-start"
+              color="$error"
+              fontWeight="600"
+            >
+              Remover divisão (voltar a 100%)
+            </Button>
+          )}
         </YStack>
 
         {requiresMotivoResponsavelFields(valorResponsabilidade ?? null, valorTotalOriginal) && (
