@@ -8,7 +8,6 @@ import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { AppInput } from '@/components/AppInput';
 import { MoneyInput } from '@/components/MoneyInput';
-import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { SegmentedControl } from '@/components/SegmentedControl';
 import { TagInput } from '@/components/TagInput';
@@ -147,19 +146,32 @@ export default function AssinaturaEditarScreen() {
 
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']}>
-      <XStack alignItems="center" gap="$3" padding={20} paddingBottom={0}>
+      <XStack alignItems="center" justifyContent="space-between" padding={20} paddingBottom={0}>
+        <XStack alignItems="center" gap="$3">
+          <Button
+            onPress={() => router.back()}
+            circular
+            size="$3"
+            backgroundColor="$surface"
+            borderColor="$border"
+            borderWidth={1}
+            icon={<ChevronLeft size={18} />}
+          />
+          <Text fontFamily="$heading" fontSize={18} fontWeight="600" color="$text">
+            {isNew ? 'Nova assinatura' : 'Editar assinatura'}
+          </Text>
+        </XStack>
         <Button
-          onPress={() => router.back()}
-          circular
-          size="$3"
-          backgroundColor="$surface"
-          borderColor="$border"
-          borderWidth={1}
-          icon={<ChevronLeft size={18} />}
-        />
-        <Text fontFamily="$heading" fontSize={18} fontWeight="600" color="$text">
-          {isNew ? 'Nova assinatura' : 'Editar assinatura'}
-        </Text>
+          onPress={handleSave}
+          disabled={!canSave || saving}
+          opacity={canSave ? 1 : 0.5}
+          chromeless
+          color="$primary"
+          fontWeight="700"
+          fontSize={15}
+        >
+          Salvar
+        </Button>
       </XStack>
 
       <ScrollView contentContainerStyle={{ padding: 20, gap: 18 }}>
@@ -267,17 +279,6 @@ export default function AssinaturaEditarScreen() {
           </Text>
           <TagInput value={tags} onChange={setTags} />
         </YStack>
-
-        <PrimaryButton
-          onPress={handleSave}
-          disabled={!canSave || saving}
-          opacity={canSave ? 1 : 0.5}
-          color="white"
-          fontWeight="700"
-          borderRadius={999}
-        >
-          {isNew ? 'Criar assinatura' : 'Salvar alterações'}
-        </PrimaryButton>
 
         {!isNew && (
           <Button

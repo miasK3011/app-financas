@@ -7,7 +7,6 @@ import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 import { AppInput } from '@/components/AppInput';
 import { Money } from '@/components/Money';
 import { MoneyInput } from '@/components/MoneyInput';
-import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { requiresMotivoResponsavelFields } from '@/domain/expenseSplitting/requiresMotivoResponsavelFields';
 import { getPurchase, updatePurchase } from '@/repositories/purchasesRepository';
@@ -71,19 +70,31 @@ export default function NovaCompraDivisaoManualScreen() {
 
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']}>
-      <XStack alignItems="center" gap="$3" padding={20} paddingBottom={0}>
+      <XStack alignItems="center" justifyContent="space-between" padding={20} paddingBottom={0}>
+        <XStack alignItems="center" gap="$3">
+          <Button
+            onPress={() => router.back()}
+            circular
+            size="$3"
+            backgroundColor="$surface"
+            borderColor="$border"
+            borderWidth={1}
+            icon={<ChevronLeft size={18} />}
+          />
+          <Text fontFamily="$heading" fontSize={18} fontWeight="600" color="$text">
+            Divisão de responsabilidade
+          </Text>
+        </XStack>
         <Button
-          onPress={() => router.back()}
-          circular
-          size="$3"
-          backgroundColor="$surface"
-          borderColor="$border"
-          borderWidth={1}
-          icon={<ChevronLeft size={18} />}
-        />
-        <Text fontFamily="$heading" fontSize={18} fontWeight="600" color="$text">
-          Divisão de responsabilidade
-        </Text>
+          onPress={handleSave}
+          disabled={saving}
+          chromeless
+          color="$primary"
+          fontWeight="700"
+          fontSize={15}
+        >
+          Salvar
+        </Button>
       </XStack>
 
       <ScrollView contentContainerStyle={{ padding: 20, gap: 18 }}>
@@ -138,16 +149,6 @@ export default function NovaCompraDivisaoManualScreen() {
             </YStack>
           </XStack>
         )}
-
-        <PrimaryButton
-          onPress={handleSave}
-          disabled={saving}
-          color="white"
-          fontWeight="700"
-          borderRadius={999}
-        >
-          Salvar
-        </PrimaryButton>
       </ScrollView>
     </Screen>
   );

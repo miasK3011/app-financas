@@ -1,12 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
-import { Text, YStack } from 'tamagui';
+import { Button, Text, XStack, YStack } from 'tamagui';
 import { z } from 'zod';
 
 import { AppInput } from '@/components/AppInput';
 import { MoneyInput } from '@/components/MoneyInput';
-import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { useMonthBalance } from '@/hooks/useMonthBalance';
 
@@ -40,11 +40,34 @@ export default function NovaEntradaAvulsaScreen() {
 
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']}>
-      <YStack flex={1} backgroundColor="$bg" padding={20} gap="$4">
-        <Text fontFamily="$heading" fontSize={20} fontWeight="600" color="$text">
-          Nova entrada avulsa
-        </Text>
+      <XStack alignItems="center" justifyContent="space-between" padding={20} paddingBottom={0}>
+        <XStack alignItems="center" gap="$3">
+          <Button
+            onPress={() => router.back()}
+            circular
+            size="$3"
+            backgroundColor="$surface"
+            borderColor="$border"
+            borderWidth={1}
+            icon={<ChevronLeft size={18} />}
+          />
+          <Text fontFamily="$heading" fontSize={18} fontWeight="600" color="$text">
+            Nova entrada avulsa
+          </Text>
+        </XStack>
+        <Button
+          onPress={onSubmit}
+          disabled={isSubmitting}
+          chromeless
+          color="$primary"
+          fontWeight="700"
+          fontSize={15}
+        >
+          Salvar
+        </Button>
+      </XStack>
 
+      <YStack flex={1} backgroundColor="$bg" padding={20} gap="$4">
         <YStack gap="$2">
           <Text fontSize={13} color="$textSecondary">
             Descrição
@@ -89,16 +112,6 @@ export default function NovaEntradaAvulsaScreen() {
             </Text>
           )}
         </YStack>
-
-        <PrimaryButton
-          onPress={onSubmit}
-          disabled={isSubmitting}
-          color="white"
-          fontWeight="700"
-          borderRadius={999}
-        >
-          Adicionar entrada
-        </PrimaryButton>
       </YStack>
     </Screen>
   );

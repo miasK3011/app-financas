@@ -123,19 +123,32 @@ export default function EstabelecimentoDetalheScreen() {
 
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']}>
-      <XStack alignItems="center" gap="$3" padding={20} paddingBottom={0}>
+      <XStack alignItems="center" justifyContent="space-between" padding={20} paddingBottom={0}>
+        <XStack alignItems="center" gap="$3">
+          <Button
+            onPress={() => router.back()}
+            circular
+            size="$3"
+            backgroundColor="$surface"
+            borderColor="$border"
+            borderWidth={1}
+            icon={<ChevronLeft size={18} />}
+          />
+          <Text fontFamily="$heading" fontSize={18} fontWeight="600" color="$text">
+            {isNew ? 'Novo estabelecimento' : 'Editar estabelecimento'}
+          </Text>
+        </XStack>
         <Button
-          onPress={() => router.back()}
-          circular
-          size="$3"
-          backgroundColor="$surface"
-          borderColor="$border"
-          borderWidth={1}
-          icon={<ChevronLeft size={18} />}
-        />
-        <Text fontFamily="$heading" fontSize={18} fontWeight="600" color="$text">
-          {isNew ? 'Novo estabelecimento' : 'Editar estabelecimento'}
-        </Text>
+          onPress={handleSave}
+          disabled={!canSave || saving}
+          opacity={canSave ? 1 : 0.5}
+          chromeless
+          color="$primary"
+          fontWeight="700"
+          fontSize={15}
+        >
+          Salvar
+        </Button>
       </XStack>
 
       <ScrollView contentContainerStyle={{ padding: 20, gap: 18 }}>
@@ -178,17 +191,6 @@ export default function EstabelecimentoDetalheScreen() {
           </Text>
           <AppInput value={dominio} onChangeText={setDominio} placeholder="Ex.: ifood.com.br" />
         </YStack>
-
-        <PrimaryButton
-          onPress={handleSave}
-          disabled={!canSave || saving}
-          opacity={canSave ? 1 : 0.5}
-          color="white"
-          fontWeight="700"
-          borderRadius={999}
-        >
-          {isNew ? 'Criar estabelecimento' : 'Salvar alterações'}
-        </PrimaryButton>
 
         {savedId && (
           <YStack gap="$2">

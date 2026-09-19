@@ -10,7 +10,6 @@ import { AppInput } from '@/components/AppInput';
 import { DateField } from '@/components/DateField';
 import { Money } from '@/components/Money';
 import { MoneyInput } from '@/components/MoneyInput';
-import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { SegmentedControl } from '@/components/SegmentedControl';
 import { Stepper } from '@/components/Stepper';
@@ -169,19 +168,31 @@ export default function NovaCompraScreen() {
 
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']}>
-      <XStack alignItems="center" gap="$3" padding={20} paddingBottom={0}>
+      <XStack alignItems="center" justifyContent="space-between" padding={20} paddingBottom={0}>
+        <XStack alignItems="center" gap="$3">
+          <Button
+            onPress={() => router.back()}
+            circular
+            size="$3"
+            backgroundColor="$surface"
+            borderColor="$border"
+            borderWidth={1}
+            icon={<ChevronLeft size={18} />}
+          />
+          <Text fontFamily="$heading" fontSize={18} fontWeight="600" color="$text">
+            Nova compra
+          </Text>
+        </XStack>
         <Button
-          onPress={() => router.back()}
-          circular
-          size="$3"
-          backgroundColor="$surface"
-          borderColor="$border"
-          borderWidth={1}
-          icon={<ChevronLeft size={18} />}
-        />
-        <Text fontFamily="$heading" fontSize={18} fontWeight="600" color="$text">
-          Nova compra
-        </Text>
+          onPress={onSubmit}
+          disabled={isSubmitting}
+          chromeless
+          color="$primary"
+          fontWeight="700"
+          fontSize={15}
+        >
+          Salvar
+        </Button>
       </XStack>
 
       <ScrollView
@@ -554,16 +565,6 @@ export default function NovaCompraScreen() {
             </>
           )}
         </YStack>
-
-        <PrimaryButton
-          onPress={onSubmit}
-          disabled={isSubmitting}
-          color="white"
-          fontWeight="700"
-          borderRadius={999}
-        >
-          Salvar compra
-        </PrimaryButton>
       </ScrollView>
     </Screen>
   );
