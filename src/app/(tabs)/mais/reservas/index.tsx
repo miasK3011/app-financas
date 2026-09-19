@@ -63,7 +63,7 @@ export default function ReservasScreen() {
                 borderColor="$border"
                 justifyContent="space-between"
                 alignItems="center"
-                onPress={() => router.push(`/reservas/${reserve.id}`)}
+                onPress={() => router.push(`/mais/reservas/${reserve.id}`)}
                 gap="$3"
               >
                 <XStack
@@ -101,7 +101,7 @@ export default function ReservasScreen() {
       </ScrollView>
 
       <PrimaryButton
-        onPress={() => router.push('/reservas/nova')}
+        onPress={() => router.push('/mais/reservas/nova')}
         position="absolute"
         bottom={24}
         right={20}

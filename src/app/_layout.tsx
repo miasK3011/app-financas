@@ -16,6 +16,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { TamaguiProvider } from 'tamagui';
 
@@ -85,37 +86,44 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider>
-      <TamaguiProvider config={tamaguiConfig} defaultTheme="light">
-        {/* Android moderno (RN 0.86) desenha edge-to-edge por padrão — a
-            barra de status vira transparente sobre o conteúdo. "dark"
-            deixa os ícones dela escuros, legíveis sobre o fundo claro do
-            app (--color-bg); cada tela cobre a faixa da própria barra de
-            status com fundo sólido via `components/Screen.tsx`. */}
-        <StatusBar style="dark" />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" />
-          {/* Fora de qualquer tab de propósito — reaproveitadas por Início
-              (Faturas do mês/Melhor cartão/Transações recentes/FAB,
-              Consumo mensal/Editar renda), Mais·Renda e Cartões, então
-              precisam viver no stack raiz (ver comentário em
-              (tabs)/cartoes/_layout.tsx sobre o bug de tab cruzada que
-              isso corrige). */}
-          <Stack.Screen name="nova-compra/index" />
-          <Stack.Screen name="nova-compra/categoria" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="nova-compra/estabelecimento" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="nova-compra/divisao-manual" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="nova-compra/divisao-vinculada" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="compra/[compraId]" />
-          <Stack.Screen name="cartao/[cardId]/index" />
-          <Stack.Screen name="cartao/[cardId]/fatura/[invoiceId]" />
-          <Stack.Screen name="cartao/importar-csv/index" />
-          <Stack.Screen name="cartao/importar-csv/resultado" />
-          <Stack.Screen name="renda/index" />
-          <Stack.Screen name="renda/nova-entrada" options={{ presentation: 'modal' }} />
-        </Stack>
-      </TamaguiProvider>
-    </SafeAreaProvider>
+    // Compras · MonthNavigator (002-central-de-compras) usa GestureDetector/
+    // Gesture.Pan do react-native-gesture-handler pro swipe entre meses —
+    // isso exige a árvore inteira dentro de um GestureHandlerRootView, ou
+    // ele quebra em runtime ao renderizar a tela (expo-router não faz esse
+    // wrap sozinho).
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <TamaguiProvider config={tamaguiConfig} defaultTheme="light">
+          {/* Android moderno (RN 0.86) desenha edge-to-edge por padrão — a
+              barra de status vira transparente sobre o conteúdo. "dark"
+              deixa os ícones dela escuros, legíveis sobre o fundo claro do
+              app (--color-bg); cada tela cobre a faixa da própria barra de
+              status com fundo sólido via `components/Screen.tsx`. */}
+          <StatusBar style="dark" />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+            {/* Fora de qualquer tab de propósito — reaproveitadas por Início
+                (Faturas do mês/Melhor cartão/Transações recentes/FAB,
+                Consumo mensal/Editar renda), Mais·Renda e Cartões, então
+                precisam viver no stack raiz (ver comentário em
+                (tabs)/cartoes/_layout.tsx sobre o bug de tab cruzada que
+                isso corrige). */}
+            <Stack.Screen name="nova-compra/index" />
+            <Stack.Screen name="nova-compra/categoria" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="nova-compra/estabelecimento" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="nova-compra/divisao-manual" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="nova-compra/divisao-vinculada" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="compra/[compraId]" />
+            <Stack.Screen name="cartao/[cardId]/index" />
+            <Stack.Screen name="cartao/[cardId]/fatura/[invoiceId]" />
+            <Stack.Screen name="cartao/importar-csv/index" />
+            <Stack.Screen name="cartao/importar-csv/resultado" />
+            <Stack.Screen name="renda/index" />
+            <Stack.Screen name="renda/nova-entrada" options={{ presentation: 'modal' }} />
+          </Stack>
+        </TamaguiProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 

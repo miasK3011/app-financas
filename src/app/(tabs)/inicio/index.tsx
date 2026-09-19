@@ -300,9 +300,17 @@ export default function InicioScreen() {
         </YStack>
 
         <YStack gap="$2">
-          <Text fontSize={15} fontWeight="600" color="$text">
-            Transações recentes
-          </Text>
+          <XStack justifyContent="space-between" alignItems="center">
+            <Text fontSize={15} fontWeight="600" color="$text">
+              Transações recentes
+            </Text>
+            <XStack alignItems="center" gap="$1" onPress={() => router.push('/compras')}>
+              <Text fontSize={13} color="$primary" fontWeight="600">
+                Ver tudo
+              </Text>
+              <ChevronRight size={16} color="#2E6F55" />
+            </XStack>
+          </XStack>
           {loadingRecent ? (
             <ActivityIndicator style={{ marginTop: 12 }} />
           ) : recentPurchases.length === 0 ? (
