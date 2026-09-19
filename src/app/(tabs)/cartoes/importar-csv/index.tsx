@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { useState } from 'react';
 import { ActivityIndicator, Alert } from 'react-native';
@@ -22,8 +22,9 @@ const FORMAT_HELP: Record<CsvFormat, string> = {
 
 export default function ImportarCsvScreen() {
   const router = useRouter();
+  const { cartaoId: cartaoIdParam } = useLocalSearchParams<{ cartaoId?: string }>();
   const { cards } = useCards();
-  const [cartaoId, setCartaoId] = useState<string | undefined>(undefined);
+  const [cartaoId, setCartaoId] = useState<string | undefined>(cartaoIdParam);
   const [formato, setFormato] = useState<CsvFormat>('GENERICO');
   const [pickedFile, setPickedFile] = useState<PickedCsvFile | null>(null);
   const [importing, setImporting] = useState(false);
