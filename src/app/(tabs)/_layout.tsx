@@ -1,14 +1,19 @@
 import { Tabs } from 'expo-router';
-import { CreditCard, Ellipsis, House, Layers, Repeat } from 'lucide-react-native';
+import { CreditCard, Ellipsis, House, Layers, Receipt, Repeat } from 'lucide-react-native';
 
 import { colors } from '@/theme/colors';
 
 /**
  * Bottom tab bar per design-brief.md §3.1 e Main.dc.html (Início) —
  * ícones lucide equivalentes aos desenhados no mockup: House (Início),
- * CreditCard (Cartões), Repeat (Assinaturas), Layers (Reservas),
- * Ellipsis (Mais). Cor ativa = `$primary`, inativa = `$textTertiary`,
- * substituindo o azul padrão do React Navigation.
+ * CreditCard (Cartões), Receipt (Compras), Ellipsis (Mais). Cor ativa =
+ * `$primary`, inativa = `$textTertiary`, substituindo o azul padrão do
+ * React Navigation.
+ *
+ * 002-central-de-compras: Assinaturas e Reservas deixam de ser abas
+ * próprias (FR-001/FR-002) — nesta fase intermediária (T008) elas
+ * ainda convivem com a aba Compras recém-criada; T028 as remove daqui,
+ * chegando ao estado final de 4 abas.
  */
 export default function TabsLayout() {
   return (
@@ -35,6 +40,13 @@ export default function TabsLayout() {
         options={{
           title: 'Cartões',
           tabBarIcon: ({ color, size }) => <CreditCard color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="compras"
+        options={{
+          title: 'Compras',
+          tabBarIcon: ({ color, size }) => <Receipt color={color} size={size} />,
         }}
       />
       <Tabs.Screen

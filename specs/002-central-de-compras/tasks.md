@@ -93,32 +93,32 @@ lugar, com resumo por forma de pagamento, filtro rápido e lista por dia.
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Adicionar `<Tabs.Screen name="compras" options={{ title: 'Compras', tabBarIcon:
+- [X] T008 [US1] Adicionar `<Tabs.Screen name="compras" options={{ title: 'Compras', tabBarIcon:
       ... }} />` em `src/app/(tabs)/_layout.tsx`, com o ícone escolhido em T001 (FR-001 parcial —
       nesta fase convivem 6 abas; T028 na US3 remove Assinaturas/Reservas para chegar a 4)
-- [ ] T009 [US1] Criar `src/app/(tabs)/compras/_layout.tsx` — `Stack` com `headerShown: false`,
+- [X] T009 [US1] Criar `src/app/(tabs)/compras/_layout.tsx` — `Stack` com `headerShown: false`,
       só a rota `index` por enquanto
-- [ ] T010 [US1] Criar `src/app/(tabs)/compras/index.tsx`: título "Compras"; rótulo de mês estático
+- [X] T010 [US1] Criar `src/app/(tabs)/compras/index.tsx`: título "Compras"; rótulo de mês estático
       centralizado (texto simples "{Mês} · {Ano}" do mês corrente — sem setas nesta story, a US2
       substitui por `MonthNavigator`); busca `listPurchasesForMonth(anoAtual, mesAtual)` (T006) ao
       focar a tela (`useFocusEffect`, mesmo padrão de outras listas do app — ver memória do projeto
       sobre por que não usar `useEffect` puro)
-- [ ] T011 [US1] Renderizar bloco de resumo com `computeBreakdown` (T004): total do mês
+- [X] T011 [US1] Renderizar bloco de resumo com `computeBreakdown` (T004): total do mês
       (`summary-value`) + barra proporcional + legenda com o valor de cada forma de pagamento
       presente, reaproveitando os tokens de cor/tipografia de `src/theme` (FR-010, FR-019)
-- [ ] T012 [US1] Renderizar chips de filtro "Todos" / "Cartão" / "Pix" com estado local
+- [X] T012 [US1] Renderizar chips de filtro "Todos" / "Cartão" / "Pix" com estado local
       (`useState`), filtrando `PurchaseListRow[]` por `formaPagamento` antes de agrupar por dia;
       "Todos" volta a mostrar todas (FR-012)
-- [ ] T013 [US1] Renderizar a lista agrupada por dia (saída de `groupByDay`, T003), **sem** wrapper
+- [X] T013 [US1] Renderizar a lista agrupada por dia (saída de `groupByDay`, T003), **sem** wrapper
       `card` com borda/fundo — linhas simples com divisória fina, igual ao padrão já usado em
       Cartões/Início/Reservas (FR-011, FR-018); cada linha usa `PurchaseAvatar` (T007) e mostra
       descrição, categoria, forma de pagamento (+ `nomeCartao` quando `formaPagamento = 'CARTAO'`),
       `valor`, e o indicador "N/total" quando `row.parcela` não é `null`
-- [ ] T014 [US1] Adicionar botão de ação flutuante reaproveitando a rota existente
+- [X] T014 [US1] Adicionar botão de ação flutuante reaproveitando a rota existente
       (`router.push('/nova-compra')`, mesmo fluxo do FAB já usado em Início) (FR-015)
-- [ ] T015 [US1] `onPress` de cada linha da lista navega para `router.push(`/compra/${row.compraId}`)`,
+- [X] T015 [US1] `onPress` de cada linha da lista navega para `router.push(`/compra/${row.compraId}`)`,
       reaproveitando a tela de detalhe/edição de compra já existente (FR-016)
-- [ ] T016 [US1] Em `src/app/(tabs)/inicio/index.tsx`, adicionar um link "Ver tudo" ao lado do
+- [X] T016 [US1] Em `src/app/(tabs)/inicio/index.tsx`, adicionar um link "Ver tudo" ao lado do
       título "Transações recentes" (mesmo padrão visual do link "Ver estatísticas" já existente na
       mesma tela), navegando para `router.push('/compras')` (FR-017)
 
