@@ -8,6 +8,7 @@ import { z } from 'zod';
 
 import { AppInput } from '@/components/AppInput';
 import { DateField } from '@/components/DateField';
+import { FormCard } from '@/components/FormCard';
 import { Money } from '@/components/Money';
 import { MoneyInput } from '@/components/MoneyInput';
 import { Screen } from '@/components/Screen';
@@ -199,241 +200,240 @@ export default function NovaCompraScreen() {
         contentContainerStyle={{ padding: 20, paddingBottom: 20 + keyboardHeight, gap: 18 }}
         keyboardShouldPersistTaps="handled"
       >
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Descrição
-          </Text>
-          <Controller
-            control={control}
-            name="descricao"
-            render={({ field, fieldState }) => (
-              <AppInput
-                value={field.value}
-                onChangeText={field.onChange}
-                placeholder="Ex.: Pizzaria Napoli"
-                error={Boolean(fieldState.error)}
-              />
-            )}
-          />
-          {errors.descricao && (
-            <Text fontSize={12} color="$error">
-              Informe uma descrição
-            </Text>
-          )}
-        </YStack>
-
-        <XStack gap="$3">
-          <YStack flex={1} gap="$2">
+        <FormCard title="Detalhes">
+          <YStack gap="$2">
             <Text fontSize={13} color="$textSecondary">
-              Valor (R$)
+              Descrição
             </Text>
             <Controller
               control={control}
-              name="valorCentavos"
+              name="descricao"
               render={({ field, fieldState }) => (
-                <MoneyInput
+                <AppInput
                   value={field.value}
-                  onChangeValue={field.onChange}
+                  onChangeText={field.onChange}
+                  placeholder="Ex.: Pizzaria Napoli"
                   error={Boolean(fieldState.error)}
                 />
               )}
             />
-            {errors.valorCentavos && (
+            {errors.descricao && (
               <Text fontSize={12} color="$error">
-                Valor inválido
+                Informe uma descrição
               </Text>
             )}
           </YStack>
 
-          <YStack flex={1} gap="$2">
-            <Text fontSize={13} color="$textSecondary">
-              Data
-            </Text>
-            <Controller
-              control={control}
-              name="dataCompra"
-              render={({ field }) => (
-                <DateField value={field.value} onChangeValue={field.onChange} />
-              )}
-            />
-          </YStack>
-        </XStack>
-
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Forma de pagamento
-          </Text>
-          <SegmentedControl
-            options={[
-              { value: 'PIX', label: 'Pix' },
-              { value: 'CARTAO', label: 'Cartão' },
-            ]}
-            value={formaPagamento}
-            onChange={(next) => setValue('formaPagamento', next)}
-          />
-        </YStack>
-
-        {formaPagamento === 'CARTAO' && (
-          <>
-            <YStack gap="$2">
+          <XStack gap="$3">
+            <YStack flex={1} gap="$2">
               <Text fontSize={13} color="$textSecondary">
-                Cartão
+                Valor (R$)
               </Text>
-              <XStack flexWrap="wrap" gap="$2">
-                {cards.map((card) => (
-                  <Button
-                    key={card.id}
-                    onPress={() => setValue('cartaoId', card.id)}
-                    size="$3"
-                    backgroundColor={selectedCartaoId === card.id ? '$primary' : '$surface'}
-                    color={selectedCartaoId === card.id ? 'white' : '$text'}
-                    borderColor="$border"
-                    borderWidth={1}
-                  >
-                    {card.nome}
-                  </Button>
-                ))}
-              </XStack>
-              {errors.cartaoId && (
+              <Controller
+                control={control}
+                name="valorCentavos"
+                render={({ field, fieldState }) => (
+                  <MoneyInput
+                    value={field.value}
+                    onChangeValue={field.onChange}
+                    error={Boolean(fieldState.error)}
+                  />
+                )}
+              />
+              {errors.valorCentavos && (
                 <Text fontSize={12} color="$error">
-                  Selecione um cartão
+                  Valor inválido
                 </Text>
-              )}
-              {cards.length > 1 && bestCard && bestCard.cardId !== selectedCartaoId && (
-                <XStack
-                  alignItems="center"
-                  justifyContent="space-between"
-                  backgroundColor="$infoBg"
-                  borderRadius="$md"
-                  paddingHorizontal={12}
-                  paddingVertical={10}
-                  marginTop="$1"
-                >
-                  <Text fontSize={12} color="$infoDark" flex={1}>
-                    Melhor hoje:{' '}
-                    {cards.find((card) => card.id === bestCard.cardId)?.nome ?? 'outro cartão'}{' '}
-                    (vence em {bestCard.daysUntilDue} dias)
-                  </Text>
-                  <Button
-                    onPress={() => setValue('cartaoId', bestCard.cardId)}
-                    size="$2"
-                    chromeless
-                    color="$infoDark"
-                    fontWeight="700"
-                  >
-                    Usar
-                  </Button>
-                </XStack>
               )}
             </YStack>
 
-            <XStack gap="$3">
-              <YStack flex={1} gap="$2">
+            <YStack flex={1} gap="$2">
+              <Text fontSize={13} color="$textSecondary">
+                Data
+              </Text>
+              <Controller
+                control={control}
+                name="dataCompra"
+                render={({ field }) => (
+                  <DateField value={field.value} onChangeValue={field.onChange} />
+                )}
+              />
+            </YStack>
+          </XStack>
+        </FormCard>
+
+        <FormCard title="Pagamento">
+          <YStack gap="$2">
+            <Text fontSize={13} color="$textSecondary">
+              Forma de pagamento
+            </Text>
+            <SegmentedControl
+              options={[
+                { value: 'PIX', label: 'Pix' },
+                { value: 'CARTAO', label: 'Cartão' },
+              ]}
+              value={formaPagamento}
+              onChange={(next) => setValue('formaPagamento', next)}
+            />
+          </YStack>
+
+          {formaPagamento === 'CARTAO' && (
+            <>
+              <YStack gap="$2">
                 <Text fontSize={13} color="$textSecondary">
-                  Nº de parcelas
+                  Cartão
                 </Text>
-                <Controller
-                  control={control}
-                  name="parcelasTotal"
-                  render={({ field }) => (
-                    <Stepper
-                      value={field.value}
-                      onChangeValue={(next) => {
-                        field.onChange(next);
-                        if (getValues('parcelaAtual') > next) {
-                          setValue('parcelaAtual', next);
-                        }
-                      }}
-                    />
-                  )}
-                />
+                <XStack flexWrap="wrap" gap="$2">
+                  {cards.map((card) => (
+                    <Button
+                      key={card.id}
+                      onPress={() => setValue('cartaoId', card.id)}
+                      size="$3"
+                      backgroundColor={selectedCartaoId === card.id ? '$primary' : '$surface'}
+                      color={selectedCartaoId === card.id ? 'white' : '$text'}
+                      borderColor="$border"
+                      borderWidth={1}
+                    >
+                      {card.nome}
+                    </Button>
+                  ))}
+                </XStack>
+                {errors.cartaoId && (
+                  <Text fontSize={12} color="$error">
+                    Selecione um cartão
+                  </Text>
+                )}
+                {cards.length > 1 && bestCard && bestCard.cardId !== selectedCartaoId && (
+                  <XStack
+                    alignItems="center"
+                    justifyContent="space-between"
+                    backgroundColor="$infoBg"
+                    borderRadius="$md"
+                    paddingHorizontal={12}
+                    paddingVertical={10}
+                    marginTop="$1"
+                  >
+                    <Text fontSize={12} color="$infoDark" flex={1}>
+                      Melhor hoje:{' '}
+                      {cards.find((card) => card.id === bestCard.cardId)?.nome ?? 'outro cartão'}{' '}
+                      (vence em {bestCard.daysUntilDue} dias)
+                    </Text>
+                    <Button
+                      onPress={() => setValue('cartaoId', bestCard.cardId)}
+                      size="$2"
+                      chromeless
+                      color="$infoDark"
+                      fontWeight="700"
+                    >
+                      Usar
+                    </Button>
+                  </XStack>
+                )}
               </YStack>
 
-              {parcelasTotal > 1 && (
+              <XStack gap="$3">
                 <YStack flex={1} gap="$2">
                   <Text fontSize={13} color="$textSecondary">
-                    Parcela atual
+                    Nº de parcelas
                   </Text>
                   <Controller
                     control={control}
-                    name="parcelaAtual"
+                    name="parcelasTotal"
                     render={({ field }) => (
                       <Stepper
                         value={field.value}
-                        onChangeValue={field.onChange}
-                        max={parcelasTotal}
+                        onChangeValue={(next) => {
+                          field.onChange(next);
+                          if (getValues('parcelaAtual') > next) {
+                            setValue('parcelaAtual', next);
+                          }
+                        }}
                       />
                     )}
                   />
                 </YStack>
-              )}
+
+                {parcelasTotal > 1 && (
+                  <YStack flex={1} gap="$2">
+                    <Text fontSize={13} color="$textSecondary">
+                      Parcela atual
+                    </Text>
+                    <Controller
+                      control={control}
+                      name="parcelaAtual"
+                      render={({ field }) => (
+                        <Stepper
+                          value={field.value}
+                          onChangeValue={field.onChange}
+                          max={parcelasTotal}
+                        />
+                      )}
+                    />
+                  </YStack>
+                )}
+              </XStack>
+            </>
+          )}
+        </FormCard>
+
+        <FormCard title="Organização">
+          <XStack
+            justifyContent="space-between"
+            alignItems="center"
+            onPress={() =>
+              router.push({
+                pathname: '/cartoes/nova-compra/categoria',
+                params: { categoriaId, categoriaNome },
+              })
+            }
+          >
+            <Text fontSize={13} color="$textSecondary">
+              Categoria
+            </Text>
+            <XStack alignItems="center" gap="$2">
+              <Text fontSize={14.5} fontWeight="600" color="$text">
+                {categoriaNome ?? 'Nenhuma'}
+              </Text>
+              <ChevronRight size={16} color="#6C6C6D" />
             </XStack>
-          </>
-        )}
-
-        <XStack
-          justifyContent="space-between"
-          alignItems="center"
-          paddingVertical={14}
-          borderTopWidth={1}
-          borderColor="$border"
-          onPress={() =>
-            router.push({
-              pathname: '/cartoes/nova-compra/categoria',
-              params: { categoriaId, categoriaNome },
-            })
-          }
-        >
-          <Text fontSize={13} color="$textSecondary">
-            Categoria
-          </Text>
-          <XStack alignItems="center" gap="$2">
-            <Text fontSize={14.5} fontWeight="600" color="$text">
-              {categoriaNome ?? 'Nenhuma'}
-            </Text>
-            <ChevronRight size={16} color="#6C6C6D" />
           </XStack>
-        </XStack>
 
-        <XStack
-          justifyContent="space-between"
-          alignItems="center"
-          paddingVertical={14}
-          borderTopWidth={1}
-          borderColor="$border"
-          onPress={() =>
-            router.push({
-              pathname: '/cartoes/nova-compra/estabelecimento',
-              params: { descricao: descricaoAtual },
-            })
-          }
-        >
-          <Text fontSize={13} color="$textSecondary">
-            Estabelecimento
-          </Text>
-          <XStack alignItems="center" gap="$2">
-            <Text fontSize={14.5} fontWeight="600" color="$text">
-              {estabelecimentoNome ?? 'Nenhum'}
+          <XStack
+            justifyContent="space-between"
+            alignItems="center"
+            onPress={() =>
+              router.push({
+                pathname: '/cartoes/nova-compra/estabelecimento',
+                params: { descricao: descricaoAtual },
+              })
+            }
+          >
+            <Text fontSize={13} color="$textSecondary">
+              Estabelecimento
             </Text>
-            <ChevronRight size={16} color="#6C6C6D" />
+            <XStack alignItems="center" gap="$2">
+              <Text fontSize={14.5} fontWeight="600" color="$text">
+                {estabelecimentoNome ?? 'Nenhum'}
+              </Text>
+              <ChevronRight size={16} color="#6C6C6D" />
+            </XStack>
           </XStack>
-        </XStack>
 
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Tags
-          </Text>
-          <Controller
-            control={control}
-            name="tags"
-            render={({ field }) => <TagInput value={field.value ?? []} onChange={field.onChange} />}
-          />
-        </YStack>
+          <YStack gap="$2">
+            <Text fontSize={13} color="$textSecondary">
+              Tags
+            </Text>
+            <Controller
+              control={control}
+              name="tags"
+              render={({ field }) => (
+                <TagInput value={field.value ?? []} onChange={field.onChange} />
+              )}
+            />
+          </YStack>
+        </FormCard>
 
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Comentário
-          </Text>
+        <FormCard title="Comentário">
           <Controller
             control={control}
             name="comentario"
@@ -441,20 +441,9 @@ export default function NovaCompraScreen() {
               <AppInput value={field.value} onChangeText={field.onChange} placeholder="Opcional" />
             )}
           />
-        </YStack>
+        </FormCard>
 
-        <YStack
-          backgroundColor="$surface"
-          borderColor="$border"
-          borderWidth={1}
-          borderRadius="$lg"
-          padding={18}
-          gap="$3"
-        >
-          <Text fontSize={12} fontWeight="700" color="$textTertiary" textTransform="uppercase">
-            Divisão de responsabilidade
-          </Text>
-
+        <FormCard title="Divisão de responsabilidade">
           {!splitting ? (
             <XStack justifyContent="space-between" alignItems="center">
               <YStack gap="$1">
@@ -564,7 +553,7 @@ export default function NovaCompraScreen() {
               </Button>
             </>
           )}
-        </YStack>
+        </FormCard>
       </ScrollView>
     </Screen>
   );

@@ -7,6 +7,7 @@ import { ActivityIndicator, Alert } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { AppInput } from '@/components/AppInput';
+import { FormCard } from '@/components/FormCard';
 import { MoneyInput } from '@/components/MoneyInput';
 import { Screen } from '@/components/Screen';
 import { SegmentedControl } from '@/components/SegmentedControl';
@@ -175,22 +176,61 @@ export default function AssinaturaEditarScreen() {
       </XStack>
 
       <ScrollView contentContainerStyle={{ padding: 20, gap: 18 }}>
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Nome
-          </Text>
-          <AppInput value={nome} onChangeText={setNome} placeholder="Ex.: Netflix" />
-        </YStack>
+        <FormCard title="Detalhes">
+          <YStack gap="$2">
+            <Text fontSize={13} color="$textSecondary">
+              Nome
+            </Text>
+            <AppInput value={nome} onChangeText={setNome} placeholder="Ex.: Netflix" />
+          </YStack>
 
-        <XStack gap="$3">
-          <YStack flex={1} gap="$2">
+          <YStack gap="$2">
             <Text fontSize={13} color="$textSecondary">
               Valor (R$)
             </Text>
             <MoneyInput value={valor} onChangeValue={setValor} />
           </YStack>
+        </FormCard>
 
-          <YStack flex={1} gap="$2">
+        <FormCard title="Cobrança">
+          <YStack gap="$2">
+            <Text fontSize={13} color="$textSecondary">
+              Forma de pagamento
+            </Text>
+            <SegmentedControl
+              options={[
+                { value: 'PIX', label: 'Pix' },
+                { value: 'CARTAO', label: 'Cartão' },
+              ]}
+              value={formaPagamento}
+              onChange={setFormaPagamento}
+            />
+          </YStack>
+
+          {formaPagamento === 'CARTAO' && (
+            <YStack gap="$2">
+              <Text fontSize={13} color="$textSecondary">
+                Cartão
+              </Text>
+              <XStack flexWrap="wrap" gap="$2">
+                {cards.map((card) => (
+                  <Button
+                    key={card.id}
+                    onPress={() => setCartaoId(card.id)}
+                    size="$3"
+                    backgroundColor={cartaoId === card.id ? '$primary' : '$surface'}
+                    color={cartaoId === card.id ? 'white' : '$text'}
+                    borderColor="$border"
+                    borderWidth={1}
+                  >
+                    {card.nome}
+                  </Button>
+                ))}
+              </XStack>
+            </YStack>
+          )}
+
+          <YStack gap="$2">
             <Text fontSize={13} color="$textSecondary">
               Dia de cobrança
             </Text>
@@ -208,77 +248,42 @@ export default function AssinaturaEditarScreen() {
               keyboardType="number-pad"
             />
           </YStack>
-        </XStack>
+        </FormCard>
 
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Forma de pagamento
-          </Text>
-          <SegmentedControl
-            options={[
-              { value: 'PIX', label: 'Pix' },
-              { value: 'CARTAO', label: 'Cartão' },
-            ]}
-            value={formaPagamento}
-            onChange={setFormaPagamento}
-          />
-        </YStack>
-
-        {formaPagamento === 'CARTAO' && (
+        <FormCard title="Organização">
           <YStack gap="$2">
             <Text fontSize={13} color="$textSecondary">
-              Cartão
+              Categoria
             </Text>
             <XStack flexWrap="wrap" gap="$2">
-              {cards.map((card) => (
-                <Button
-                  key={card.id}
-                  onPress={() => setCartaoId(card.id)}
-                  size="$3"
-                  backgroundColor={cartaoId === card.id ? '$primary' : '$surface'}
-                  color={cartaoId === card.id ? 'white' : '$text'}
-                  borderColor="$border"
-                  borderWidth={1}
-                >
-                  {card.nome}
-                </Button>
-              ))}
+              {categories.map((category) => {
+                const Icon = icons[category.icone] ?? Shapes;
+                const selected = categoriaId === category.id;
+                return (
+                  <Button
+                    key={category.id}
+                    onPress={() => setCategoriaId(selected ? undefined : category.id)}
+                    size="$3"
+                    backgroundColor={selected ? '$primary' : '$surface'}
+                    color={selected ? 'white' : '$text'}
+                    borderColor="$border"
+                    borderWidth={1}
+                    icon={<Icon size={16} color={selected ? 'white' : '#1C1C1E'} />}
+                  >
+                    {category.nome}
+                  </Button>
+                );
+              })}
             </XStack>
           </YStack>
-        )}
 
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Categoria
-          </Text>
-          <XStack flexWrap="wrap" gap="$2">
-            {categories.map((category) => {
-              const Icon = icons[category.icone] ?? Shapes;
-              const selected = categoriaId === category.id;
-              return (
-                <Button
-                  key={category.id}
-                  onPress={() => setCategoriaId(selected ? undefined : category.id)}
-                  size="$3"
-                  backgroundColor={selected ? '$primary' : '$surface'}
-                  color={selected ? 'white' : '$text'}
-                  borderColor="$border"
-                  borderWidth={1}
-                  icon={<Icon size={16} color={selected ? 'white' : '#1C1C1E'} />}
-                >
-                  {category.nome}
-                </Button>
-              );
-            })}
-          </XStack>
-        </YStack>
-
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Tags
-          </Text>
-          <TagInput value={tags} onChange={setTags} />
-        </YStack>
+          <YStack gap="$2">
+            <Text fontSize={13} color="$textSecondary">
+              Tags
+            </Text>
+            <TagInput value={tags} onChange={setTags} />
+          </YStack>
+        </FormCard>
 
         {!isNew && (
           <Button

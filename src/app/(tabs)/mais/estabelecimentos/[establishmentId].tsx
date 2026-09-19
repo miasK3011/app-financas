@@ -7,6 +7,7 @@ import { ActivityIndicator } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { AppInput } from '@/components/AppInput';
+import { FormCard } from '@/components/FormCard';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { CATEGORY_ICON_OPTIONS, getIconColors } from '@/domain/shared/categoryIcons';
@@ -159,44 +160,16 @@ export default function EstabelecimentoDetalheScreen() {
           <AppInput value={nomeExibicao} onChangeText={setNomeExibicao} placeholder="Ex.: iFood" />
         </YStack>
 
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Ícone de respaldo
-          </Text>
-          <XStack flexWrap="wrap" gap="$2">
-            {CATEGORY_ICON_OPTIONS.map((iconName) => {
-              const Icon = icons[iconName];
-              const selected = iconeRespaldo === iconName;
-              const { bg, fg } = getIconColors(iconName);
-              return (
-                <Button
-                  key={iconName}
-                  onPress={() => setIconeRespaldo(iconName)}
-                  width={48}
-                  height={48}
-                  circular
-                  backgroundColor={bg}
-                  borderColor={selected ? '$primary' : 'transparent'}
-                  borderWidth={2}
-                  icon={<Icon size={20} color={fg} />}
-                />
-              );
-            })}
-          </XStack>
-        </YStack>
-
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Domínio (opcional, para buscar o logotipo)
-          </Text>
-          <AppInput value={dominio} onChangeText={setDominio} placeholder="Ex.: ifood.com.br" />
-        </YStack>
+        <FormCard title="Domínio do site">
+          <AppInput
+            value={dominio}
+            onChangeText={setDominio}
+            placeholder="Ex.: ifood.com.br (opcional, para buscar o logotipo)"
+          />
+        </FormCard>
 
         {savedId && (
-          <YStack gap="$2">
-            <Text fontSize={15} fontWeight="600" color="$text">
-              Padrões de reconhecimento
-            </Text>
+          <FormCard title="Padrões de reconhecimento">
             <Text fontSize={12} color="$textTertiary">
               Toda compra cuja descrição contenha um destes textos ganha este estabelecimento
               automaticamente.
@@ -235,8 +208,31 @@ export default function EstabelecimentoDetalheScreen() {
                 Adicionar
               </PrimaryButton>
             </XStack>
-          </YStack>
+          </FormCard>
         )}
+
+        <FormCard title="Ícone de respaldo">
+          <XStack flexWrap="wrap" gap="$2">
+            {CATEGORY_ICON_OPTIONS.map((iconName) => {
+              const Icon = icons[iconName];
+              const selected = iconeRespaldo === iconName;
+              const { bg, fg } = getIconColors(iconName);
+              return (
+                <Button
+                  key={iconName}
+                  onPress={() => setIconeRespaldo(iconName)}
+                  width={48}
+                  height={48}
+                  circular
+                  backgroundColor={bg}
+                  borderColor={selected ? '$primary' : 'transparent'}
+                  borderWidth={2}
+                  icon={<Icon size={20} color={fg} />}
+                />
+              );
+            })}
+          </XStack>
+        </FormCard>
       </ScrollView>
     </Screen>
   );

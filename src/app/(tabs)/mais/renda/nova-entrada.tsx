@@ -6,6 +6,7 @@ import { Button, Text, XStack, YStack } from 'tamagui';
 import { z } from 'zod';
 
 import { AppInput } from '@/components/AppInput';
+import { FormCard } from '@/components/FormCard';
 import { MoneyInput } from '@/components/MoneyInput';
 import { Screen } from '@/components/Screen';
 import { useMonthBalance } from '@/hooks/useMonthBalance';
@@ -68,50 +69,52 @@ export default function NovaEntradaAvulsaScreen() {
       </XStack>
 
       <YStack flex={1} backgroundColor="$bg" padding={20} gap="$4">
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Descrição
-          </Text>
-          <Controller
-            control={control}
-            name="descricao"
-            render={({ field, fieldState }) => (
-              <AppInput
-                value={field.value}
-                onChangeText={field.onChange}
-                placeholder="Ex.: Freela de design"
-                error={Boolean(fieldState.error)}
-              />
-            )}
-          />
-          {errors.descricao && (
-            <Text fontSize={12} color="$error">
-              Informe uma descrição
+        <FormCard title="Detalhes">
+          <YStack gap="$2">
+            <Text fontSize={13} color="$textSecondary">
+              Descrição
             </Text>
-          )}
-        </YStack>
+            <Controller
+              control={control}
+              name="descricao"
+              render={({ field, fieldState }) => (
+                <AppInput
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  placeholder="Ex.: Freela de design"
+                  error={Boolean(fieldState.error)}
+                />
+              )}
+            />
+            {errors.descricao && (
+              <Text fontSize={12} color="$error">
+                Informe uma descrição
+              </Text>
+            )}
+          </YStack>
 
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Valor (R$)
-          </Text>
-          <Controller
-            control={control}
-            name="valorCentavos"
-            render={({ field, fieldState }) => (
-              <MoneyInput
-                value={field.value}
-                onChangeValue={field.onChange}
-                error={Boolean(fieldState.error)}
-              />
-            )}
-          />
-          {errors.valorCentavos && (
-            <Text fontSize={12} color="$error">
-              Informe um valor maior que zero
+          <YStack gap="$2">
+            <Text fontSize={13} color="$textSecondary">
+              Valor (R$)
             </Text>
-          )}
-        </YStack>
+            <Controller
+              control={control}
+              name="valorCentavos"
+              render={({ field, fieldState }) => (
+                <MoneyInput
+                  value={field.value}
+                  onChangeValue={field.onChange}
+                  error={Boolean(fieldState.error)}
+                />
+              )}
+            />
+            {errors.valorCentavos && (
+              <Text fontSize={12} color="$error">
+                Informe um valor maior que zero
+              </Text>
+            )}
+          </YStack>
+        </FormCard>
       </YStack>
     </Screen>
   );
