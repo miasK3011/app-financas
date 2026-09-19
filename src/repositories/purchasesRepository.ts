@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, isNull, lt, lte } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNull, lt, lte } from 'drizzle-orm';
 import { randomUUID } from 'expo-crypto';
 
 import { db } from '@/db/client';
@@ -23,7 +23,7 @@ import { purchaseSchema } from '@/domain/shared/purchaseSchema';
 import { resolvePeriod } from '@/domain/statistics/resolvePeriod';
 
 import { matchEstablishmentForDescription } from './establishmentsRepository';
-import { getOrCreateInvoice } from './invoicesRepository';
+import { getOrCreateInvoice, listInvoicesDueInMonth } from './invoicesRepository';
 import { findOrCreateTag } from './tagsRepository';
 
 export type Purchase = typeof compras.$inferSelect;
@@ -591,4 +591,56 @@ export async function listPurchasesForMonth(year: number, month: number): Promis
   ];
 
   return rows.sort((a, b) => b.dataCompra.getTime() - a.dataCompra.getTime());
+}
+
+/** `MonthRange.earliest` (`contracts/purchases-overview.md`): data da Compra mais antiga cadastrada. */
+export async function getEarliestCompraDate(): Promise<Date | null> {
+  const [row] = await db
+    .select({ dataCompra: compras.dataCompra })
+    .from(compras)
+    .orderBy(asc(compras.dataCompra))
+    .limit(1);
+  return row?.dataCompra ?? null;
+}
+
+export type ForecastInvoiceGroup = { cartaoNome: string; dataVencimento: Date; rows: PurchaseListRow[] };
+
+/**
+ * Tela Compras, mês futuro previsto (FR-013): reaproveita
+ * `listInvoicesDueInMonth` + `listPurchasesForInvoice` (já existentes)
+ * para agrupar as parcelas já lançadas para o mês por fatura, em vez
+ * de por dia (contracts/purchases-overview.md).
+ */
+export async function listForecastInvoicesForMonth(
+  year: number,
+  month: number,
+): Promise<ForecastInvoiceGroup[]> {
+  const invoices = await listInvoicesDueInMonth(year, month);
+
+  return Promise.all(
+    invoices.map(async (invoice) => {
+      const [card] = await db.select({ nome: cartoes.nome }).from(cartoes).where(eq(cartoes.id, invoice.cartaoId));
+      const cartaoNome = card?.nome ?? 'Cartão';
+      const purchaseRows = await listPurchasesForInvoice(invoice.id);
+
+      const rows = purchaseRows.map((row) =>
+        toPurchaseListRow(
+          {
+            id: row.parcelaId,
+            compraId: row.compra.id,
+            faturaId: invoice.id,
+            numero: row.numero,
+            valor: row.valor,
+            valorResponsabilidade: row.valorResponsabilidade,
+          },
+          row.compra,
+          row.categoria,
+          cartaoNome,
+          invoice.dataVencimento,
+        ),
+      );
+
+      return { cartaoNome, dataVencimento: invoice.dataVencimento, rows };
+    }),
+  );
 }

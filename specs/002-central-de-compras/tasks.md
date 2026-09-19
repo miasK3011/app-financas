@@ -135,43 +135,43 @@ agrupada por fatura.
 
 ### Implementation for User Story 2
 
-- [ ] T017 [P] [US2] Implementar `src/domain/purchasesOverview/monthRange.ts` —
+- [X] T017 [P] [US2] Implementar `src/domain/purchasesOverview/monthRange.ts` —
       `computeMonthRange(earliestCompraDate: Date | null, invoiceDueDatesWithParcela: Date[], today:
       Date): MonthRange`: `earliest` = mês de `earliestCompraDate` (`undefined` se `null`); `latest` =
       "o maior entre o mês de `today` e o mês de `max(invoiceDueDatesWithParcela)`" (`today` quando a
       lista estiver vazia — FR-009, seta de avançar já desabilitada no mês corrente sem parcela
       futura)
-- [ ] T018 [P] [US2] Testes unitários de `computeMonthRange` em
+- [X] T018 [P] [US2] Testes unitários de `computeMonthRange` em
       `tests/unit/domain/purchasesOverview.test.ts`: sem parcela futura (avançar desabilitado no mês
       corrente); parcelas futuras lançadas para os próximos 2 meses (chega até o 2º, não além); sem
       nenhuma Compra cadastrada (`earliest` indefinido)
-- [ ] T019 [US2] Repositório: obter `earliestCompraDate` (`MIN(compras.dataCompra)`) e a lista de
+- [X] T019 [US2] Repositório: obter `earliestCompraDate` (`MIN(compras.dataCompra)`) e a lista de
       `Fatura.dataVencimento` de toda `Fatura` com ao menos uma `Parcela` associada, em
       `src/repositories/purchasesRepository.ts` (ou `invoicesRepository.ts`), alimentando
       `computeMonthRange` (T017)
-- [ ] T020 [US2] Implementar `listForecastInvoicesForMonth(year: number, month: number)` em
+- [X] T020 [US2] Implementar `listForecastInvoicesForMonth(year: number, month: number)` em
       `src/repositories/purchasesRepository.ts` per `contracts/purchases-overview.md`: reaproveita
       `invoicesRepository.listInvoicesDueInMonth(year, month)` (já existente) +
       `purchasesRepository.listPurchasesForInvoice(invoiceId)` (já existente) por fatura, convertendo
       `InvoicePurchaseRow` para `PurchaseListRow` (T002) (FR-013)
-- [ ] T021 [P] [US2] Criar `src/components/MonthNavigator.tsx`: seta de voltar, rótulo centralizado,
+- [X] T021 [P] [US2] Criar `src/components/MonthNavigator.tsx`: seta de voltar, rótulo centralizado,
       seta de avançar — cada seta recebe `disabled` via prop (estilo esmaecido quando desabilitada);
       gesto de swipe horizontal sobre a área do navegador usando `react-native-gesture-handler` +
       `react-native-reanimated`, chamando `onPrev`/`onNext` (mesmo efeito de tocar nas setas) (FR-006,
       FR-007)
-- [ ] T022 [US2] Em `(tabs)/compras/index.tsx`, substituir o rótulo estático de T010 pelo
+- [X] T022 [US2] Em `(tabs)/compras/index.tsx`, substituir o rótulo estático de T010 pelo
       `MonthNavigator` (T021), com `selectedYear`/`selectedMonth` em estado local; "a seta de voltar
       fica desabilitada quando o mês exibido é igual a `earliest` (ou não existe `earliest`); a seta
       de avançar fica desabilitada quando o mês exibido é igual a `latest`" (T017/`data-model.md`)
       (FR-005, FR-008, FR-009)
-- [ ] T023 [US2] Em `(tabs)/compras/index.tsx`, ramificar o conteúdo pelo `kind` do mês selecionado:
+- [X] T023 [US2] Em `(tabs)/compras/index.tsx`, ramificar o conteúdo pelo `kind` do mês selecionado:
       `'atual'`/`'passado'` mantém resumo + filtro + lista por dia (T011–T013), buscando
       `listPurchasesForMonth` (T006) para o mês selecionado; `'futuro-previsto'` busca
       `listForecastInvoicesForMonth` (T020), mostra o mesmo bloco de resumo (T011) com o rótulo
       trocado para "Previsto para [mês]", e a lista agrupada por fatura (nome do cartão + data de
       vencimento) em vez de por dia — "não deve usar nenhum selo ou banner adicional de 'previsto'
       além da seta de avançar desabilitada e do rótulo do próprio resumo" (FR-013, FR-014)
-- [ ] T024 [US2] Esconder o botão de ação flutuante (T014) quando `kind = 'futuro-previsto'`
+- [X] T024 [US2] Esconder o botão de ação flutuante (T014) quando `kind = 'futuro-previsto'`
       (FR-015 — FAB só em mês atual/passado)
 
 **Checkpoint**: User Stories 1 e 2 completas e testáveis de forma independente (`quickstart.md`

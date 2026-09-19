@@ -145,3 +145,17 @@ export async function listInvoicesDueInMonth(
     .where(and(gte(faturas.dataVencimento, monthStart), lt(faturas.dataVencimento, monthEnd)));
   return Promise.all(rows.map((invoice) => withTotals(invoice, today)));
 }
+
+/**
+ * `MonthRange.latest` (`contracts/purchases-overview.md`): data de
+ * vencimento de toda Fatura que tenha ao menos uma Parcela associada
+ * — o que define até que mês futuro a tela Compras pode navegar
+ * (FR-009).
+ */
+export async function listInvoiceDueDatesWithParcela(): Promise<Date[]> {
+  const rows = await db
+    .selectDistinct({ dataVencimento: faturas.dataVencimento })
+    .from(faturas)
+    .innerJoin(parcelas, eq(parcelas.faturaId, faturas.id));
+  return rows.map((row) => row.dataVencimento);
+}
