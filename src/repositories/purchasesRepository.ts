@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lt } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lt } from 'drizzle-orm';
 import { randomUUID } from 'expo-crypto';
 
 import { db } from '@/db/client';
@@ -273,9 +273,11 @@ export type InvoicePurchaseRow = {
   valorResponsabilidade: number;
   compra: Purchase;
   /** Para `TransactionAvatar` (FR-030) — `null` até a Compra ter uma categoria. */
-  categoria: { icone: string } | null;
+  categoria: { icone: string; nome: string } | null;
   /** Idem — sempre `null` até a User Story 10 existir. */
   estabelecimento: { logoCachePath: string | null; iconeRespaldo: string } | null;
+  /** Etiquetas da Compra (FR-007/FR-008) — exibidas como chips em Fatura · Detalhe. */
+  tags: string[];
 };
 
 /**
@@ -283,14 +285,16 @@ export type InvoicePurchaseRow = {
  * pela tela Fatura · Detalhe. `valor`/`valorResponsabilidade` vêm da
  * Parcela (o que de fato recai nesta fatura), o resto vem da Compra.
  * `categoria`/`estabelecimento` vêm via left join só para alimentar
- * `TransactionAvatar` sem uma segunda consulta por linha.
+ * `TransactionAvatar` sem uma segunda consulta por linha. `tags` vem de
+ * uma segunda consulta em lote (não dá para agregar array em SQLite via
+ * drizzle aqui) para não fazer N+1 por linha.
  */
 export async function listPurchasesForInvoice(invoiceId: string): Promise<InvoicePurchaseRow[]> {
   const rows = await db
     .select({
       parcela: parcelas,
       compra: compras,
-      categoria: { icone: categorias.icone },
+      categoria: { icone: categorias.icone, nome: categorias.nome },
       estabelecimento: {
         logoCachePath: estabelecimentos.logoCachePath,
         iconeRespaldo: estabelecimentos.iconeRespaldo,
@@ -302,19 +306,35 @@ export async function listPurchasesForInvoice(invoiceId: string): Promise<Invoic
     .leftJoin(estabelecimentos, eq(compras.estabelecimentoId, estabelecimentos.id))
     .where(eq(parcelas.faturaId, invoiceId));
 
+  const compraIds = rows.map((row) => row.compra.id);
+  const tagRows = compraIds.length
+    ? await db
+        .select({ compraId: compraTags.compraId, nome: tags.nome })
+        .from(compraTags)
+        .innerJoin(tags, eq(compraTags.tagId, tags.id))
+        .where(inArray(compraTags.compraId, compraIds))
+    : [];
+  const tagsByCompraId = new Map<string, string[]>();
+  for (const tagRow of tagRows) {
+    const current = tagsByCompraId.get(tagRow.compraId) ?? [];
+    current.push(tagRow.nome);
+    tagsByCompraId.set(tagRow.compraId, current);
+  }
+
   return rows.map(({ parcela, compra, categoria, estabelecimento }) => ({
     parcelaId: parcela.id,
     numero: parcela.numero,
     valor: parcela.valor,
     valorResponsabilidade: parcela.valorResponsabilidade,
     compra,
-    categoria: categoria?.icone ? { icone: categoria.icone } : null,
+    categoria: categoria?.icone ? { icone: categoria.icone, nome: categoria.nome ?? '' } : null,
     estabelecimento: estabelecimento?.iconeRespaldo
       ? {
           logoCachePath: estabelecimento.logoCachePath,
           iconeRespaldo: estabelecimento.iconeRespaldo,
         }
       : null,
+    tags: tagsByCompraId.get(compra.id) ?? [],
   }));
 }
 
