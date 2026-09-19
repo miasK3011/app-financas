@@ -117,7 +117,7 @@ export default function CartaoFaturasScreen() {
           {!card?.arquivadoEm && (
             <Button
               onPress={() =>
-                router.push({ pathname: '/cartoes/importar-csv', params: { cartaoId: cardId } })
+                router.push({ pathname: '/cartao/importar-csv', params: { cartaoId: cardId } })
               }
               size="$3"
               backgroundColor="$primaryLight"
@@ -157,7 +157,7 @@ export default function CartaoFaturasScreen() {
                   borderColor="$border"
                   alignItems="center"
                   gap="$3"
-                  onPress={() => router.push(`/cartoes/${cardId}/fatura/${invoice.id}`)}
+                  onPress={() => router.push(`/cartao/${cardId}/fatura/${invoice.id}`)}
                 >
                   <YStack flex={1}>
                     <Text fontSize={15} fontWeight="600" color={isFuture ? '$textSecondary' : '$text'}>

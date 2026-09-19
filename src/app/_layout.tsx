@@ -96,7 +96,8 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" />
           {/* Fora de qualquer tab de propósito — reaproveitadas por Início
-              (Transações recentes/FAB), Mais·Renda e Cartões, então
+              (Faturas do mês/Melhor cartão/Transações recentes/FAB,
+              Consumo mensal/Editar renda), Mais·Renda e Cartões, então
               precisam viver no stack raiz (ver comentário em
               (tabs)/cartoes/_layout.tsx sobre o bug de tab cruzada que
               isso corrige). */}
@@ -106,6 +107,12 @@ export default function RootLayout() {
           <Stack.Screen name="nova-compra/divisao-manual" options={{ presentation: 'modal' }} />
           <Stack.Screen name="nova-compra/divisao-vinculada" options={{ presentation: 'modal' }} />
           <Stack.Screen name="compra/[compraId]" />
+          <Stack.Screen name="cartao/[cardId]/index" />
+          <Stack.Screen name="cartao/[cardId]/fatura/[invoiceId]" />
+          <Stack.Screen name="cartao/importar-csv/index" />
+          <Stack.Screen name="cartao/importar-csv/resultado" />
+          <Stack.Screen name="renda/index" />
+          <Stack.Screen name="renda/nova-entrada" options={{ presentation: 'modal' }} />
         </Stack>
       </TamaguiProvider>
     </SafeAreaProvider>

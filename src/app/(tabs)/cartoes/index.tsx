@@ -64,7 +64,7 @@ export default function CartoesScreen() {
         )}
 
         <Button
-          onPress={() => router.push('/cartoes/importar-csv')}
+          onPress={() => router.push('/cartao/importar-csv')}
           backgroundColor="$surface"
           borderColor="$border"
           borderWidth={1}
@@ -95,7 +95,7 @@ export default function CartoesScreen() {
                   borderColor="$border"
                   justifyContent="space-between"
                   alignItems="center"
-                  onPress={() => router.push(`/cartoes/${card.id}`)}
+                  onPress={() => router.push(`/cartao/${card.id}`)}
                   opacity={card.arquivadoEm ? 0.5 : 1}
                   gap="$3"
                 >
