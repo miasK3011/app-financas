@@ -8,6 +8,7 @@ import {
   listInvoicesForCardWithTotals,
   listOpenInvoicesWithTotals,
   markInvoiceAsPaid,
+  unmarkInvoiceAsPaid,
 } from '@/repositories/invoicesRepository';
 import {
   type InvoicePurchaseRow,
@@ -45,7 +46,13 @@ export function useInvoice(invoiceId: string | undefined) {
     await refresh();
   }, [invoiceId, refresh]);
 
-  return { invoice, loading, refresh, markAsPaid };
+  const unmarkAsPaid = useCallback(async () => {
+    if (!invoiceId) return;
+    await unmarkInvoiceAsPaid(invoiceId);
+    await refresh();
+  }, [invoiceId, refresh]);
+
+  return { invoice, loading, refresh, markAsPaid, unmarkAsPaid };
 }
 
 /** Compras alocadas em uma Fatura (Fatura · Detalhe). */

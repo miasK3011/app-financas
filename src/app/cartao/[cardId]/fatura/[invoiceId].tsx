@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeft, ChevronRight, Users } from 'lucide-react-native';
-import { ActivityIndicator } from 'react-native';
+import { ActivityIndicator, Alert } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { Money } from '@/components/Money';
@@ -31,7 +31,7 @@ export default function FaturaDetalheScreen() {
   const { cardId, invoiceId } = useLocalSearchParams<{ cardId: string; invoiceId: string }>();
   const router = useRouter();
   const { card } = useCard(cardId);
-  const { invoice, loading, markAsPaid } = useInvoice(invoiceId);
+  const { invoice, loading, markAsPaid, unmarkAsPaid } = useInvoice(invoiceId);
   const { purchases, loading: purchasesLoading } = useInvoicePurchases(invoiceId);
 
   if (loading || !invoice) {
@@ -45,6 +45,27 @@ export default function FaturaDetalheScreen() {
   }
 
   const showResponsibility = shouldShowResponsibilitySummary(invoice);
+  const invoiceLabel = `${MONTH_NAMES[invoice.referenciaMes - 1]} ${invoice.referenciaAno}`;
+
+  // Issue #19: pagar só faz sentido depois do fechamento, e as duas ações
+  // pedem confirmação — um toque acidental não pode mudar o status.
+  const handleMarkAsPaid = () => {
+    Alert.alert('Marcar fatura como paga', `Confirmar o pagamento da fatura de ${invoiceLabel}?`, [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Marcar como paga', onPress: markAsPaid },
+    ]);
+  };
+
+  const handleUnmarkAsPaid = () => {
+    Alert.alert(
+      'Desmarcar pagamento',
+      `A fatura de ${invoiceLabel} volta a constar como não paga.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Desmarcar', style: 'destructive', onPress: unmarkAsPaid },
+      ],
+    );
+  };
 
   return (
     <Screen>
@@ -202,10 +223,20 @@ export default function FaturaDetalheScreen() {
           )}
         </YStack>
 
-        {invoice.status !== 'PAGA' && (
-          <PrimaryButton onPress={markAsPaid} color="white" fontWeight="700" borderRadius={999}>
+        {invoice.status === 'FECHADA' && (
+          <PrimaryButton
+            onPress={handleMarkAsPaid}
+            color="white"
+            fontWeight="700"
+            borderRadius={999}
+          >
             Marcar fatura como paga
           </PrimaryButton>
+        )}
+        {invoice.status === 'PAGA' && (
+          <Button onPress={handleUnmarkAsPaid} chromeless color="$textSecondary" fontWeight="600">
+            Desmarcar pagamento
+          </Button>
         )}
       </ScrollView>
     </Screen>
