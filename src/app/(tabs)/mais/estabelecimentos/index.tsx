@@ -7,6 +7,7 @@ import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { TransactionAvatar } from '@/components/TransactionAvatar';
+import { FAB_SCROLL_PADDING } from '@/components/fabLayout';
 import {
   type EstablishmentWithPatternCount,
   listEstablishmentsWithPatternCount,
@@ -44,7 +45,9 @@ export default function EstabelecimentosScreen() {
         </Text>
       </XStack>
 
-      <ScrollView contentContainerStyle={{ padding: 20 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingBottom: FAB_SCROLL_PADDING }}
+      >
         {loading ? (
           <ActivityIndicator style={{ marginTop: 24 }} />
         ) : establishments.length === 0 ? (

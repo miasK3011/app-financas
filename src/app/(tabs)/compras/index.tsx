@@ -9,6 +9,7 @@ import { Money } from '@/components/Money';
 import { PurchaseAvatar } from '@/components/PaymentMethodBadge';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
+import { FAB_SCROLL_PADDING } from '@/components/fabLayout';
 import { groupByDay } from '@/domain/purchasesOverview/groupByDay';
 import { computeBreakdown } from '@/domain/purchasesOverview/paymentBreakdown';
 import type { FormaPagamento, PurchaseListRow } from '@/domain/purchasesOverview/types';
@@ -155,7 +156,9 @@ export default function ComprasScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={{ padding: 20, gap: 18 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingBottom: FAB_SCROLL_PADDING, gap: 18 }}
+      >
         <Text
           fontFamily="$heading"
           fontSize={27}

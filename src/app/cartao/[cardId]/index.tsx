@@ -7,6 +7,7 @@ import { Money } from '@/components/Money';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { StatusBadge } from '@/components/StatusBadge';
+import { FAB_SCROLL_PADDING } from '@/components/fabLayout';
 import { shouldShowResponsibilitySummary } from '@/domain/expenseSplitting/shouldShowResponsibilitySummary';
 import { useCard } from '@/hooks/useCards';
 import { useCardInvoices } from '@/hooks/useInvoice';
@@ -75,7 +76,9 @@ export default function CartaoFaturasScreen() {
         />
       </XStack>
 
-      <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingBottom: FAB_SCROLL_PADDING, gap: 22 }}
+      >
         <XStack
           backgroundColor="$surface"
           borderColor="$border"

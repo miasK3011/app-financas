@@ -8,6 +8,7 @@ import { Money } from '@/components/Money';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { TransactionAvatar } from '@/components/TransactionAvatar';
+import { FAB_SCROLL_PADDING } from '@/components/fabLayout';
 import { monthlySubscriptionsTotal } from '@/domain/subscriptions/monthlySubscriptionsTotal';
 import { listCategories } from '@/repositories/categoriesRepository';
 import { listActiveSubscriptions, type Subscription } from '@/repositories/subscriptionsRepository';
@@ -35,7 +36,9 @@ export default function AssinaturasScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingBottom: FAB_SCROLL_PADDING, gap: 22 }}
+      >
         <Text
           fontFamily="$heading"
           fontSize={27}
