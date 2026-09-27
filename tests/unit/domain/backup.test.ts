@@ -41,6 +41,7 @@ describe('validateBackupFile', () => {
           nome: 'Nubank',
           diaFechamento: 10,
           diaVencimento: 17,
+          compraNoFechamentoVaiParaProxima: false,
           arquivadoEm: null,
           criadoEm: new Date('2026-01-01'),
         },
@@ -51,6 +52,31 @@ describe('validateBackupFile', () => {
     expect(result.valid).toBe(true);
     if (result.valid) {
       expect(result.file.data.cartoes[0].criadoEm).toBeInstanceOf(Date);
+    }
+  });
+
+  it('accepts a backup made before the closing-day rule existed, defaulting it to true (issue #16)', () => {
+    const file = serializeBackup(emptySnapshot);
+    const legacy = {
+      ...JSON.parse(JSON.stringify(file)),
+      data: {
+        ...JSON.parse(JSON.stringify(file.data)),
+        cartoes: [
+          {
+            id: 'card-1',
+            nome: 'Nubank',
+            diaFechamento: 10,
+            diaVencimento: 17,
+            arquivadoEm: null,
+            criadoEm: '2026-01-01T00:00:00.000Z',
+          },
+        ],
+      },
+    };
+    const result = validateBackupFile(legacy);
+    expect(result.valid).toBe(true);
+    if (result.valid) {
+      expect(result.file.data.cartoes[0].compraNoFechamentoVaiParaProxima).toBe(true);
     }
   });
 

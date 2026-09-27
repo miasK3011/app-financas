@@ -1,0 +1,1 @@
+ALTER TABLE `cartoes` ADD `compra_no_fechamento_vai_para_proxima` integer DEFAULT 1 NOT NULL;

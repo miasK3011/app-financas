@@ -5,6 +5,7 @@ export type BestCardCandidate = {
   id: string;
   diaFechamento: number;
   diaVencimento: number;
+  compraNoFechamentoVaiParaProxima?: boolean;
   arquivadoEm: Date | null;
   criadoEm: Date;
 };
@@ -34,7 +35,11 @@ export function suggestBestCard(
   if (active.length === 0) return null;
 
   const withClosingDate = active.map((card) => {
-    const { year, month } = resolveInvoicePeriod(card.diaFechamento, today);
+    const { year, month } = resolveInvoicePeriod(
+      card.diaFechamento,
+      today,
+      card.compraNoFechamentoVaiParaProxima,
+    );
     const { dataFechamento } = computeInvoiceDates(card, year, month);
     return { card, closingDate: dataFechamento };
   });

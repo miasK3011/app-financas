@@ -2,20 +2,29 @@ import { clampDayToMonth } from '@/domain/shared/dateClamp';
 
 /**
  * Determina em qual mês de referência de fatura uma compra cai, dado o
- * dia de fechamento do cartão (FR-002). Uma compra no dia exato do
- * fechamento entra no ciclo que fecha naquele mesmo dia — não no
- * seguinte (User Story 1, cenário 2).
+ * dia de fechamento do cartão (FR-002). O que acontece com uma compra
+ * feita NO PRÓPRIO dia do fechamento depende do cartão (issue #16):
+ * alguns fecham às 00:00 desse dia (ex.: Nubank — a compra já vai para
+ * a fatura seguinte, `compraNoFechamentoVaiParaProxima = true`), outros
+ * às 23:59 (ex.: Mercado Pago — a compra ainda entra no ciclo que fecha
+ * naquele dia, `false`).
  */
 export function resolveInvoicePeriod(
   cardClosingDay: number,
   purchaseDate: Date,
+  compraNoFechamentoVaiParaProxima = false,
 ): { year: number; month: number } {
   const year = purchaseDate.getFullYear();
   const month = purchaseDate.getMonth() + 1; // 1-12
 
-  const closingDateThisMonth = clampDayToMonth(cardClosingDay, year, month);
+  const closingDay = clampDayToMonth(cardClosingDay, year, month).getDate();
+  const purchaseDay = purchaseDate.getDate();
 
-  if (purchaseDate.getDate() <= closingDateThisMonth.getDate()) {
+  const inCurrentCycle = compraNoFechamentoVaiParaProxima
+    ? purchaseDay < closingDay
+    : purchaseDay <= closingDay;
+
+  if (inCurrentCycle) {
     return { year, month };
   }
 

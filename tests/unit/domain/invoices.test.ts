@@ -36,6 +36,31 @@ describe('resolveInvoicePeriod', () => {
   });
 });
 
+describe('resolveInvoicePeriod — compra no dia do fechamento vai para a próxima (issue #16)', () => {
+  it('moves a closing-day purchase to the next cycle', () => {
+    expect(resolveInvoicePeriod(18, new Date(2026, 8, 18, 14, 30), true)).toEqual({
+      year: 2026,
+      month: 10,
+    });
+  });
+
+  it('keeps the day before closing in the current cycle', () => {
+    expect(resolveInvoicePeriod(18, new Date(2026, 8, 17, 23, 59), true)).toEqual({
+      year: 2026,
+      month: 9,
+    });
+  });
+
+  it('applies the rule on a clamped closing day (short month)', () => {
+    // Fecha dia 31 → em fevereiro o fechamento é dia 28.
+    expect(resolveInvoicePeriod(31, new Date(2026, 1, 28), true)).toEqual({ year: 2026, month: 3 });
+    expect(resolveInvoicePeriod(31, new Date(2026, 1, 28), false)).toEqual({
+      year: 2026,
+      month: 2,
+    });
+  });
+});
+
 describe('computeInvoiceDates', () => {
   it('keeps the due date in the same month when diaVencimento >= diaFechamento', () => {
     const { dataFechamento, dataVencimento } = computeInvoiceDates(
@@ -112,6 +137,26 @@ describe('computeInvoiceStatus', () => {
       new Date(2026, 9, 11, 0, 0, 1),
     );
     expect(status).toBe('FECHADA');
+  });
+});
+
+describe('computeInvoiceStatus — cartão que fecha às 00:00 (issue #16)', () => {
+  it('is FECHADA during the whole closing day', () => {
+    const status = computeInvoiceStatus(
+      { pagaEm: null, dataFechamento: new Date(2026, 9, 10) },
+      new Date(2026, 9, 10, 14, 30),
+      true,
+    );
+    expect(status).toBe('FECHADA');
+  });
+
+  it('is ABERTA the day before closing', () => {
+    const status = computeInvoiceStatus(
+      { pagaEm: null, dataFechamento: new Date(2026, 9, 10) },
+      new Date(2026, 9, 9, 23, 59),
+      true,
+    );
+    expect(status).toBe('ABERTA');
   });
 });
 

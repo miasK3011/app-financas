@@ -1,4 +1,5 @@
 import { allocateInstallmentsToInvoices } from '@/domain/installments/allocateInstallmentsToInvoices';
+import { currentInstallmentNumber } from '@/domain/installments/currentInstallmentNumber';
 import { recomputeSplitOnRefund } from '@/domain/installments/recomputeSplitOnRefund';
 import {
   InvalidInstallmentError,
@@ -114,16 +115,79 @@ describe('allocateInstallmentsToInvoices', () => {
     ]);
   });
 
-  it('starts from the current cycle even for an in-progress purchase (parcelaAtual > 1)', () => {
+  it('anchors the given installment to the date cycle (CSV "Parcela 5/12" row)', () => {
     const plan = splitInstallments({
       valorTotalOriginal: 120000,
       parcelasTotal: 12,
       parcelaAtual: 5,
       valorResponsabilidade: null,
     });
-    const allocations = allocateInstallmentsToInvoices(plan, card, new Date(2026, 9, 5));
+    const allocations = allocateInstallmentsToInvoices(plan, card, new Date(2026, 9, 5), 5);
     expect(allocations[0]).toEqual({ numero: 5, year: 2026, month: 10 });
     expect(allocations.at(-1)).toEqual({ numero: 12, year: 2027, month: 5 });
+  });
+
+  it('treats the date as the ORIGINAL purchase date by default (issue #18)', () => {
+    // Compra de maio em 10x: parcela 1 em maio, a 4ª em agosto, a 10ª em fevereiro.
+    const plan = splitInstallments({
+      valorTotalOriginal: 100000,
+      parcelasTotal: 10,
+      parcelaAtual: 1,
+      valorResponsabilidade: null,
+    });
+    const allocations = allocateInstallmentsToInvoices(plan, card, new Date(2026, 4, 5));
+    expect(allocations[0]).toEqual({ numero: 1, year: 2026, month: 5 });
+    expect(allocations[3]).toEqual({ numero: 4, year: 2026, month: 8 });
+    expect(allocations.at(-1)).toEqual({ numero: 10, year: 2027, month: 2 });
+  });
+
+  it('puts a remaining-only plan in the right months when anchored at 1 (issue #18)', () => {
+    const plan = splitInstallments({
+      valorTotalOriginal: 100000,
+      parcelasTotal: 10,
+      parcelaAtual: 4,
+      valorResponsabilidade: null,
+    });
+    const allocations = allocateInstallmentsToInvoices(plan, card, new Date(2026, 4, 5));
+    expect(allocations[0]).toEqual({ numero: 4, year: 2026, month: 8 });
+  });
+
+  it('respects the closing-day rule of the card (issue #16)', () => {
+    const plan = splitInstallments({
+      valorTotalOriginal: 20000,
+      parcelasTotal: 2,
+      parcelaAtual: 1,
+      valorResponsabilidade: null,
+    });
+    const onClosingDay = new Date(2026, 9, 10, 15, 0);
+    expect(
+      allocateInstallmentsToInvoices(
+        plan,
+        { diaFechamento: 10, compraNoFechamentoVaiParaProxima: true },
+        onClosingDay,
+      ),
+    ).toEqual([
+      { numero: 1, year: 2026, month: 11 },
+      { numero: 2, year: 2026, month: 12 },
+    ]);
+  });
+});
+
+describe('currentInstallmentNumber', () => {
+  const card = { diaFechamento: 10 };
+
+  it('returns which installment falls in the running cycle', () => {
+    // Compra em 5/mai, 10x; hoje 20/set → ciclo de outubro → parcela 6.
+    expect(currentInstallmentNumber(new Date(2026, 4, 5), 10, card, new Date(2026, 8, 20))).toBe(6);
+  });
+
+  it('returns 1 for a purchase made today', () => {
+    expect(currentInstallmentNumber(new Date(2026, 8, 5), 3, card, new Date(2026, 8, 5))).toBe(1);
+  });
+
+  it('clamps past the end and before the start', () => {
+    expect(currentInstallmentNumber(new Date(2025, 0, 5), 3, card, new Date(2026, 8, 5))).toBe(4);
+    expect(currentInstallmentNumber(new Date(2026, 11, 5), 3, card, new Date(2026, 8, 5))).toBe(0);
   });
 });
 
