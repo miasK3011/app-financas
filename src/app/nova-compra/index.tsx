@@ -15,8 +15,7 @@ import { IconAvatar } from '@/components/IconAvatar';
 import { Money } from '@/components/Money';
 import { MoneyInput } from '@/components/MoneyInput';
 import { Screen } from '@/components/Screen';
-import { SegmentedControl } from '@/components/SegmentedControl';
-import { Stepper } from '@/components/Stepper';
+import { PaymentFields } from '@/components/PaymentFields';
 import { TagInput } from '@/components/TagInput';
 import { requiresMotivoResponsavelFields } from '@/domain/expenseSplitting/requiresMotivoResponsavelFields';
 import { useBestCard } from '@/hooks/useBestCard';
@@ -39,7 +38,6 @@ const formSchema = z
     formaPagamento: z.enum(['PIX', 'CARTAO']),
     cartaoId: z.string().optional(),
     parcelasTotal: z.number().int().min(1),
-    parcelaAtual: z.number().int().min(1),
     tags: z.array(z.string()).optional(),
     comentario: z.string().optional(),
     valorResponsabilidade: z.number().int().optional(),
@@ -49,10 +47,6 @@ const formSchema = z
   .refine((data) => data.formaPagamento !== 'CARTAO' || Boolean(data.cartaoId), {
     message: 'Selecione um cartão',
     path: ['cartaoId'],
-  })
-  .refine((data) => data.parcelaAtual <= data.parcelasTotal, {
-    message: 'A parcela atual não pode ser maior que o total de parcelas',
-    path: ['parcelaAtual'],
   })
   .refine(
     (data) =>
@@ -106,7 +100,6 @@ export default function NovaCompraScreen() {
     handleSubmit,
     watch,
     setValue,
-    getValues,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -117,7 +110,6 @@ export default function NovaCompraScreen() {
       formaPagamento: params.formaPagamento ?? (params.cartaoId ? 'CARTAO' : 'PIX'),
       cartaoId: params.cartaoId,
       parcelasTotal: 1,
-      parcelaAtual: 1,
       tags: [],
       comentario: '',
       valorResponsabilidade: undefined,
@@ -146,6 +138,7 @@ export default function NovaCompraScreen() {
   const formaPagamento = watch('formaPagamento');
   const parcelasTotal = watch('parcelasTotal');
   const selectedCartaoId = watch('cartaoId');
+  const dataCompra = watch('dataCompra');
   const valorCentavos = watch('valorCentavos');
   const valorResponsabilidade = watch('valorResponsabilidade');
   const descricaoAtual = watch('descricao');
@@ -184,7 +177,6 @@ export default function NovaCompraScreen() {
         dataCompra: data.dataCompra,
         cartaoId: data.cartaoId!,
         parcelasTotal: data.parcelasTotal,
-        parcelaAtual: data.parcelaAtual,
         categoriaId,
         comentario: data.comentario || undefined,
         tagNomes,
@@ -293,7 +285,7 @@ export default function NovaCompraScreen() {
 
             <YStack flex={1} gap="$2">
               <Text fontSize={13} color="$textSecondary">
-                Data
+                {parcelasTotal > 1 ? 'Data da compra' : 'Data'}
               </Text>
               <Controller
                 control={control}
@@ -307,117 +299,47 @@ export default function NovaCompraScreen() {
         </FormCard>
 
         <FormCard title="Pagamento">
-          <YStack gap="$2">
-            <Text fontSize={13} color="$textSecondary">
-              Forma de pagamento
-            </Text>
-            <SegmentedControl
-              options={[
-                { value: 'PIX', label: 'Pix' },
-                { value: 'CARTAO', label: 'Cartão' },
-              ]}
-              value={formaPagamento}
-              onChange={(next) => setValue('formaPagamento', next)}
-            />
-          </YStack>
-
-          {formaPagamento === 'CARTAO' && (
-            <>
-              <YStack gap="$2">
-                <Text fontSize={13} color="$textSecondary">
-                  Cartão
-                </Text>
-                <XStack flexWrap="wrap" gap="$2">
-                  {cards.map((card) => (
-                    <Button
-                      key={card.id}
-                      onPress={() => setValue('cartaoId', card.id)}
-                      size="$3"
-                      backgroundColor={selectedCartaoId === card.id ? '$primary' : '$surface'}
-                      color={selectedCartaoId === card.id ? 'white' : '$text'}
-                      borderColor="$border"
-                      borderWidth={1}
-                    >
-                      {card.nome}
-                    </Button>
-                  ))}
-                </XStack>
-                {errors.cartaoId && (
-                  <Text fontSize={12} color="$error">
-                    Selecione um cartão
+          <PaymentFields
+            formaPagamento={formaPagamento}
+            onChangeFormaPagamento={(next) => setValue('formaPagamento', next)}
+            cards={cards}
+            cartaoId={selectedCartaoId}
+            onChangeCartaoId={(next) => setValue('cartaoId', next)}
+            cartaoError={Boolean(errors.cartaoId)}
+            parcelasTotal={parcelasTotal}
+            onChangeParcelasTotal={(next) => setValue('parcelasTotal', next)}
+            dataCompra={dataCompra}
+            cardExtras={
+              cards.length > 1 &&
+              bestCard &&
+              bestCard.cardId !== selectedCartaoId && (
+                <XStack
+                  alignItems="center"
+                  justifyContent="space-between"
+                  backgroundColor="$infoBg"
+                  borderRadius="$md"
+                  paddingHorizontal={12}
+                  paddingVertical={10}
+                  marginTop="$1"
+                >
+                  <Text fontSize={12} color="$infoDark" flex={1}>
+                    Melhor hoje:{' '}
+                    {cards.find((card) => card.id === bestCard.cardId)?.nome ?? 'outro cartão'}{' '}
+                    (fecha em {bestCard.daysUntilClosing} dias)
                   </Text>
-                )}
-                {cards.length > 1 && bestCard && bestCard.cardId !== selectedCartaoId && (
-                  <XStack
-                    alignItems="center"
-                    justifyContent="space-between"
-                    backgroundColor="$infoBg"
-                    borderRadius="$md"
-                    paddingHorizontal={12}
-                    paddingVertical={10}
-                    marginTop="$1"
+                  <Button
+                    onPress={() => setValue('cartaoId', bestCard.cardId)}
+                    size="$2"
+                    chromeless
+                    color="$infoDark"
+                    fontWeight="700"
                   >
-                    <Text fontSize={12} color="$infoDark" flex={1}>
-                      Melhor hoje:{' '}
-                      {cards.find((card) => card.id === bestCard.cardId)?.nome ?? 'outro cartão'}{' '}
-                      (fecha em {bestCard.daysUntilClosing} dias)
-                    </Text>
-                    <Button
-                      onPress={() => setValue('cartaoId', bestCard.cardId)}
-                      size="$2"
-                      chromeless
-                      color="$infoDark"
-                      fontWeight="700"
-                    >
-                      Usar
-                    </Button>
-                  </XStack>
-                )}
-              </YStack>
-
-              <XStack gap="$3">
-                <YStack flex={1} gap="$2">
-                  <Text fontSize={13} color="$textSecondary">
-                    Parcelas
-                  </Text>
-                  <Controller
-                    control={control}
-                    name="parcelasTotal"
-                    render={({ field }) => (
-                      <Stepper
-                        value={field.value}
-                        onChangeValue={(next) => {
-                          field.onChange(next);
-                          if (getValues('parcelaAtual') > next) {
-                            setValue('parcelaAtual', next);
-                          }
-                        }}
-                      />
-                    )}
-                  />
-                </YStack>
-
-                {parcelasTotal > 1 && (
-                  <YStack flex={1} gap="$2">
-                    <Text fontSize={13} color="$textSecondary">
-                      Parcela atual
-                    </Text>
-                    <Controller
-                      control={control}
-                      name="parcelaAtual"
-                      render={({ field }) => (
-                        <Stepper
-                          value={field.value}
-                          onChangeValue={field.onChange}
-                          max={parcelasTotal}
-                        />
-                      )}
-                    />
-                  </YStack>
-                )}
-              </XStack>
-            </>
-          )}
+                    Usar
+                  </Button>
+                </XStack>
+              )
+            }
+          />
         </FormCard>
 
         <FormCard title="Divisão de responsabilidade">
@@ -556,7 +478,11 @@ export default function NovaCompraScreen() {
             >
               <XStack alignItems="center" gap="$2.5">
                 {categoriaIcone && (
-                  <IconAvatar icon={icons[categoriaIcone] ?? Shapes} iconName={categoriaIcone} size={30} />
+                  <IconAvatar
+                    icon={icons[categoriaIcone] ?? Shapes}
+                    iconName={categoriaIcone}
+                    size={30}
+                  />
                 )}
                 <Text fontSize={14.5} fontWeight="600" color="$text">
                   {categoriaNome ?? 'Nenhuma'}

@@ -7,6 +7,7 @@ import { ScrollView, Text, XStack, YStack } from 'tamagui';
 import { Money } from '@/components/Money';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
+import { FAB_SCROLL_PADDING } from '@/components/fabLayout';
 import { getReserveBalance, listReserves, type Reserve } from '@/repositories/reservesRepository';
 
 type ReserveWithBalance = Reserve & { balance: number };
@@ -36,7 +37,9 @@ export default function ReservasScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingBottom: FAB_SCROLL_PADDING, gap: 22 }}
+      >
         <Text
           fontFamily="$heading"
           fontSize={27}

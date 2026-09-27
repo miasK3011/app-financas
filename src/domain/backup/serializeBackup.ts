@@ -21,6 +21,8 @@ const cartaoSchema = z.object({
   nome: z.string(),
   diaFechamento: z.number(),
   diaVencimento: z.number(),
+  // Issue #16 — backups anteriores ao campo assumem o padrão da migração.
+  compraNoFechamentoVaiParaProxima: z.boolean().default(true),
   arquivadoEm: z.coerce.date().nullable(),
   criadoEm: z.coerce.date(),
 });

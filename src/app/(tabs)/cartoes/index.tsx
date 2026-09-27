@@ -6,6 +6,7 @@ import { Button, Card, ScrollView, Text, XStack, YStack } from 'tamagui';
 import { Money } from '@/components/Money';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
+import { FAB_SCROLL_PADDING } from '@/components/fabLayout';
 import { useBestCard } from '@/hooks/useBestCard';
 import { useCards } from '@/hooks/useCards';
 import { useOpenInvoicesByCard, useOpenInvoicesTotal } from '@/hooks/useInvoice';
@@ -20,7 +21,9 @@ export default function CartoesScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingBottom: FAB_SCROLL_PADDING, gap: 22 }}
+      >
         <Text
           fontFamily="$heading"
           fontSize={27}

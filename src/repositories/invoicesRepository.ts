@@ -1,4 +1,5 @@
-import { and, eq, gte, lt } from 'drizzle-orm';
+import { startOfDay } from 'date-fns';
+import { and, eq, gte, inArray, isNull, lt, notInArray } from 'drizzle-orm';
 import { randomUUID } from 'expo-crypto';
 
 import { db } from '@/db/client';
@@ -11,52 +12,82 @@ import { demoteFutureOpenInvoices } from '@/domain/invoices/demoteFutureOpenInvo
 export type Invoice = typeof faturas.$inferSelect;
 
 /**
+ * Qualquer coisa que execute queries síncronas do Drizzle — o próprio
+ * `db` ou o `tx` de um `db.transaction((tx) => …)`. Permite que
+ * criar/reconstruir/excluir parcelas (issue #17) rode numa única
+ * transação, no mesmo padrão de `backupRepository.restoreAll`.
+ */
+export type DbExecutor = Pick<
+  typeof db,
+  'select' | 'selectDistinct' | 'insert' | 'update' | 'delete'
+>;
+
+export type InvoiceCard = { id: string; diaFechamento: number; diaVencimento: number };
+
+/**
  * Upsert idempotente por `(cardId, year, month)` — cria a Fatura (com
  * `dataFechamento`/`dataVencimento` calculadas via `computeInvoiceDates`)
  * se ainda não existir, ou retorna a existente. Ver
  * `contracts/invoices.md` para a divisão puro/repositório.
+ *
+ * Issue #18: uma Fatura criada agora cujo vencimento JÁ PASSOU (parcelas
+ * antigas de uma compra cadastrada depois) nasce PAGA, com `pagaEm` no
+ * próprio vencimento — não faz sentido uma fatura "em aberto" no
+ * passado. O usuário pode desmarcar o pagamento se não for o caso.
  */
-export async function getOrCreateInvoice(
-  cardId: string,
+export function ensureInvoice(
+  executor: DbExecutor,
+  card: InvoiceCard,
   year: number,
   month: number,
-): Promise<Invoice> {
-  const [existing] = await db
+  today: Date = new Date(),
+): Invoice {
+  const existing = executor
     .select()
     .from(faturas)
     .where(
       and(
-        eq(faturas.cartaoId, cardId),
+        eq(faturas.cartaoId, card.id),
         eq(faturas.referenciaAno, year),
         eq(faturas.referenciaMes, month),
       ),
-    );
+    )
+    .get();
   if (existing) {
     return existing;
   }
 
-  const [card] = await db.select().from(cartoes).where(eq(cartoes.id, cardId));
-  if (!card) {
-    throw new Error(`Cartão ${cardId} não encontrado`);
-  }
-
   const { dataFechamento, dataVencimento } = computeInvoiceDates(card, year, month);
+  const alreadyDue = dataVencimento < startOfDay(today);
 
-  const [invoice] = await db
+  return executor
     .insert(faturas)
     .values({
       id: randomUUID(),
-      cartaoId: cardId,
+      cartaoId: card.id,
       referenciaAno: year,
       referenciaMes: month,
       dataFechamento,
       dataVencimento,
-      status: 'ABERTA',
-      pagaEm: null,
+      status: alreadyDue ? 'PAGA' : 'ABERTA',
+      pagaEm: alreadyDue ? dataVencimento : null,
     })
-    .returning();
+    .returning()
+    .get();
+}
 
-  return invoice;
+/** `ensureInvoice` fora de transação, buscando o cartão pelo id. */
+export async function getOrCreateInvoice(
+  cardId: string,
+  year: number,
+  month: number,
+  today: Date = new Date(),
+): Promise<Invoice> {
+  const [card] = await db.select().from(cartoes).where(eq(cartoes.id, cardId));
+  if (!card) {
+    throw new Error(`Cartão ${cardId} não encontrado`);
+  }
+  return ensureInvoice(db, card, year, month, today);
 }
 
 export async function listInvoicesForCard(cardId: string): Promise<Invoice[]> {
@@ -68,7 +99,8 @@ export async function listInvoicesForCardWithTotals(
   today: Date = new Date(),
 ): Promise<InvoiceWithTotals[]> {
   const rows = await listInvoicesForCard(cardId);
-  const withStatus = await Promise.all(rows.map((invoice) => withTotals(invoice, today)));
+  const rules = await loadClosingRules([cardId]);
+  const withStatus = await Promise.all(rows.map((invoice) => withTotals(invoice, today, rules)));
   return demoteFutureOpenInvoices(withStatus);
 }
 
@@ -100,16 +132,65 @@ export async function markInvoiceAsPaid(invoiceId: string): Promise<void> {
     .where(eq(faturas.id, invoiceId));
 }
 
+/** Issue #19: desfaz um "Marcar como paga" feito por engano. */
+export async function unmarkInvoiceAsPaid(invoiceId: string): Promise<void> {
+  await db.update(faturas).set({ status: 'ABERTA', pagaEm: null }).where(eq(faturas.id, invoiceId));
+}
+
+/**
+ * Remove as Faturas não pagas de um cartão que ficaram sem nenhuma
+ * Parcela — depois de editar/excluir uma compra (issue #17) ou de mudar
+ * as datas do cartão, para não sobrar uma fatura "Prevista R$ 0,00".
+ * Faturas PAGAS ficam sempre (histórico).
+ */
+export function deleteEmptyUnpaidInvoices(executor: DbExecutor, cardId: string): void {
+  const usedIds = executor
+    .selectDistinct({ faturaId: parcelas.faturaId })
+    .from(parcelas)
+    .innerJoin(faturas, eq(parcelas.faturaId, faturas.id))
+    .where(eq(faturas.cartaoId, cardId))
+    .all()
+    .map((row) => row.faturaId)
+    .filter((id): id is string => id !== null);
+
+  executor
+    .delete(faturas)
+    .where(
+      and(
+        eq(faturas.cartaoId, cardId),
+        isNull(faturas.pagaEm),
+        usedIds.length > 0 ? notInArray(faturas.id, usedIds) : undefined,
+      ),
+    )
+    .run();
+}
+
 export type InvoiceWithTotals = Omit<Invoice, 'status'> & {
   status: InvoiceStatus;
   total: number;
   totalResponsabilidade: number;
 };
 
-async function withTotals(invoice: Invoice, today: Date): Promise<InvoiceWithTotals> {
+/** Regra de fechamento (issue #16) de cada cartão, para `computeInvoiceStatus`. */
+type ClosingRules = Map<string, boolean>;
+
+async function loadClosingRules(cardIds?: string[]): Promise<ClosingRules> {
+  const rows = await db
+    .select({ id: cartoes.id, regra: cartoes.compraNoFechamentoVaiParaProxima })
+    .from(cartoes)
+    .where(cardIds ? inArray(cartoes.id, cardIds) : undefined);
+  return new Map(rows.map((row) => [row.id, row.regra]));
+}
+
+async function withTotals(
+  invoice: Invoice,
+  today: Date,
+  rules: ClosingRules,
+): Promise<InvoiceWithTotals> {
   const invoiceParcelas = await db.select().from(parcelas).where(eq(parcelas.faturaId, invoice.id));
   const { total, totalResponsabilidade } = computeInvoiceTotals(invoiceParcelas);
-  return { ...invoice, status: computeInvoiceStatus(invoice, today), total, totalResponsabilidade };
+  const status = computeInvoiceStatus(invoice, today, rules.get(invoice.cartaoId));
+  return { ...invoice, status, total, totalResponsabilidade };
 }
 
 /**
@@ -123,7 +204,10 @@ export async function listOpenInvoicesWithTotals(
   today: Date = new Date(),
 ): Promise<InvoiceWithTotals[]> {
   const allInvoices = await db.select().from(faturas);
-  const withStatus = await Promise.all(allInvoices.map((invoice) => withTotals(invoice, today)));
+  const rules = await loadClosingRules();
+  const withStatus = await Promise.all(
+    allInvoices.map((invoice) => withTotals(invoice, today, rules)),
+  );
   const demoted = demoteFutureOpenInvoices(withStatus);
   return demoted.filter((invoice) => invoice.status === 'ABERTA');
 }
@@ -143,7 +227,8 @@ export async function listInvoicesDueInMonth(
     .select()
     .from(faturas)
     .where(and(gte(faturas.dataVencimento, monthStart), lt(faturas.dataVencimento, monthEnd)));
-  return Promise.all(rows.map((invoice) => withTotals(invoice, today)));
+  const rules = await loadClosingRules();
+  return Promise.all(rows.map((invoice) => withTotals(invoice, today, rules)));
 }
 
 /**

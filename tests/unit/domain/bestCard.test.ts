@@ -87,6 +87,25 @@ describe('suggestBestCard', () => {
     expect(result?.cardId).toBe('card-older');
   });
 
+  it('on the closing day, a card that closes at 00:00 is already on its next cycle (issue #16)', () => {
+    const closesTodayAtMidnight = {
+      id: 'card-next',
+      diaFechamento: 5,
+      diaVencimento: 12,
+      compraNoFechamentoVaiParaProxima: true,
+      arquivadoEm: null,
+      criadoEm: new Date(2026, 0, 1),
+    };
+    const closesTodayAtEndOfDay = {
+      ...closesTodayAtMidnight,
+      id: 'card-current',
+      compraNoFechamentoVaiParaProxima: false,
+    };
+
+    const result = suggestBestCard([closesTodayAtEndOfDay, closesTodayAtMidnight], today);
+    expect(result?.cardId).toBe('card-next');
+  });
+
   it('returns null when there is no active card', () => {
     const onlyArchived = {
       id: 'card-archived',

@@ -9,6 +9,7 @@ import { MoneyInput } from '@/components/MoneyInput';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { SegmentedControl } from '@/components/SegmentedControl';
+import { FAB_SCROLL_PADDING } from '@/components/fabLayout';
 import {
   type CashEntryWithLinkedPurchase,
   deleteCashEntry,
@@ -136,7 +137,9 @@ export default function RendaScreen() {
         </Text>
       </XStack>
 
-      <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingBottom: FAB_SCROLL_PADDING, gap: 22 }}
+      >
         <YStack
           backgroundColor="$surface"
           borderColor="$border"

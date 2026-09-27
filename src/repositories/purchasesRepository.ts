@@ -23,7 +23,12 @@ import { purchaseSchema } from '@/domain/shared/purchaseSchema';
 import { resolvePeriod } from '@/domain/statistics/resolvePeriod';
 
 import { matchEstablishmentForDescription } from './establishmentsRepository';
-import { getOrCreateInvoice, listInvoicesDueInMonth } from './invoicesRepository';
+import {
+  type DbExecutor,
+  deleteEmptyUnpaidInvoices,
+  ensureInvoice,
+  listInvoicesDueInMonth,
+} from './invoicesRepository';
 import { findOrCreateTag } from './tagsRepository';
 
 export type Purchase = typeof compras.$inferSelect;
@@ -39,6 +44,65 @@ async function attachTagsToCompra(compraId: string, tagNomes: string[] | undefin
   await db.insert(compraTags).values(tags.map((tag) => ({ compraId, tagId: tag.id })));
 }
 
+/**
+ * Grava as Parcelas de uma Compra a partir dos seus campos atuais —
+ * usado tanto na criação quanto em `rebuildInstallments` (edição de
+ * valor/data/cartão/parcelas, issue #17), para as duas nunca divergirem.
+ * Pix: sempre 1 parcela SEM fatura (`faturaId = null`) — conta direto no
+ * saldo do mês pela `dataCompra` (data-model.md § Parcela; FR-015).
+ * Cartão: FR-004..FR-006 — divide o valor entre as parcelas
+ * (`splitInstallments`) e aloca cada uma na Fatura certa
+ * (`allocateInstallmentsToInvoices` + `ensureInvoice`). Importação CSV
+ * ancora a data na parcela da linha; o resto, na parcela 1 (issue #18).
+ */
+function writeInstallments(
+  executor: DbExecutor,
+  compra: Purchase,
+  card: typeof cartoes.$inferSelect | null,
+  responsabilidadeEfetiva: number,
+  today: Date = new Date(),
+): void {
+  if (compra.formaPagamento === 'PIX' || !card) {
+    executor
+      .insert(parcelas)
+      .values({
+        id: randomUUID(),
+        compraId: compra.id,
+        faturaId: null,
+        numero: 1,
+        valor: compra.valorTotalOriginal,
+        valorResponsabilidade: responsabilidadeEfetiva,
+      })
+      .run();
+    return;
+  }
+
+  const plan = splitInstallments({
+    valorTotalOriginal: compra.valorTotalOriginal,
+    parcelasTotal: compra.parcelasTotal,
+    parcelaAtual: compra.parcelaAtual,
+    valorResponsabilidade: responsabilidadeEfetiva,
+  });
+  const anchorNumero = compra.origem === 'CSV_IMPORT' ? compra.parcelaAtual : 1;
+  const allocations = allocateInstallmentsToInvoices(plan, card, compra.dataCompra, anchorNumero);
+
+  for (const [index, installment] of plan.entries()) {
+    const allocation = allocations[index];
+    const invoice = ensureInvoice(executor, card, allocation.year, allocation.month, today);
+    executor
+      .insert(parcelas)
+      .values({
+        id: randomUUID(),
+        compraId: compra.id,
+        faturaId: invoice.id,
+        numero: installment.numero,
+        valor: installment.valor,
+        valorResponsabilidade: installment.valorResponsabilidade,
+      })
+      .run();
+  }
+}
+
 export type CreateCardPurchaseInput = {
   descricao: string;
   valorTotalOriginal: number;
@@ -47,7 +111,11 @@ export type CreateCardPurchaseInput = {
   categoriaId?: string;
   /** Total de parcelas (default 1 — compra à vista). */
   parcelasTotal?: number;
-  /** Próxima parcela a vencer (default 1); >1 = parcelamento já em andamento (FR-004). */
+  /**
+   * Só usado pela importação CSV (parcela da linha, "Parcela 4/10"). Fora
+   * dela é sempre 1: `dataCompra` é a data da compra original e todas as
+   * parcelas são criadas (issue #18).
+   */
   parcelaAtual?: number;
   comentario?: string;
   tagNomes?: string[];
@@ -68,11 +136,8 @@ export type CreateCardPurchaseInput = {
 };
 
 /**
- * FR-004..FR-006: cria uma Compra no cartão, dividindo automaticamente
- * o valor entre as parcelas restantes (`splitInstallments`) e
- * alocando cada uma na Fatura correta (`allocateInstallmentsToInvoices`
- * + `getOrCreateInvoice`, que garante a Fatura existir antes de
- * inserir a Parcela).
+ * FR-004..FR-006: cria uma Compra no cartão e suas Parcelas
+ * (`writeInstallments`) numa única transação.
  */
 export async function createCardPurchase(input: CreateCardPurchaseInput): Promise<Purchase> {
   const parsed = purchaseSchema.parse({
@@ -101,13 +166,13 @@ export async function createCardPurchase(input: CreateCardPurchaseInput): Promis
     [],
   );
 
-  const plan = splitInstallments({
-    valorTotalOriginal: parsed.valorTotalOriginal,
-    parcelasTotal: parsed.parcelasTotal,
-    parcelaAtual: parsed.parcelaAtual,
-    valorResponsabilidade: responsabilidadeEfetiva,
-  });
-  const allocations = allocateInstallmentsToInvoices(plan, card, parsed.dataCompra);
+  const origem = input.origem ?? 'MANUAL';
+  // Issue #18: fora da importação CSV, a data é a da compra ORIGINAL e
+  // todas as parcelas (1..N) são criadas — as já vencidas caem em
+  // faturas que nascem PAGAS (`ensureInvoice`). Só o CSV cria a partir
+  // da parcela da linha ("Parcela 4/10"), para não duplicar parcelas que
+  // outras importações (meses anteriores) já trouxeram.
+  const parcelaAtual = origem === 'CSV_IMPORT' ? parsed.parcelaAtual : 1;
 
   const estabelecimentoId =
     input.estabelecimentoId ??
@@ -115,43 +180,35 @@ export async function createCardPurchase(input: CreateCardPurchaseInput): Promis
     undefined;
 
   const compraId = randomUUID();
-  const [purchase] = await db
-    .insert(compras)
-    .values({
-      id: compraId,
-      descricao: parsed.descricao,
-      valorTotalOriginal: parsed.valorTotalOriginal,
-      dataCompra: parsed.dataCompra,
-      formaPagamento: 'CARTAO',
-      cartaoId: card.id,
-      parcelasTotal: parsed.parcelasTotal,
-      parcelaAtual: parsed.parcelaAtual,
-      comentario: input.comentario,
-      categoriaId: input.categoriaId,
-      estabelecimentoId,
-      estabelecimentoManual: input.estabelecimentoId !== undefined,
-      origem: input.origem ?? 'MANUAL',
-      loteImportacaoId: input.loteImportacaoId,
-      assinaturaId: input.assinaturaId,
-      valorResponsabilidade: input.valorResponsabilidade ?? null,
-      motivo: input.motivo,
-      responsavel: input.responsavel,
-      criadoEm: new Date(),
-    })
-    .returning();
-
-  for (const [index, installment] of plan.entries()) {
-    const allocation = allocations[index];
-    const invoice = await getOrCreateInvoice(card.id, allocation.year, allocation.month);
-    await db.insert(parcelas).values({
-      id: randomUUID(),
-      compraId,
-      faturaId: invoice.id,
-      numero: installment.numero,
-      valor: installment.valor,
-      valorResponsabilidade: installment.valorResponsabilidade,
-    });
-  }
+  const purchase = db.transaction((tx) => {
+    const inserted = tx
+      .insert(compras)
+      .values({
+        id: compraId,
+        descricao: parsed.descricao,
+        valorTotalOriginal: parsed.valorTotalOriginal,
+        dataCompra: parsed.dataCompra,
+        formaPagamento: 'CARTAO',
+        cartaoId: card.id,
+        parcelasTotal: parsed.parcelasTotal,
+        parcelaAtual,
+        comentario: input.comentario,
+        categoriaId: input.categoriaId,
+        estabelecimentoId,
+        estabelecimentoManual: input.estabelecimentoId !== undefined,
+        origem,
+        loteImportacaoId: input.loteImportacaoId,
+        assinaturaId: input.assinaturaId,
+        valorResponsabilidade: input.valorResponsabilidade ?? null,
+        motivo: input.motivo,
+        responsavel: input.responsavel,
+        criadoEm: new Date(),
+      })
+      .returning()
+      .get();
+    writeInstallments(tx, inserted, card, responsabilidadeEfetiva);
+    return inserted;
+  });
 
   await attachTagsToCompra(compraId, input.tagNomes);
 
@@ -177,10 +234,8 @@ export type CreatePixPurchaseInput = {
 };
 
 /**
- * User Story 2: uma Compra Pix é sempre 1 parcela SEM fatura
- * (`faturaId = null`) — conta direto no saldo do mês pela `dataCompra`,
- * nunca no total de uma fatura de cartão (nota de `data-model.md` §
- * Parcela; FR-015).
+ * User Story 2: uma Compra Pix é sempre 1 parcela SEM fatura — ver
+ * `writeInstallments`.
  */
 export async function createPixPurchase(input: CreatePixPurchaseInput): Promise<Purchase> {
   const parsed = purchaseSchema.parse({
@@ -209,37 +264,33 @@ export async function createPixPurchase(input: CreatePixPurchaseInput): Promise<
     undefined;
 
   const compraId = randomUUID();
-  const [purchase] = await db
-    .insert(compras)
-    .values({
-      id: compraId,
-      descricao: parsed.descricao,
-      valorTotalOriginal: parsed.valorTotalOriginal,
-      dataCompra: parsed.dataCompra,
-      formaPagamento: 'PIX',
-      cartaoId: null,
-      parcelasTotal: 1,
-      parcelaAtual: 1,
-      comentario: input.comentario,
-      categoriaId: input.categoriaId,
-      estabelecimentoId,
-      estabelecimentoManual: input.estabelecimentoId !== undefined,
-      origem: input.origem ?? 'MANUAL',
-      assinaturaId: input.assinaturaId,
-      valorResponsabilidade: input.valorResponsabilidade ?? null,
-      motivo: input.motivo,
-      responsavel: input.responsavel,
-      criadoEm: new Date(),
-    })
-    .returning();
-
-  await db.insert(parcelas).values({
-    id: randomUUID(),
-    compraId,
-    faturaId: null,
-    numero: 1,
-    valor: parsed.valorTotalOriginal,
-    valorResponsabilidade: responsabilidadeEfetiva,
+  const purchase = db.transaction((tx) => {
+    const inserted = tx
+      .insert(compras)
+      .values({
+        id: compraId,
+        descricao: parsed.descricao,
+        valorTotalOriginal: parsed.valorTotalOriginal,
+        dataCompra: parsed.dataCompra,
+        formaPagamento: 'PIX',
+        cartaoId: null,
+        parcelasTotal: 1,
+        parcelaAtual: 1,
+        comentario: input.comentario,
+        categoriaId: input.categoriaId,
+        estabelecimentoId,
+        estabelecimentoManual: input.estabelecimentoId !== undefined,
+        origem: input.origem ?? 'MANUAL',
+        assinaturaId: input.assinaturaId,
+        valorResponsabilidade: input.valorResponsabilidade ?? null,
+        motivo: input.motivo,
+        responsavel: input.responsavel,
+        criadoEm: new Date(),
+      })
+      .returning()
+      .get();
+    writeInstallments(tx, inserted, null, responsabilidadeEfetiva);
+    return inserted;
   });
 
   await attachTagsToCompra(compraId, input.tagNomes);
@@ -344,19 +395,21 @@ export async function listPurchasesForInvoice(invoiceId: string): Promise<Invoic
  * Edge Case: "parcela já lançada em fatura fechada/paga fica
  * congelada" — verdadeiro se QUALQUER Parcela desta Compra pertence a
  * uma Fatura cujo status de exibição (via `computeInvoiceStatus`, não
- * a coluna crua) é `FECHADA` ou `PAGA`.
+ * a coluna crua) é `FECHADA` ou `PAGA`. Desde a issue #17 não bloqueia
+ * mais a edição — só dispara o aviso de confirmação na tela.
  */
 export async function hasFrozenInstallments(
   compraId: string,
   today: Date = new Date(),
 ): Promise<boolean> {
   const rows = await db
-    .select({ fatura: faturas })
+    .select({ fatura: faturas, regra: cartoes.compraNoFechamentoVaiParaProxima })
     .from(parcelas)
     .innerJoin(faturas, eq(parcelas.faturaId, faturas.id))
+    .innerJoin(cartoes, eq(faturas.cartaoId, cartoes.id))
     .where(eq(parcelas.compraId, compraId));
 
-  return rows.some(({ fatura }) => computeInvoiceStatus(fatura, today) !== 'ABERTA');
+  return rows.some(({ fatura, regra }) => computeInvoiceStatus(fatura, today, regra) !== 'ABERTA');
 }
 
 export type UpdatePurchaseInput = {
@@ -369,43 +422,186 @@ export type UpdatePurchaseInput = {
   responsavel?: string | null;
   /** US10/FR-034 — associar/remover manualmente; sempre marca `estabelecimentoManual = true`. */
   estabelecimentoId?: string | null;
+  /** Issue #17 — qualquer um destes refaz as Parcelas (`rebuildInstallments`). */
+  valorTotalOriginal?: number;
+  dataCompra?: Date;
+  formaPagamento?: 'PIX' | 'CARTAO';
+  cartaoId?: string | null;
+  parcelasTotal?: number;
 };
 
+const FINANCIAL_FIELDS = [
+  'valorTotalOriginal',
+  'dataCompra',
+  'formaPagamento',
+  'cartaoId',
+  'parcelasTotal',
+] as const;
+
 /**
- * Descrição/categoria/comentário nunca afetam `Parcela.valor`, então
- * não precisam checar parcelas congeladas. `valorResponsabilidade`
- * também não — é uma dimensão separada de "quem pagou de fato", que
- * pode mudar mesmo depois da fatura fechar/ser paga (ex.: reembolso
- * recebido depois) — só dispara `recomputeResponsibility` para
- * propagar a mudança às Parcelas já existentes. `estabelecimentoId`
- * definido por esta função é SEMPRE manual (distinto do matching
- * automático em `createCardPurchase`/`createPixPurchase`) — nunca mais
- * será sobrescrito por `establishmentsRepository.addPattern` (FR-034).
- * Uma futura tela de "editar valor/parcelamento" em si (nenhuma existe
- * ainda) deve chamar `hasFrozenInstallments` antes de permitir ESSA
- * edição.
+ * Descrição/categoria/comentário/estabelecimento só mudam a linha da
+ * Compra. `valorResponsabilidade` é uma dimensão separada de "quem pagou
+ * de fato", que pode mudar mesmo depois da fatura fechar/ser paga — só
+ * propaga às Parcelas via `recomputeResponsibility`. Valor, data, forma
+ * de pagamento, cartão e parcelas (issue #17) refazem TODAS as Parcelas
+ * via `rebuildInstallments` — inclusive as de faturas já fechadas/pagas;
+ * a tela avisa antes (`hasFrozenInstallments`). `estabelecimentoId`
+ * definido por esta função é SEMPRE manual — nunca mais será
+ * sobrescrito por `establishmentsRepository.addPattern` (FR-034).
  */
 export async function updatePurchase(
   compraId: string,
   updates: UpdatePurchaseInput,
 ): Promise<void> {
-  if (updates.valorResponsabilidade != null) {
-    const compra = await getPurchase(compraId);
-    if (compra) {
-      validateManualResponsibility(updates.valorResponsabilidade, compra.valorTotalOriginal);
-    }
-  }
+  const compra = await getPurchase(compraId);
+  if (!compra) return;
 
-  const dbUpdates: typeof updates & { estabelecimentoManual?: boolean } = { ...updates };
+  const dbUpdates: UpdatePurchaseInput & { estabelecimentoManual?: boolean } = { ...updates };
   if ('estabelecimentoId' in updates) {
     dbUpdates.estabelecimentoManual = true;
   }
 
+  const financialChanged = FINANCIAL_FIELDS.some((field) => {
+    if (!(field in updates)) return false;
+    const next = updates[field];
+    const current = compra[field];
+    return next instanceof Date && current instanceof Date
+      ? next.getTime() !== current.getTime()
+      : next !== current;
+  });
+
+  if (financialChanged) {
+    const merged = { ...compra, ...dbUpdates };
+    if (merged.formaPagamento === 'PIX') {
+      dbUpdates.cartaoId = null;
+      dbUpdates.parcelasTotal = 1;
+    }
+    purchaseSchema.parse({
+      descricao: merged.descricao,
+      valorTotalOriginal: merged.valorTotalOriginal,
+      dataCompra: merged.dataCompra,
+      formaPagamento: merged.formaPagamento,
+      cartaoId: merged.formaPagamento === 'CARTAO' ? (merged.cartaoId ?? undefined) : undefined,
+      parcelasTotal: merged.formaPagamento === 'PIX' ? 1 : merged.parcelasTotal,
+      parcelaAtual: 1,
+    });
+  }
+
+  const valorTotal = updates.valorTotalOriginal ?? compra.valorTotalOriginal;
+  const valorResponsabilidade =
+    'valorResponsabilidade' in updates
+      ? updates.valorResponsabilidade
+      : compra.valorResponsabilidade;
+  if (valorResponsabilidade != null) {
+    validateManualResponsibility(valorResponsabilidade, valorTotal);
+  }
+
   await db.update(compras).set(dbUpdates).where(eq(compras.id, compraId));
 
-  if ('valorResponsabilidade' in updates) {
+  if (financialChanged || needsInstallmentNormalization(compra)) {
+    await rebuildInstallments(compraId);
+  } else if ('valorResponsabilidade' in updates) {
     await recomputeResponsibility(compraId);
   }
+}
+
+/**
+ * Compra manual criada antes da issue #18 com "parcela atual" > 1: só
+ * tinha as parcelas restantes, alocadas a partir do mês da data. Ao
+ * salvá-la de novo, as Parcelas são refeitas com a regra nova (todas,
+ * data = compra original).
+ */
+function needsInstallmentNormalization(compra: Purchase): boolean {
+  return compra.origem !== 'CSV_IMPORT' && compra.parcelaAtual > 1;
+}
+
+/**
+ * Issue #17: apaga e recria TODAS as Parcelas da Compra a partir dos
+ * seus campos atuais (`writeInstallments`), numa transação só. Faturas
+ * que ficarem vazias (do cartão antigo e do novo) são removidas se não
+ * estiverem pagas (`deleteEmptyUnpaidInvoices`).
+ */
+export async function rebuildInstallments(
+  compraId: string,
+  today: Date = new Date(),
+): Promise<void> {
+  const compra = await getPurchase(compraId);
+  if (!compra) return;
+
+  const entradasVinculadas = await listEntradasVinculadas(compraId);
+  const responsabilidadeEfetiva = resolveResponsibility(
+    {
+      valorTotalOriginal: compra.valorTotalOriginal,
+      valorResponsabilidade: compra.valorResponsabilidade,
+    },
+    entradasVinculadas,
+  );
+
+  db.transaction((tx) => {
+    const normalized = needsInstallmentNormalization(compra)
+      ? { ...compra, parcelaAtual: 1 }
+      : compra;
+    if (normalized !== compra) {
+      tx.update(compras).set({ parcelaAtual: 1 }).where(eq(compras.id, compraId)).run();
+    }
+
+    const affectedCardIds = new Set(
+      tx
+        .select({ cartaoId: faturas.cartaoId })
+        .from(parcelas)
+        .innerJoin(faturas, eq(parcelas.faturaId, faturas.id))
+        .where(eq(parcelas.compraId, compraId))
+        .all()
+        .map((row) => row.cartaoId),
+    );
+
+    const card =
+      normalized.formaPagamento === 'CARTAO' && normalized.cartaoId
+        ? tx.select().from(cartoes).where(eq(cartoes.id, normalized.cartaoId)).get()
+        : undefined;
+    if (normalized.formaPagamento === 'CARTAO' && !card) {
+      throw new Error(`Cartão ${normalized.cartaoId} não encontrado`);
+    }
+    if (card) affectedCardIds.add(card.id);
+
+    tx.delete(parcelas).where(eq(parcelas.compraId, compraId)).run();
+    writeInstallments(tx, normalized, card ?? null, responsabilidadeEfetiva, today);
+
+    for (const cardId of affectedCardIds) {
+      deleteEmptyUnpaidInvoices(tx, cardId);
+    }
+  });
+}
+
+/**
+ * Issue #17: exclusão definitiva (sem soft delete) de uma Compra errada.
+ * Entradas avulsas vinculadas continuam existindo, só perdem o vínculo;
+ * faturas não pagas que ficarem vazias são removidas.
+ */
+export async function deletePurchase(compraId: string): Promise<void> {
+  db.transaction((tx) => {
+    const affectedCardIds = new Set(
+      tx
+        .select({ cartaoId: faturas.cartaoId })
+        .from(parcelas)
+        .innerJoin(faturas, eq(parcelas.faturaId, faturas.id))
+        .where(eq(parcelas.compraId, compraId))
+        .all()
+        .map((row) => row.cartaoId),
+    );
+
+    tx.update(entradasAvulsas)
+      .set({ compraVinculadaId: null })
+      .where(eq(entradasAvulsas.compraVinculadaId, compraId))
+      .run();
+    tx.delete(compraTags).where(eq(compraTags.compraId, compraId)).run();
+    tx.delete(parcelas).where(eq(parcelas.compraId, compraId)).run();
+    tx.delete(compras).where(eq(compras.id, compraId)).run();
+
+    for (const cardId of affectedCardIds) {
+      deleteEmptyUnpaidInvoices(tx, cardId);
+    }
+  });
 }
 
 async function listEntradasVinculadas(compraId: string): Promise<{ valor: number }[]> {
@@ -533,7 +729,8 @@ function toPurchaseListRow(
     valor: parcela.valor,
     formaPagamento: compra.formaPagamento,
     nomeCartao,
-    parcela: compra.parcelasTotal > 1 ? { atual: parcela.numero, total: compra.parcelasTotal } : null,
+    parcela:
+      compra.parcelasTotal > 1 ? { atual: parcela.numero, total: compra.parcelasTotal } : null,
     dataCompra,
   };
 }
@@ -546,7 +743,10 @@ function toPurchaseListRow(
  * o total nunca divergir do "Gastos" já exibido na Início. Mais
  * recente primeiro (contracts/purchases-overview.md).
  */
-export async function listPurchasesForMonth(year: number, month: number): Promise<PurchaseListRow[]> {
+export async function listPurchasesForMonth(
+  year: number,
+  month: number,
+): Promise<PurchaseListRow[]> {
   const period = resolvePeriod('MENSAL', new Date(year, month - 1, 15)).current;
 
   const pixRows = await db
@@ -603,7 +803,11 @@ export async function getEarliestCompraDate(): Promise<Date | null> {
   return row?.dataCompra ?? null;
 }
 
-export type ForecastInvoiceGroup = { cartaoNome: string; dataVencimento: Date; rows: PurchaseListRow[] };
+export type ForecastInvoiceGroup = {
+  cartaoNome: string;
+  dataVencimento: Date;
+  rows: PurchaseListRow[];
+};
 
 /**
  * Tela Compras, mês futuro previsto (FR-013): reaproveita
@@ -619,7 +823,10 @@ export async function listForecastInvoicesForMonth(
 
   return Promise.all(
     invoices.map(async (invoice) => {
-      const [card] = await db.select({ nome: cartoes.nome }).from(cartoes).where(eq(cartoes.id, invoice.cartaoId));
+      const [card] = await db
+        .select({ nome: cartoes.nome })
+        .from(cartoes)
+        .where(eq(cartoes.id, invoice.cartaoId));
       const cartaoNome = card?.nome ?? 'Cartão';
       const purchaseRows = await listPurchasesForInvoice(invoice.id);
 

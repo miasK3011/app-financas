@@ -22,11 +22,22 @@ export type InvoiceStatus = 'ABERTA' | 'FECHADA' | 'PAGA' | 'FUTURA';
  * `ABERTA`/`FECHADA` são sempre recalculados a partir da data atual,
  * nunca armazenados.
  */
-export function computeInvoiceStatus(fatura: InvoiceStatusInput, today: Date): InvoiceStatus {
+export function computeInvoiceStatus(
+  fatura: InvoiceStatusInput,
+  today: Date,
+  compraNoFechamentoVaiParaProxima = false,
+): InvoiceStatus {
   if (fatura.pagaEm !== null) {
     return 'PAGA';
   }
-  // `dataFechamento` é sempre meia-noite (`clampDayToMonth`) — comparar o
+  // Cartão que fecha às 00:00 do dia de fechamento (issue #16 — compra
+  // desse dia já vai para a próxima fatura): a fatura está FECHADA
+  // durante todo o próprio dia de fechamento, simétrico com
+  // `resolveInvoicePeriod` com a mesma regra.
+  if (compraNoFechamentoVaiParaProxima) {
+    return startOfDay(today) >= fatura.dataFechamento ? 'FECHADA' : 'ABERTA';
+  }
+  // Cartão que fecha às 23:59: `dataFechamento` é sempre meia-noite (`clampDayToMonth`) — comparar o
   // timestamp completo de `today` contra ela faria a fatura virar FECHADA
   // a partir de 00:00:01 do PRÓPRIO dia de fechamento, quando ele ainda
   // não terminou. Truncar `today` ao início do dia mantém ABERTA durante

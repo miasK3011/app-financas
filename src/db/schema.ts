@@ -24,6 +24,15 @@ export const cartoes = sqliteTable('cartoes', {
   nome: text('nome').notNull(),
   diaFechamento: integer('dia_fechamento').notNull(),
   diaVencimento: integer('dia_vencimento').notNull(),
+  // Issue #16: `true` = o cartão fecha às 00:00 do dia de fechamento (ex.:
+  // Nubank), então uma compra feita nesse dia já cai na fatura seguinte;
+  // `false` = fecha às 23:59 (ex.: Mercado Pago), a compra ainda entra na
+  // fatura que fecha naquele dia. Ver domain/invoices/resolveInvoicePeriod.ts.
+  compraNoFechamentoVaiParaProxima: integer('compra_no_fechamento_vai_para_proxima', {
+    mode: 'boolean',
+  })
+    .notNull()
+    .default(true),
   arquivadoEm: integer('arquivado_em', { mode: 'timestamp_ms' }),
   criadoEm: integer('criado_em', { mode: 'timestamp_ms' }).notNull(),
 });

@@ -9,6 +9,7 @@ import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 import { IconAvatar } from '@/components/IconAvatar';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
+import { FAB_SCROLL_PADDING } from '@/components/fabLayout';
 import { type Category, deleteCategory, listCategories } from '@/repositories/categoriesRepository';
 
 type IconProps = { size?: number; color?: string };
@@ -66,7 +67,9 @@ export default function CategoriasScreen() {
         </Text>
       </XStack>
 
-      <ScrollView contentContainerStyle={{ padding: 20 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingBottom: FAB_SCROLL_PADDING }}
+      >
         {loading ? (
           <ActivityIndicator style={{ marginTop: 24 }} />
         ) : (

@@ -8,6 +8,7 @@ import { Money } from '@/components/Money';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { TransactionAvatar } from '@/components/TransactionAvatar';
+import { FAB_SCROLL_PADDING } from '@/components/fabLayout';
 import { useBestCard } from '@/hooks/useBestCard';
 import { useCards } from '@/hooks/useCards';
 import { useInvoicesDueInMonth } from '@/hooks/useInvoice';
@@ -85,7 +86,9 @@ export default function InicioScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 20, paddingBottom: FAB_SCROLL_PADDING, gap: 22 }}
+      >
         <YStack gap="$1">
           <Text
             fontSize={12}
