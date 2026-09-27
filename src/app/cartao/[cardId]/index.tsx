@@ -1,7 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Archive, ChevronLeft, ChevronRight, Plus, Upload } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert } from 'react-native';
+import { ChevronLeft, ChevronRight, Pencil, Plus, Upload } from 'lucide-react-native';
+import { ActivityIndicator } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { Money } from '@/components/Money';
@@ -9,9 +8,8 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { StatusBadge } from '@/components/StatusBadge';
 import { shouldShowResponsibilitySummary } from '@/domain/expenseSplitting/shouldShowResponsibilitySummary';
-import { useCards } from '@/hooks/useCards';
+import { useCard } from '@/hooks/useCards';
 import { useCardInvoices } from '@/hooks/useInvoice';
-import { type Card, getCard } from '@/repositories/cardsRepository';
 
 const MONTH_NAMES = [
   'Janeiro',
@@ -32,30 +30,9 @@ export default function CartaoFaturasScreen() {
   const { cardId } = useLocalSearchParams<{ cardId: string }>();
   const router = useRouter();
   const { invoices, loading } = useCardInvoices(cardId);
-  const { archive } = useCards();
-  const [card, setCard] = useState<Card>();
-
-  useEffect(() => {
-    if (cardId) getCard(cardId).then(setCard);
-  }, [cardId]);
-
-  const handleArchive = () => {
-    Alert.alert(
-      'Arquivar cartão',
-      'O cartão sai das opções de nova compra, mas o histórico é mantido.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Arquivar',
-          style: 'destructive',
-          onPress: async () => {
-            await archive(cardId!);
-            router.back();
-          },
-        },
-      ],
-    );
-  };
+  // `useCard` recarrega no foco — volta de "Editar cartão" já mostra
+  // nome/dias/arquivamento atualizados.
+  const { card } = useCard(cardId);
 
   // Faturas "FUTURA" (parcelas já alocadas em meses que nem começaram
   // a fechar) vão para o fim da lista, da mais próxima para a mais
@@ -87,17 +64,15 @@ export default function CartaoFaturasScreen() {
             {card?.nome ?? 'Cartão'}
           </Text>
         </XStack>
-        {!card?.arquivadoEm && (
-          <Button
-            onPress={handleArchive}
-            circular
-            size="$3"
-            backgroundColor="$surface"
-            borderColor="$border"
-            borderWidth={1}
-            icon={<Archive size={16} />}
-          />
-        )}
+        <Button
+          onPress={() => router.push(`/cartao/${cardId}/editar`)}
+          circular
+          size="$3"
+          backgroundColor="$surface"
+          borderColor="$border"
+          borderWidth={1}
+          icon={<Pencil size={16} />}
+        />
       </XStack>
 
       <ScrollView contentContainerStyle={{ padding: 20, gap: 22 }}>
@@ -160,7 +135,11 @@ export default function CartaoFaturasScreen() {
                   onPress={() => router.push(`/cartao/${cardId}/fatura/${invoice.id}`)}
                 >
                   <YStack flex={1}>
-                    <Text fontSize={15} fontWeight="600" color={isFuture ? '$textSecondary' : '$text'}>
+                    <Text
+                      fontSize={15}
+                      fontWeight="600"
+                      color={isFuture ? '$textSecondary' : '$text'}
+                    >
                       {MONTH_NAMES[invoice.referenciaMes - 1]} {invoice.referenciaAno}
                     </Text>
                     {showResponsibility && (
@@ -185,7 +164,13 @@ export default function CartaoFaturasScreen() {
                       cents={invoice.total}
                       fontSize={17}
                       fontWeight="600"
-                      color={isFuture ? '$textSecondary' : invoice.status === 'ABERTA' ? '$info' : '$text'}
+                      color={
+                        isFuture
+                          ? '$textSecondary'
+                          : invoice.status === 'ABERTA'
+                            ? '$info'
+                            : '$text'
+                      }
                     />
                   </YStack>
                   <ChevronRight size={16} color="#6C6C6D" />
@@ -198,9 +183,7 @@ export default function CartaoFaturasScreen() {
 
       {!card?.arquivadoEm && (
         <PrimaryButton
-          onPress={() =>
-            router.push({ pathname: '/nova-compra', params: { cartaoId: cardId } })
-          }
+          onPress={() => router.push({ pathname: '/nova-compra', params: { cartaoId: cardId } })}
           position="absolute"
           bottom={24}
           right={20}

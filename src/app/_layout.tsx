@@ -115,6 +115,7 @@ export default function RootLayout() {
             <Stack.Screen name="nova-compra/divisao-vinculada" options={{ presentation: 'modal' }} />
             <Stack.Screen name="compra/[compraId]" />
             <Stack.Screen name="cartao/[cardId]/index" />
+            <Stack.Screen name="cartao/[cardId]/editar" />
             <Stack.Screen name="cartao/[cardId]/fatura/[invoiceId]" />
             <Stack.Screen name="cartao/importar-csv/index" />
             <Stack.Screen name="cartao/importar-csv/resultado" />

@@ -1,30 +1,13 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
-import { Controller, useForm } from 'react-hook-form';
 import { Text, YStack } from 'tamagui';
 
-import { AppInput } from '@/components/AppInput';
-import { PrimaryButton } from '@/components/PrimaryButton';
+import { CardForm } from '@/components/CardForm';
 import { Screen } from '@/components/Screen';
 import { useCards } from '@/hooks/useCards';
-import { type CardInput, cardInputSchema } from '@/repositories/cardsRepository';
 
 export default function NovoCartaoScreen() {
   const router = useRouter();
   const { create } = useCards();
-  const {
-    control,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<CardInput>({
-    resolver: zodResolver(cardInputSchema),
-    defaultValues: { nome: '', diaFechamento: undefined, diaVencimento: undefined },
-  });
-
-  const onSubmit = handleSubmit(async (data) => {
-    await create(data);
-    router.back();
-  });
 
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']}>
@@ -33,90 +16,13 @@ export default function NovoCartaoScreen() {
           Novo cartão
         </Text>
 
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Nome
-          </Text>
-          <Controller
-            control={control}
-            name="nome"
-            render={({ field, fieldState }) => (
-              <AppInput
-                value={field.value}
-                onChangeText={field.onChange}
-                placeholder="Ex.: Nubank"
-                error={Boolean(fieldState.error)}
-              />
-            )}
-          />
-          {errors.nome && (
-            <Text fontSize={12} color="$error">
-              Informe um nome para o cartão
-            </Text>
-          )}
-        </YStack>
-
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Dia de fechamento
-          </Text>
-          <Controller
-            control={control}
-            name="diaFechamento"
-            render={({ field, fieldState }) => (
-              <AppInput
-                value={field.value === undefined ? '' : String(field.value)}
-                onChangeText={(text) =>
-                  field.onChange(text === '' ? undefined : Number(text.replace(/\D/g, '')))
-                }
-                placeholder="Ex.: 10"
-                keyboardType="number-pad"
-                error={Boolean(fieldState.error)}
-              />
-            )}
-          />
-          {errors.diaFechamento && (
-            <Text fontSize={12} color="$error">
-              Informe um dia entre 1 e 31
-            </Text>
-          )}
-        </YStack>
-
-        <YStack gap="$2">
-          <Text fontSize={13} color="$textSecondary">
-            Dia de vencimento
-          </Text>
-          <Controller
-            control={control}
-            name="diaVencimento"
-            render={({ field, fieldState }) => (
-              <AppInput
-                value={field.value === undefined ? '' : String(field.value)}
-                onChangeText={(text) =>
-                  field.onChange(text === '' ? undefined : Number(text.replace(/\D/g, '')))
-                }
-                placeholder="Ex.: 17"
-                keyboardType="number-pad"
-                error={Boolean(fieldState.error)}
-              />
-            )}
-          />
-          {errors.diaVencimento && (
-            <Text fontSize={12} color="$error">
-              Informe um dia entre 1 e 31
-            </Text>
-          )}
-        </YStack>
-
-        <PrimaryButton
-          onPress={onSubmit}
-          disabled={isSubmitting}
-          color="white"
-          fontWeight="700"
-          borderRadius={999}
-        >
-          Salvar cartão
-        </PrimaryButton>
+        <CardForm
+          submitLabel="Salvar cartão"
+          onSubmit={async (data) => {
+            await create(data);
+            router.back();
+          }}
+        />
       </YStack>
     </Screen>
   );
