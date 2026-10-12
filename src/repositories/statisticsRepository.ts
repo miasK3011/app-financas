@@ -9,7 +9,12 @@ import { spendingByCategory } from '@/domain/statistics/spendingByCategory';
 import { subscriptionsShare } from '@/domain/statistics/subscriptionsShare';
 import { topExpenses } from '@/domain/statistics/topExpenses';
 import { totalSpent } from '@/domain/statistics/totalSpent';
-import type { ParcelaComCompra, Period, PeriodKind } from '@/domain/statistics/types';
+import type {
+  ParcelaComCompra,
+  Period,
+  PeriodKind,
+  SpendingBasis,
+} from '@/domain/statistics/types';
 
 import { getIdealGoalPercent } from './idealGoalRepository';
 import { getIncomeForMonth } from './incomeConfigRepository';
@@ -20,6 +25,7 @@ function toParcelaComCompra(
 ): ParcelaComCompra {
   return {
     parcelaId: parcela.id,
+    valor: parcela.valor,
     valorResponsabilidade: parcela.valorResponsabilidade,
     compra: {
       id: compra.id,
@@ -65,7 +71,11 @@ export async function listParcelasForPeriod(period: Period): Promise<ParcelaComC
 
 export type StatisticsResult = {
   period: Period;
+  basis: SpendingBasis;
+  /** Total do período conforme `basis`. */
   totalSpent: number;
+  /** Total do período sempre pela parte do usuário (FR-004/FR-005 da feature 003). */
+  totalMinhaParte: number;
   comparison: { percent: number } | null;
   spendingByCategory: { categoriaId: string | null; total: number }[];
   topExpenses: ParcelaComCompra[];
@@ -73,10 +83,16 @@ export type StatisticsResult = {
   idealSpend: { used: number; goalAmount: number } | null;
 };
 
-/** T095/FR-038..FR-045: agrega tudo que a tela de Estatísticas precisa para um período. */
+/**
+ * T095/FR-038..FR-045: agrega tudo que a tela de Estatísticas precisa para
+ * um período. `basis` (feature 003, FR-003) escolhe entre a parte do
+ * usuário e o valor global; a meta de consumo ideal usa sempre a parte
+ * do usuário (FR-005).
+ */
 export async function getStatistics(
   kind: PeriodKind,
   anchor: Date = new Date(),
+  basis: SpendingBasis = 'minha',
 ): Promise<StatisticsResult> {
   const { current, previous } = resolvePeriod(kind, anchor);
 
@@ -87,17 +103,20 @@ export async function getStatistics(
     getIdealGoalPercent(),
   ]);
 
-  const total = totalSpent(currentParcelas);
-  const previousTotal = previousParcelas.length === 0 ? null : totalSpent(previousParcelas);
+  const total = totalSpent(currentParcelas, basis);
+  const totalMinhaParte = totalSpent(currentParcelas, 'minha');
+  const previousTotal = previousParcelas.length === 0 ? null : totalSpent(previousParcelas, basis);
 
   return {
     period: current,
+    basis,
     totalSpent: total,
+    totalMinhaParte,
     comparison: compareToPrevious(total, previousTotal),
-    spendingByCategory: spendingByCategory(currentParcelas),
-    topExpenses: topExpenses(currentParcelas, 5),
-    subscriptionsShare: subscriptionsShare(currentParcelas, total),
-    idealSpend: idealSpendComparison(total, income?.valor ?? null, goalPercent),
+    spendingByCategory: spendingByCategory(currentParcelas, basis),
+    topExpenses: topExpenses(currentParcelas, 5, basis),
+    subscriptionsShare: subscriptionsShare(currentParcelas, total, basis),
+    idealSpend: idealSpendComparison(totalMinhaParte, income?.valor ?? null, goalPercent),
   };
 }
 

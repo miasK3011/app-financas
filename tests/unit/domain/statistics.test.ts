@@ -5,15 +5,26 @@ import { resolvePeriod } from '@/domain/statistics/resolvePeriod';
 import { spendingByCategory } from '@/domain/statistics/spendingByCategory';
 import { subscriptionsShare } from '@/domain/statistics/subscriptionsShare';
 import { topExpenses } from '@/domain/statistics/topExpenses';
+import { amountOf } from '@/domain/statistics/amountOf';
+import {
+  formatSharePct,
+  toCategoryShare,
+  toCategoryShareFull,
+} from '@/domain/statistics/categoryShare';
+import { periodLabel } from '@/domain/statistics/periodLabel';
 import { totalSpent } from '@/domain/statistics/totalSpent';
 import type { ParcelaComCompra } from '@/domain/statistics/types';
 
 function parcela(
-  overrides: Partial<ParcelaComCompra['compra']> & { valorResponsabilidade: number },
+  overrides: Partial<ParcelaComCompra['compra']> & {
+    valorResponsabilidade: number;
+    valor?: number;
+  },
 ): ParcelaComCompra {
-  const { valorResponsabilidade, ...compraOverrides } = overrides;
+  const { valorResponsabilidade, valor, ...compraOverrides } = overrides;
   return {
     parcelaId: 'parcela-' + Math.random(),
+    valor: valor ?? valorResponsabilidade,
     valorResponsabilidade,
     compra: {
       id: 'compra-' + Math.random(),
@@ -159,5 +170,121 @@ describe('US12 — a purchase split with someone else (FR-054)', () => {
     expect(totalSpent(parcelas)).toBe(7000); // 5000 + 2000, nunca 10000 + 2000
     expect(spendingByCategory(parcelas)).toEqual([{ categoriaId: 'cat-1', total: 7000 }]);
     expect(topExpenses(parcelas, 1)[0].valorResponsabilidade).toBe(5000);
+  });
+});
+
+describe('003/US1 — SpendingBasis (minha × global)', () => {
+  // Compra de R$100 em que a parte do usuário é R$40 + uma sem divisão de R$20.
+  const parcelas: ParcelaComCompra[] = [
+    parcela({
+      valor: 10000,
+      valorResponsabilidade: 4000,
+      categoriaId: 'cat-1',
+      origem: 'ASSINATURA',
+    }),
+    parcela({ valor: 2000, valorResponsabilidade: 2000, categoriaId: 'cat-2' }),
+  ];
+
+  it('amountOf picks valorResponsabilidade for minha and valor for global', () => {
+    expect(amountOf(parcelas[0], 'minha')).toBe(4000);
+    expect(amountOf(parcelas[0], 'global')).toBe(10000);
+  });
+
+  it('defaults to minha, preserving the pre-003 behaviour', () => {
+    expect(totalSpent(parcelas)).toBe(6000);
+    expect(totalSpent(parcelas, 'minha')).toBe(6000);
+    expect(totalSpent(parcelas, 'global')).toBe(12000);
+  });
+
+  it('spendingByCategory follows the basis', () => {
+    expect(spendingByCategory(parcelas, 'global')).toEqual([
+      { categoriaId: 'cat-1', total: 10000 },
+      { categoriaId: 'cat-2', total: 2000 },
+    ]);
+    expect(spendingByCategory(parcelas, 'minha')).toEqual([
+      { categoriaId: 'cat-1', total: 4000 },
+      { categoriaId: 'cat-2', total: 2000 },
+    ]);
+  });
+
+  it('topExpenses ranks by the basis amount', () => {
+    const tied: ParcelaComCompra[] = [
+      parcela({ valor: 10000, valorResponsabilidade: 1000, descricao: 'dividida' }),
+      parcela({ valor: 3000, valorResponsabilidade: 3000, descricao: 'minha' }),
+    ];
+    expect(topExpenses(tied, 1, 'minha')[0].compra.descricao).toBe('minha');
+    expect(topExpenses(tied, 1, 'global')[0].compra.descricao).toBe('dividida');
+  });
+
+  it('subscriptionsShare follows the basis', () => {
+    expect(subscriptionsShare(parcelas, 12000, 'global')).toEqual({
+      subscriptionsTotal: 10000,
+      percent: 10000 / 12000,
+    });
+    expect(subscriptionsShare(parcelas, 6000).subscriptionsTotal).toBe(4000);
+  });
+});
+
+describe('003/US4 — categoryShare', () => {
+  const spending = (totals: number[]) =>
+    totals.map((total, index) => ({ categoriaId: `cat-${index}`, total }));
+  const sumPct = (list: { pct: number }[]) =>
+    Math.round(list.reduce((acc, item) => acc + item.pct, 0) * 10) / 10;
+
+  it('keeps the 5 largest and folds the rest into "Outras", last', () => {
+    const result = toCategoryShare(spending([500, 8000, 300, 1200, 50, 2000, 900, 700]));
+    expect(result).toHaveLength(6);
+    expect(result.map((item) => item.total)).toEqual([8000, 2000, 1200, 900, 700, 850]);
+    expect(result[5]).toMatchObject({ key: 'outras', isOutras: true, rank: 5 });
+    expect(result.slice(0, 5).map((item) => item.rank)).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it('has no "Outras" when there are 5 categories or fewer', () => {
+    const result = toCategoryShare(spending([300, 100, 600]));
+    expect(result.map((item) => item.key)).toEqual(['cat-2', 'cat-0', 'cat-1']);
+    expect(result.some((item) => item.isOutras)).toBe(false);
+  });
+
+  it('percentages always add up to exactly 100', () => {
+    expect(sumPct(toCategoryShare(spending([1, 1, 1])))).toBe(100);
+    expect(sumPct(toCategoryShare(spending([3333, 3333, 3334, 17, 9, 4, 1])))).toBe(100);
+    expect(sumPct(toCategoryShareFull(spending([3333, 3333, 3334, 17, 9, 4, 1])))).toBe(100);
+  });
+
+  it('a single category is 100%', () => {
+    expect(toCategoryShare(spending([4200]))).toEqual([
+      { key: 'cat-0', categoriaId: 'cat-0', total: 4200, pct: 100, rank: 0, isOutras: false },
+    ]);
+  });
+
+  it('returns [] when there is no spending, ignoring zero totals', () => {
+    expect(toCategoryShare([])).toEqual([]);
+    expect(toCategoryShare(spending([0, 0]))).toEqual([]);
+    expect(toCategoryShare(spending([0, 500])).map((item) => item.key)).toEqual(['cat-1']);
+  });
+
+  it('uncategorised spending gets a stable key', () => {
+    expect(toCategoryShare([{ categoriaId: null, total: 100 }])[0].key).toBe('sem-categoria');
+  });
+
+  it('toCategoryShareFull lists every category without folding', () => {
+    const result = toCategoryShareFull(spending([500, 8000, 300, 1200, 50, 2000, 900, 700]));
+    expect(result).toHaveLength(8);
+    expect(result[7]).toMatchObject({ total: 50, rank: 7, isOutras: false });
+  });
+});
+
+describe('003/US4 — rótulos', () => {
+  it('formats share percentages with a decimal comma', () => {
+    expect(formatSharePct(38.2)).toBe('38,2%');
+    expect(formatSharePct(100)).toBe('100,0%');
+  });
+
+  it('labels each period kind for the detail header', () => {
+    const anchor = new Date(2026, 9, 12);
+    expect(periodLabel('DIARIO', resolvePeriod('DIARIO', anchor).current)).toBe('12/10/2026');
+    expect(periodLabel('SEMANAL', resolvePeriod('SEMANAL', anchor).current)).toBe('12/10 – 18/10');
+    expect(periodLabel('MENSAL', resolvePeriod('MENSAL', anchor).current)).toBe('Outubro 2026');
+    expect(periodLabel('ANUAL', resolvePeriod('ANUAL', anchor).current)).toBe('2026');
   });
 });

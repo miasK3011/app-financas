@@ -1,3 +1,4 @@
+import { balanceEntries } from '@/domain/cashflow/balanceEntries';
 import { computeMonthBalance } from '@/domain/cashflow/computeMonthBalance';
 
 describe('computeMonthBalance', () => {
@@ -46,5 +47,46 @@ describe('computeMonthBalance', () => {
         faturasVencendo: [],
       }),
     ).toBe(1000);
+  });
+});
+
+describe('003/US1 — saldo pela parte do usuário (FR-001/FR-001a)', () => {
+  it('discounts only the user share of Pix purchases and due invoices', () => {
+    expect(
+      computeMonthBalance({
+        rendaVigente: 500000,
+        entradasAvulsas: [],
+        comprasPix: [4000], // Pix de R$100, parte do usuário R$40
+        faturasVencendo: [70000], // fatura de R$1.000, parte do usuário R$700
+      }),
+    ).toBe(426000);
+  });
+
+  it('does not count a linked refund twice', () => {
+    // Compra Pix de R$100 com reembolso vinculado de R$60: parte = R$40.
+    const entries = [
+      { valor: 6000, compraVinculadaId: 'compra-1' },
+      { valor: 2000, compraVinculadaId: null },
+    ];
+    expect(balanceEntries(entries)).toEqual([2000]);
+    expect(
+      computeMonthBalance({
+        rendaVigente: 500000,
+        entradasAvulsas: balanceEntries(entries),
+        comprasPix: [4000],
+        faturasVencendo: [],
+      }),
+    ).toBe(500000 + 2000 - 4000); // nunca 500000 + 2000 + 6000 - 4000
+  });
+
+  it('is unchanged for purchases without any split', () => {
+    expect(
+      computeMonthBalance({
+        rendaVigente: 300000,
+        entradasAvulsas: balanceEntries([{ valor: 2000, compraVinculadaId: null }]),
+        comprasPix: [5000],
+        faturasVencendo: [100000],
+      }),
+    ).toBe(197000);
   });
 });

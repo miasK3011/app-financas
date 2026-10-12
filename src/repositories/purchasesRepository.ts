@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, isNull, lt, lte } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, lt, lte, sql } from 'drizzle-orm';
 import { randomUUID } from 'expo-crypto';
 
 import { db } from '@/db/client';
@@ -18,7 +18,7 @@ import { validateManualResponsibility } from '@/domain/expenseSplitting/validate
 import { allocateInstallmentsToInvoices } from '@/domain/installments/allocateInstallmentsToInvoices';
 import { splitInstallments } from '@/domain/installments/splitInstallments';
 import { computeInvoiceStatus } from '@/domain/invoices/computeInvoiceStatus';
-import type { PurchaseListRow } from '@/domain/purchasesOverview/types';
+import type { ForecastRow, PurchaseListRow } from '@/domain/purchasesOverview/types';
 import { purchaseSchema } from '@/domain/shared/purchaseSchema';
 import { resolvePeriod } from '@/domain/statistics/resolvePeriod';
 
@@ -298,20 +298,43 @@ export async function createPixPurchase(input: CreatePixPurchaseInput): Promise<
   return purchase;
 }
 
-/** Compras Pix de um mês de referência — base do saldo do mês (FR-015). */
-export async function listPixPurchasesForMonth(year: number, month: number): Promise<Purchase[]> {
+/**
+ * Compra Pix com a parte efetiva do usuário (Σ `parcelas.valorResponsabilidade`,
+ * já resolvida no write). Nome distinto de `compras.valorResponsabilidade`
+ * (manual, nullable) — data-model da feature 003.
+ */
+export type PixPurchaseWithShare = Purchase & { parteUsuario: number };
+
+/**
+ * Compras Pix de um mês de referência — base do saldo do mês (FR-015 da
+ * 001; FR-001 da 003: o saldo desconta `parteUsuario`, não o total).
+ */
+export async function listPixPurchasesForMonth(
+  year: number,
+  month: number,
+): Promise<PixPurchaseWithShare[]> {
   const monthStart = new Date(year, month - 1, 1);
   const monthEnd = new Date(year, month, 1);
-  return db
-    .select()
+  const rows = await db
+    .select({
+      compra: compras,
+      parteUsuario: sql<number>`coalesce(sum(${parcelas.valorResponsabilidade}), ${compras.valorTotalOriginal})`,
+    })
     .from(compras)
+    .leftJoin(parcelas, eq(parcelas.compraId, compras.id))
     .where(
       and(
         eq(compras.formaPagamento, 'PIX'),
         gte(compras.dataCompra, monthStart),
         lt(compras.dataCompra, monthEnd),
       ),
-    );
+    )
+    .groupBy(compras.id);
+
+  return rows.map(({ compra, parteUsuario }) => ({
+    ...compra,
+    parteUsuario: Number(parteUsuario),
+  }));
 }
 
 export async function getPurchase(compraId: string): Promise<Purchase | undefined> {
@@ -357,7 +380,9 @@ export async function listPurchasesForInvoice(invoiceId: string): Promise<Invoic
     .innerJoin(compras, eq(parcelas.compraId, compras.id))
     .leftJoin(categorias, eq(compras.categoriaId, categorias.id))
     .leftJoin(estabelecimentos, eq(compras.estabelecimentoId, estabelecimentos.id))
-    .where(eq(parcelas.faturaId, invoiceId));
+    .where(eq(parcelas.faturaId, invoiceId))
+    // FR-013 (003): mais recente primeiro, pela data da compra original.
+    .orderBy(desc(compras.dataCompra), desc(compras.criadoEm));
 
   const compraIds = rows.map((row) => row.compra.id);
   const tagRows = compraIds.length
@@ -714,34 +739,38 @@ export async function listRecentPurchases(limit: number): Promise<RecentPurchase
   }));
 }
 
-function toPurchaseListRow(
+/** Linha da visão de previsão (por Parcela/Fatura — FR-013 da 002, inalterada pela 003). */
+function toForecastRow(
   parcela: typeof parcelas.$inferSelect,
   compra: typeof compras.$inferSelect,
   categoria: { icone: string | null; nome: string | null } | null,
   nomeCartao: string | null,
-  dataCompra: Date,
-): PurchaseListRow {
+  dataVencimento: Date,
+): ForecastRow {
   return {
     parcelaId: parcela.id,
     compraId: compra.id,
     descricao: compra.descricao,
     categoria: categoria?.icone ? { icone: categoria.icone, nome: categoria.nome ?? '' } : null,
     valor: parcela.valor,
+    valorResponsabilidade: parcela.valorResponsabilidade,
     formaPagamento: compra.formaPagamento,
     nomeCartao,
     parcela:
       compra.parcelasTotal > 1 ? { atual: parcela.numero, total: compra.parcelasTotal } : null,
-    dataCompra,
+    dataCompra: dataVencimento,
   };
 }
 
 /**
- * Tela Compras (002-central-de-compras), mês atual/passado: todas as
- * Parcelas (cartão + Pix) do mês, no mesmo critério de atribuição de
- * mês já usado por `domain/statistics` (`listParcelasForPeriod`) — Pix
- * pela `dataCompra`, cartão pela `dataVencimento` da sua Fatura — para
- * o total nunca divergir do "Gastos" já exibido na Início. Mais
- * recente primeiro (contracts/purchases-overview.md).
+ * Tela Compras, mês atual/passado — linha do tempo (feature 003, FR-006/
+ * FR-006a/FR-007): uma linha por **Compra** feita no mês (cartão + Pix,
+ * pela `dataCompra` real), com o valor cheio e a parte do usuário (Σ das
+ * parcelas). Substitui de propósito a regra da 002 (Parcela atribuída ao
+ * mês pelo vencimento da fatura): o total desta tela deixa de bater com
+ * o "Gastos" da Início, que segue o que vence no mês —
+ * `specs/003-minha-parte-e-linha-do-tempo/contracts/purchases-timeline.md`.
+ * Mais recente primeiro.
  */
 export async function listPurchasesForMonth(
   year: number,
@@ -749,48 +778,39 @@ export async function listPurchasesForMonth(
 ): Promise<PurchaseListRow[]> {
   const period = resolvePeriod('MENSAL', new Date(year, month - 1, 15)).current;
 
-  const pixRows = await db
+  const rows = await db
     .select({
-      parcela: parcelas,
-      compra: compras,
-      categoria: { icone: categorias.icone, nome: categorias.nome },
-    })
-    .from(parcelas)
-    .innerJoin(compras, eq(parcelas.compraId, compras.id))
-    .leftJoin(categorias, eq(compras.categoriaId, categorias.id))
-    .where(
-      and(
-        isNull(parcelas.faturaId),
-        gte(compras.dataCompra, period.start),
-        lte(compras.dataCompra, period.end),
-      ),
-    );
-
-  const cardRows = await db
-    .select({
-      parcela: parcelas,
       compra: compras,
       categoria: { icone: categorias.icone, nome: categorias.nome },
       cartaoNome: cartoes.nome,
-      dataVencimento: faturas.dataVencimento,
+      parteUsuario: sql<number>`coalesce(sum(${parcelas.valorResponsabilidade}), ${compras.valorTotalOriginal})`,
     })
-    .from(parcelas)
-    .innerJoin(compras, eq(parcelas.compraId, compras.id))
-    .innerJoin(faturas, eq(parcelas.faturaId, faturas.id))
-    .innerJoin(cartoes, eq(faturas.cartaoId, cartoes.id))
+    .from(compras)
+    .leftJoin(parcelas, eq(parcelas.compraId, compras.id))
+    .leftJoin(cartoes, eq(compras.cartaoId, cartoes.id))
     .leftJoin(categorias, eq(compras.categoriaId, categorias.id))
-    .where(and(gte(faturas.dataVencimento, period.start), lte(faturas.dataVencimento, period.end)));
+    .where(and(gte(compras.dataCompra, period.start), lte(compras.dataCompra, period.end)))
+    .groupBy(compras.id)
+    .orderBy(desc(compras.dataCompra), desc(compras.criadoEm));
 
-  const rows = [
-    ...pixRows.map((row) =>
-      toPurchaseListRow(row.parcela, row.compra, row.categoria, null, row.compra.dataCompra),
-    ),
-    ...cardRows.map((row) =>
-      toPurchaseListRow(row.parcela, row.compra, row.categoria, row.cartaoNome, row.dataVencimento),
-    ),
-  ];
-
-  return rows.sort((a, b) => b.dataCompra.getTime() - a.dataCompra.getTime());
+  return rows.map(({ compra, categoria, cartaoNome, parteUsuario }) => {
+    const valorResponsabilidade = Number(parteUsuario);
+    return {
+      compraId: compra.id,
+      descricao: compra.descricao,
+      categoria: categoria?.icone ? { icone: categoria.icone, nome: categoria.nome ?? '' } : null,
+      valor: compra.valorTotalOriginal,
+      valorResponsabilidade,
+      isSplit: valorResponsabilidade < compra.valorTotalOriginal,
+      formaPagamento: compra.formaPagamento,
+      nomeCartao: compra.formaPagamento === 'CARTAO' ? (cartaoNome ?? 'Cartão') : null,
+      parcelas:
+        compra.parcelasTotal > 1
+          ? { atual: compra.parcelaAtual, total: compra.parcelasTotal }
+          : null,
+      dataCompra: compra.dataCompra,
+    };
+  });
 }
 
 /** `MonthRange.earliest` (`contracts/purchases-overview.md`): data da Compra mais antiga cadastrada. */
@@ -806,7 +826,7 @@ export async function getEarliestCompraDate(): Promise<Date | null> {
 export type ForecastInvoiceGroup = {
   cartaoNome: string;
   dataVencimento: Date;
-  rows: PurchaseListRow[];
+  rows: ForecastRow[];
 };
 
 /**
@@ -831,7 +851,7 @@ export async function listForecastInvoicesForMonth(
       const purchaseRows = await listPurchasesForInvoice(invoice.id);
 
       const rows = purchaseRows.map((row) =>
-        toPurchaseListRow(
+        toForecastRow(
           {
             id: row.parcelaId,
             compraId: row.compra.id,

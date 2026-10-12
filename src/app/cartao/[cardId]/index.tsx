@@ -1,14 +1,22 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ChevronLeft, ChevronRight, Pencil, Plus, Upload } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Eye, EyeOff, Pencil, Plus, Upload } from 'lucide-react-native';
+import { useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
+import { MonthNavigator } from '@/components/MonthNavigator';
 import { Money } from '@/components/Money';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { StatusBadge } from '@/components/StatusBadge';
 import { FAB_SCROLL_PADDING } from '@/components/fabLayout';
 import { shouldShowResponsibilitySummary } from '@/domain/expenseSplitting/shouldShowResponsibilitySummary';
+import {
+  availableYears,
+  countPaidInYear,
+  filterInvoicesForYear,
+  initialYear,
+} from '@/domain/invoices/invoiceYearView';
 import { useCard } from '@/hooks/useCards';
 import { useCardInvoices } from '@/hooks/useInvoice';
 
@@ -35,18 +43,19 @@ export default function CartaoFaturasScreen() {
   // nome/dias/arquivamento atualizados.
   const { card } = useCard(cardId);
 
-  // Faturas "FUTURA" (parcelas já alocadas em meses que nem começaram
-  // a fechar) vão para o fim da lista, da mais próxima para a mais
-  // distante — as demais (ABERTA/FECHADA/PAGA) ficam no topo, da mais
-  // recente para a mais antiga.
-  const sortedInvoices = [...invoices].sort((a, b) => {
-    const aFutura = a.status === 'FUTURA';
-    const bFutura = b.status === 'FUTURA';
-    if (aFutura !== bFutura) return aFutura ? 1 : -1;
-
-    const order = b.referenciaAno - a.referenciaAno || b.referenciaMes - a.referenciaMes;
-    return aFutura ? -order : order;
-  });
+  // FR-011/FR-012 (003, issue #23): um ano por vez, pagas ocultas por
+  // padrão. O ano escolhido só vale enquanto existir na lista; senão
+  // volta ao ano inicial (corrente ou o mais próximo com faturas).
+  const [selectedYear, setSelectedYear] = useState<number | undefined>();
+  const [showPaid, setShowPaid] = useState(false);
+  const years = availableYears(invoices);
+  const year =
+    selectedYear !== undefined && years.includes(selectedYear)
+      ? selectedYear
+      : initialYear(years, new Date());
+  const yearIndex = year === undefined ? -1 : years.indexOf(year);
+  const visibleInvoices = year === undefined ? [] : filterInvoicesForYear(invoices, year, showPaid);
+  const paidCount = year === undefined ? 0 : countPaidInYear(invoices, year);
 
   return (
     <Screen>
@@ -113,73 +122,133 @@ export default function CartaoFaturasScreen() {
 
         {loading ? (
           <ActivityIndicator style={{ marginTop: 24 }} />
-        ) : sortedInvoices.length === 0 ? (
+        ) : year === undefined ? (
           <Text fontSize={13} color="$textSecondary">
             Nenhuma fatura ainda.
           </Text>
         ) : (
-          <YStack>
-            <Text fontSize={15} fontWeight="600" color="$text" marginBottom="$3">
-              Faturas
-            </Text>
-            {sortedInvoices.map((invoice, index) => {
-              const isFuture = invoice.status === 'FUTURA';
-              const showResponsibility =
-                invoice.status === 'ABERTA' && shouldShowResponsibilitySummary(invoice);
+          <YStack gap="$3">
+            <MonthNavigator
+              label={String(year)}
+              onPrev={() => setSelectedYear(years[yearIndex - 1])}
+              onNext={() => setSelectedYear(years[yearIndex + 1])}
+              prevDisabled={yearIndex <= 0}
+              nextDisabled={yearIndex >= years.length - 1}
+            />
 
-              return (
+            {visibleInvoices.length === 0 ? (
+              <YStack alignItems="center" gap="$1.5" paddingTop={28} paddingBottom={8}>
+                <Text fontSize={14.5} fontWeight="600" color="$text" textAlign="center">
+                  Nenhuma fatura em aberto em {year}
+                </Text>
+                <Text fontSize={13} color="$textTertiary" textAlign="center">
+                  {paidCount} {paidCount === 1 ? 'fatura paga oculta' : 'faturas pagas ocultas'}
+                </Text>
                 <XStack
-                  key={invoice.id}
-                  paddingVertical={16}
-                  borderTopWidth={index === 0 ? 0 : 1}
-                  borderColor="$border"
                   alignItems="center"
-                  gap="$3"
-                  onPress={() => router.push(`/cartao/${cardId}/fatura/${invoice.id}`)}
+                  gap="$1.5"
+                  paddingVertical={6}
+                  paddingHorizontal={8}
+                  pressStyle={{ opacity: 0.55, scale: 0.96 }}
+                  accessibilityRole="button"
+                  onPress={() => setShowPaid(true)}
                 >
-                  <YStack flex={1}>
-                    <Text
-                      fontSize={15}
-                      fontWeight="600"
-                      color={isFuture ? '$textSecondary' : '$text'}
-                    >
-                      {MONTH_NAMES[invoice.referenciaMes - 1]} {invoice.referenciaAno}
-                    </Text>
-                    {showResponsibility && (
-                      <Text fontSize={12.5} color="$textTertiary" marginTop={2}>
-                        Sua responsabilidade:{' '}
-                        <Money
-                          cents={invoice.totalResponsabilidade}
-                          fontSize={12.5}
-                          color="$textTertiary"
-                        />
-                      </Text>
-                    )}
-                    {isFuture && (
-                      <Text fontSize={12.5} color="$textTertiary" marginTop={2}>
-                        Prevista · parcelas já alocadas
-                      </Text>
-                    )}
-                  </YStack>
-                  <YStack alignItems="flex-end" gap="$1.5">
-                    {!isFuture && <StatusBadge status={invoice.status} />}
-                    <Money
-                      cents={invoice.total}
-                      fontSize={17}
-                      fontWeight="600"
-                      color={
-                        isFuture
-                          ? '$textSecondary'
-                          : invoice.status === 'ABERTA'
-                            ? '$info'
-                            : '$text'
-                      }
-                    />
-                  </YStack>
-                  <ChevronRight size={16} color="#6C6C6D" />
+                  <Eye size={16} color="#2E6F55" />
+                  <Text fontSize={13} fontWeight="600" color="$primary">
+                    Mostrar pagas
+                  </Text>
                 </XStack>
-              );
-            })}
+              </YStack>
+            ) : (
+              <YStack>
+                {visibleInvoices.map((invoice, index) => {
+                  const isFuture = invoice.status === 'FUTURA';
+                  const showResponsibility =
+                    invoice.status === 'ABERTA' && shouldShowResponsibilitySummary(invoice);
+
+                  return (
+                    <XStack
+                      key={invoice.id}
+                      paddingVertical={16}
+                      borderTopWidth={index === 0 ? 0 : 1}
+                      borderColor="$border"
+                      alignItems="center"
+                      gap="$3"
+                      pressStyle={{ opacity: 0.6 }}
+                      onPress={() => router.push(`/cartao/${cardId}/fatura/${invoice.id}`)}
+                    >
+                      <YStack flex={1}>
+                        <Text
+                          fontSize={15}
+                          fontWeight="600"
+                          color={isFuture || invoice.status === 'PAGA' ? '$textSecondary' : '$text'}
+                        >
+                          {MONTH_NAMES[invoice.referenciaMes - 1]} {invoice.referenciaAno}
+                        </Text>
+                        {showResponsibility && (
+                          <Text fontSize={12.5} color="$textTertiary" marginTop={2}>
+                            Sua parte:{' '}
+                            <Money
+                              cents={invoice.totalResponsabilidade}
+                              fontSize={12.5}
+                              color="$textTertiary"
+                            />
+                          </Text>
+                        )}
+                        {isFuture && (
+                          <Text fontSize={12.5} color="$textTertiary" marginTop={2}>
+                            Prevista
+                          </Text>
+                        )}
+                      </YStack>
+                      <YStack alignItems="flex-end" gap="$1.5">
+                        {!isFuture && <StatusBadge status={invoice.status} />}
+                        <Money
+                          cents={invoice.total}
+                          fontSize={17}
+                          fontWeight="600"
+                          color={
+                            isFuture
+                              ? '$textSecondary'
+                              : invoice.status === 'ABERTA'
+                                ? '$info'
+                                : '$text'
+                          }
+                        />
+                      </YStack>
+                      <ChevronRight size={16} color="#6C6C6D" />
+                    </XStack>
+                  );
+                })}
+              </YStack>
+            )}
+
+            {paidCount > 0 && visibleInvoices.length > 0 && (
+              <XStack
+                alignItems="center"
+                justifyContent="center"
+                gap="$2"
+                paddingVertical={12}
+                paddingHorizontal={16}
+                borderRadius={999}
+                borderWidth={1}
+                borderColor="$border"
+                backgroundColor="$surface"
+                pressStyle={{ opacity: 0.6, scale: 0.98 }}
+                accessibilityRole="button"
+                accessibilityState={{ expanded: showPaid }}
+                onPress={() => setShowPaid((current) => !current)}
+              >
+                {showPaid ? (
+                  <EyeOff size={16} color="#2E6F55" />
+                ) : (
+                  <Eye size={16} color="#2E6F55" />
+                )}
+                <Text fontSize={13.5} fontWeight="600" color="$primary">
+                  {showPaid ? 'Ocultar pagas' : `Mostrar pagas (${paidCount})`}
+                </Text>
+              </XStack>
+            )}
           </YStack>
         )}
       </ScrollView>

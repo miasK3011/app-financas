@@ -1,24 +1,28 @@
 import { format, isSameDay, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-import type { DayGroup, PurchaseListRow } from './types';
+import type { DayGroup } from './types';
 
 /**
- * FR-010: agrupa por dia calendário de `row.dataCompra` — "Hoje" /
- * "Ontem" / "{d} de {mês por extenso}". Linhas já devem vir ordenadas
- * (mais recente primeiro) do repositório; aqui só agrupamos mantendo
- * essa ordem, sem reordenar.
+ * FR-010 (002) / FR-007 e FR-013 (003): agrupa por dia calendário de
+ * `getDate(row)` — "Hoje" / "Ontem" / "{d} de {mês por extenso}". Ordena
+ * uma cópia do mais recente para o mais antigo antes de agrupar (a
+ * ordenação é estável: linhas do mesmo instante mantêm a ordem de
+ * entrada); a entrada nunca é mutada. Genérico para servir tanto à tela
+ * Compras quanto ao detalhe da fatura.
  */
-export function groupByDay(rows: PurchaseListRow[], today: Date): DayGroup[] {
-  const groups: DayGroup[] = [];
+export function groupByDay<T>(rows: T[], getDate: (row: T) => Date, today: Date): DayGroup<T>[] {
+  const sorted = [...rows].sort((a, b) => getDate(b).getTime() - getDate(a).getTime());
+  const groups: DayGroup<T>[] = [];
 
-  for (const row of rows) {
+  for (const row of sorted) {
+    const date = getDate(row);
     const lastGroup = groups[groups.length - 1];
-    if (lastGroup && isSameDay(lastGroup.rows[0].dataCompra, row.dataCompra)) {
+    if (lastGroup && isSameDay(lastGroup.date, date)) {
       lastGroup.rows.push(row);
       continue;
     }
-    groups.push({ label: labelForDay(row.dataCompra, today), rows: [row] });
+    groups.push({ label: labelForDay(date, today), date, rows: [row] });
   }
 
   return groups;

@@ -1,6 +1,7 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 
+import { balanceEntries } from '@/domain/cashflow/balanceEntries';
 import { computeMonthBalance } from '@/domain/cashflow/computeMonthBalance';
 import {
   type CashEntry,
@@ -15,7 +16,11 @@ import { listPixPurchasesForMonth } from '@/repositories/purchasesRepository';
 
 /**
  * Saldo do mês (FR-015) + as entradas avulsas do mês, para a tela
- * Renda & Entradas · Main.
+ * Renda & Entradas · Main e a Início. Desde a feature 003 (FR-001/FR-002)
+ * o saldo e `expenses` descontam só a parte do usuário — Pix por
+ * `parteUsuario`, faturas por `totalResponsabilidade` — e reembolsos
+ * vinculados não entram de novo como entrada (FR-001a). `entries`
+ * continua trazendo todas as entradas do mês.
  */
 export function useMonthBalance(year: number, month: number) {
   const [balance, setBalance] = useState(0);
@@ -34,8 +39,10 @@ export function useMonthBalance(year: number, month: number) {
       listInvoicesDueInMonth(year, month),
     ]);
 
-    const pixTotal = pixPurchases.reduce((sum, purchase) => sum + purchase.valorTotalOriginal, 0);
-    const invoicesTotal = dueInvoices.reduce((sum, invoice) => sum + invoice.total, 0);
+    const pixShares = pixPurchases.map((purchase) => purchase.parteUsuario);
+    const invoiceShares = dueInvoices.map((invoice) => invoice.totalResponsabilidade);
+    const pixTotal = pixShares.reduce((sum, value) => sum + value, 0);
+    const invoicesTotal = invoiceShares.reduce((sum, value) => sum + value, 0);
 
     setHasIncome(Boolean(incomeConfig));
     setEntries(cashEntries);
@@ -44,9 +51,9 @@ export function useMonthBalance(year: number, month: number) {
     setBalance(
       computeMonthBalance({
         rendaVigente: incomeConfig?.valor ?? null,
-        entradasAvulsas: cashEntries.map((entry) => entry.valor),
-        comprasPix: pixPurchases.map((purchase) => purchase.valorTotalOriginal),
-        faturasVencendo: dueInvoices.map((invoice) => invoice.total),
+        entradasAvulsas: balanceEntries(cashEntries),
+        comprasPix: pixShares,
+        faturasVencendo: invoiceShares,
       }),
     );
     setLoading(false);
