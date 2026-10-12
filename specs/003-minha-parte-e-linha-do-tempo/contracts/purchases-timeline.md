@@ -24,8 +24,11 @@ Parcela/Fatura, com tipo `ForecastRow`.
 - `monthRange`: inalterado (earliest = compra mais antiga; latest = max(hoje, maior vencimento)).
 
 ## UI — `(tabs)/compras/index.tsx`
-- Chips existentes Todos/Cartão/Pix + chip toggle **"Só minhas"** (mesmo estilo de chip; ativo =
-  fundo `$primary`). Ocultos no modo previsão, como hoje.
+- Chips Todos/Cartão/Pix/**"Só minhas"** via `FilterChip` (com `pressStyle`). Estado puro em
+  `filters.ts`: `NO_FILTERS`, `isUnfiltered` (Todos ativo), `toggleFormaPagamento` (exclusivo,
+  tocar de novo volta a Todos), `toggleSoMinhas`. Ocultos no modo previsão.
+- Lista e card usam `useDeferredValue(filters)` + `useMemo` (lista memoizada); enquanto o valor
+  adiado está defasado, lista/card ficam esmaecidos (FR-008a).
 - Card de gasto: total grande (filtrado) + "Sua parte: R$ X" 13px quando
   `totalResponsabilidade !== total`. Barra/legenda Cartão/Pix também sobre as linhas filtradas.
 - Linha: selo "Nx" (ou "k/N" quando `parcelas.atual > 1`, ver research R9); ícone de divisão

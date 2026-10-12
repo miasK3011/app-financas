@@ -198,7 +198,11 @@ porcentagens que somam 100%.
   recente para o mais antigo.
 - **FR-008**: A tela Compras DEVE oferecer o filtro "Só minhas", que oculta qualquer compra em que a
   parte do usuário é menor que o total (divisão manual ou reembolso vinculado), combinável com os
-  filtros de forma de pagamento.
+  filtros de forma de pagamento. O chip "Todos" significa "nenhum filtro": fica ativo só quando
+  nenhum outro está e, ao ser tocado, limpa todos; Cartão e Pix são exclusivos entre si e tocar no
+  chip já ativo o desliga; "Só minhas" combina com Cartão ou Pix.
+- **FR-008a**: Tocar em um filtro DEVE dar retorno visual imediato (estado de pressionado e troca do
+  chip), sem esperar a lista ser recalculada.
 - **FR-009**: O card de gasto da tela Compras DEVE exibir o total em destaque e, quando houver
   diferença, a parte do usuário como subtítulo menor; ambos refletindo os filtros ativos.
 - **FR-010**: A visão de previsão de meses futuros (parcelas agrupadas por fatura) DEVE permanecer

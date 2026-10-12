@@ -11,7 +11,7 @@ import {
 } from '@/repositories/purchasesRepository';
 import { listInvoiceDueDatesWithParcela } from '@/repositories/invoicesRepository';
 
-/** Tela Compras (mês atual/passado): todas as Parcelas (cartão + Pix) do mês. */
+/** Tela Compras (mês atual/passado): linha do tempo das Compras feitas no mês (feature 003). */
 export function useMonthPurchases(year: number, month: number) {
   const [rows, setRows] = useState<PurchaseListRow[]>([]);
   const [loading, setLoading] = useState(true);
