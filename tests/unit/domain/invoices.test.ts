@@ -1,7 +1,13 @@
 import { computeInvoiceDates } from '@/domain/invoices/computeInvoiceDates';
-import { computeInvoiceStatus } from '@/domain/invoices/computeInvoiceStatus';
+import { computeInvoiceStatus, type InvoiceStatus } from '@/domain/invoices/computeInvoiceStatus';
 import { computeInvoiceTotals } from '@/domain/invoices/computeInvoiceTotals';
 import { demoteFutureOpenInvoices } from '@/domain/invoices/demoteFutureOpenInvoices';
+import {
+  availableYears,
+  countPaidInYear,
+  filterInvoicesForYear,
+  initialYear,
+} from '@/domain/invoices/invoiceYearView';
 import { resolveInvoicePeriod } from '@/domain/invoices/resolveInvoicePeriod';
 
 describe('resolveInvoicePeriod', () => {
@@ -204,5 +210,67 @@ describe('computeInvoiceTotals', () => {
 
   it('returns zeros for an empty invoice', () => {
     expect(computeInvoiceTotals([])).toEqual({ total: 0, totalResponsabilidade: 0 });
+  });
+});
+
+describe('invoiceYearView (003/US3, issue #23)', () => {
+  const inv = (referenciaAno: number, referenciaMes: number, status: InvoiceStatus) => ({
+    referenciaAno,
+    referenciaMes,
+    status,
+  });
+  const invoices = [
+    inv(2025, 11, 'PAGA'),
+    inv(2025, 12, 'PAGA'),
+    inv(2026, 8, 'PAGA'),
+    inv(2026, 9, 'PAGA'),
+    inv(2026, 10, 'FECHADA'),
+    inv(2026, 11, 'ABERTA'),
+    inv(2026, 12, 'FUTURA'),
+    inv(2027, 1, 'FUTURA'),
+  ];
+  const labels = (list: { referenciaAno: number; referenciaMes: number }[]) =>
+    list.map((i) => `${i.referenciaMes}/${i.referenciaAno}`);
+
+  it('lists the distinct years, oldest first', () => {
+    expect(availableYears(invoices)).toEqual([2025, 2026, 2027]);
+    expect(availableYears([])).toEqual([]);
+  });
+
+  it('starts on the current year, or the nearest one with invoices', () => {
+    const today = new Date(2026, 9, 12);
+    expect(initialYear([2025, 2026, 2027], today)).toBe(2026);
+    expect(initialYear([2023, 2024], today)).toBe(2024);
+    expect(initialYear([2025, 2027], today)).toBe(2027);
+    expect(initialYear([], today)).toBeUndefined();
+  });
+
+  it('hides paid invoices by default and keeps the list order', () => {
+    expect(labels(filterInvoicesForYear(invoices, 2026, false))).toEqual([
+      '11/2026',
+      '10/2026',
+      '12/2026',
+    ]);
+  });
+
+  it('shows paid invoices when asked', () => {
+    expect(labels(filterInvoicesForYear(invoices, 2026, true))).toEqual([
+      '11/2026',
+      '10/2026',
+      '9/2026',
+      '8/2026',
+      '12/2026',
+    ]);
+  });
+
+  it('a fully paid year is empty until paid invoices are shown', () => {
+    expect(filterInvoicesForYear(invoices, 2025, false)).toEqual([]);
+    expect(countPaidInYear(invoices, 2025)).toBe(2);
+    expect(labels(filterInvoicesForYear(invoices, 2025, true))).toEqual(['12/2025', '11/2025']);
+  });
+
+  it('forecast invoices belong to the year of their label', () => {
+    expect(labels(filterInvoicesForYear(invoices, 2027, false))).toEqual(['1/2027']);
+    expect(countPaidInYear(invoices, 2027)).toBe(0);
   });
 });

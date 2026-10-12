@@ -3,12 +3,14 @@ import { ChevronLeft, ChevronRight, Users } from 'lucide-react-native';
 import { ActivityIndicator, Alert } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
+import { DayGroupHeader } from '@/components/DayGroupHeader';
 import { Money } from '@/components/Money';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { StatusBadge } from '@/components/StatusBadge';
 import { TransactionAvatar } from '@/components/TransactionAvatar';
 import { shouldShowResponsibilitySummary } from '@/domain/expenseSplitting/shouldShowResponsibilitySummary';
+import { groupByDay } from '@/domain/purchasesOverview/groupByDay';
 import { useCard } from '@/hooks/useCards';
 import { useInvoice, useInvoicePurchases } from '@/hooks/useInvoice';
 
@@ -126,10 +128,9 @@ export default function FaturaDetalheScreen() {
           )}
         </YStack>
 
-        <YStack>
-          <Text fontSize={15} fontWeight="600" color="$text" marginBottom="$3">
-            Compras desta fatura
-          </Text>
+        {/* FR-013 (003): agrupado pelo dia da compra — parcelas de compras
+            antigas ficam sob a data original, como nos extratos dos cartões. */}
+        <YStack gap={18}>
           {purchasesLoading ? (
             <ActivityIndicator />
           ) : purchases.length === 0 ? (
@@ -137,89 +138,100 @@ export default function FaturaDetalheScreen() {
               Nenhuma compra nesta fatura.
             </Text>
           ) : (
-            purchases.map((row, index) => {
-              const isSplit = row.valorResponsabilidade !== row.valor;
-              const isUnrecognized = row.compra.origem === 'CSV_IMPORT' && !row.estabelecimento;
+            groupByDay(purchases, (purchase) => purchase.compra.dataCompra, new Date()).map(
+              (group) => (
+                <YStack key={group.date.toISOString()} gap="$2">
+                  <DayGroupHeader label={group.label} />
+                  <YStack>
+                    {group.rows.map((row, index) => {
+                      const isSplit = row.valorResponsabilidade !== row.valor;
+                      const isUnrecognized =
+                        row.compra.origem === 'CSV_IMPORT' && !row.estabelecimento;
 
-              return (
-                <XStack
-                  key={row.parcelaId}
-                  paddingVertical={14}
-                  borderTopWidth={index === 0 ? 0 : 1}
-                  borderColor="$border"
-                  alignItems="center"
-                  gap="$3"
-                  onPress={() => router.push(`/compra/${row.compra.id}`)}
-                >
-                  <TransactionAvatar
-                    estabelecimento={row.estabelecimento}
-                    categoria={row.categoria}
-                  />
-                  <YStack flex={1} gap={2}>
-                    <XStack alignItems="center" gap="$1.5" flexWrap="wrap">
-                      <Text fontSize={14.5} fontWeight="600" color="$text">
-                        {row.compra.descricao}
-                      </Text>
-                      {row.compra.parcelasTotal > 1 && (
+                      return (
                         <XStack
-                          backgroundColor="$primaryLight"
-                          borderRadius={999}
-                          paddingHorizontal={7}
-                          paddingVertical={2}
-                        >
-                          <Text fontSize={11} fontWeight="700" color="$primaryDark">
-                            {row.numero}/{row.compra.parcelasTotal}
-                          </Text>
-                        </XStack>
-                      )}
-                      {row.tags.map((tag) => (
-                        <XStack
-                          key={tag}
-                          backgroundColor="$border"
-                          borderRadius={999}
-                          paddingHorizontal={7}
-                          paddingVertical={2}
-                        >
-                          <Text fontSize={11} fontWeight="700" color="$textSecondary">
-                            {tag}
-                          </Text>
-                        </XStack>
-                      ))}
-                      {isSplit && (
-                        <XStack
-                          width={18}
-                          height={18}
-                          borderRadius={9}
-                          backgroundColor="$border"
+                          key={row.parcelaId}
+                          paddingVertical={14}
+                          borderTopWidth={index === 0 ? 0 : 1}
+                          borderColor="$border"
                           alignItems="center"
-                          justifyContent="center"
+                          gap="$3"
+                          pressStyle={{ opacity: 0.6 }}
+                          onPress={() => router.push(`/compra/${row.compra.id}`)}
                         >
-                          <Users size={11} color="#5B5B5E" />
+                          <TransactionAvatar
+                            estabelecimento={row.estabelecimento}
+                            categoria={row.categoria}
+                          />
+                          <YStack flex={1} gap={2}>
+                            <XStack alignItems="center" gap="$1.5" flexWrap="wrap">
+                              <Text fontSize={14.5} fontWeight="600" color="$text">
+                                {row.compra.descricao}
+                              </Text>
+                              {row.compra.parcelasTotal > 1 && (
+                                <XStack
+                                  backgroundColor="$primaryLight"
+                                  borderRadius={999}
+                                  paddingHorizontal={7}
+                                  paddingVertical={2}
+                                >
+                                  <Text fontSize={11} fontWeight="700" color="$primaryDark">
+                                    {row.numero}/{row.compra.parcelasTotal}
+                                  </Text>
+                                </XStack>
+                              )}
+                              {row.tags.map((tag) => (
+                                <XStack
+                                  key={tag}
+                                  backgroundColor="$border"
+                                  borderRadius={999}
+                                  paddingHorizontal={7}
+                                  paddingVertical={2}
+                                >
+                                  <Text fontSize={11} fontWeight="700" color="$textSecondary">
+                                    {tag}
+                                  </Text>
+                                </XStack>
+                              ))}
+                              {isSplit && (
+                                <XStack
+                                  width={18}
+                                  height={18}
+                                  borderRadius={9}
+                                  backgroundColor="$border"
+                                  alignItems="center"
+                                  justifyContent="center"
+                                >
+                                  <Users size={11} color="#5B5B5E" />
+                                </XStack>
+                              )}
+                            </XStack>
+                            <Text fontSize={12} color="$textTertiary">
+                              {row.categoria?.nome ?? 'Sem categoria'}
+                              {isUnrecognized ? ' · não reconhecido' : ''}
+                            </Text>
+                            {isSplit && (
+                              <XStack gap="$1">
+                                <Text fontSize={12} color="$textTertiary">
+                                  Sua parte:
+                                </Text>
+                                <Money
+                                  cents={row.valorResponsabilidade}
+                                  fontSize={12}
+                                  color="$textTertiary"
+                                />
+                              </XStack>
+                            )}
+                          </YStack>
+                          <Money cents={row.valor} fontSize={14.5} fontWeight="600" color="$text" />
+                          <ChevronRight size={16} color="#6C6C6D" />
                         </XStack>
-                      )}
-                    </XStack>
-                    <Text fontSize={12} color="$textTertiary">
-                      {row.categoria?.nome ?? 'Sem categoria'}
-                      {isUnrecognized ? ' · não reconhecido' : ''}
-                    </Text>
-                    {isSplit && (
-                      <XStack gap="$1">
-                        <Text fontSize={12} color="$textTertiary">
-                          Sua parte:
-                        </Text>
-                        <Money
-                          cents={row.valorResponsabilidade}
-                          fontSize={12}
-                          color="$textTertiary"
-                        />
-                      </XStack>
-                    )}
+                      );
+                    })}
                   </YStack>
-                  <Money cents={row.valor} fontSize={14.5} fontWeight="600" color="$text" />
-                  <ChevronRight size={16} color="#6C6C6D" />
-                </XStack>
-              );
-            })
+                </YStack>
+              ),
+            )
           )}
         </YStack>
 

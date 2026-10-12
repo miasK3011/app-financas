@@ -380,7 +380,9 @@ export async function listPurchasesForInvoice(invoiceId: string): Promise<Invoic
     .innerJoin(compras, eq(parcelas.compraId, compras.id))
     .leftJoin(categorias, eq(compras.categoriaId, categorias.id))
     .leftJoin(estabelecimentos, eq(compras.estabelecimentoId, estabelecimentos.id))
-    .where(eq(parcelas.faturaId, invoiceId));
+    .where(eq(parcelas.faturaId, invoiceId))
+    // FR-013 (003): mais recente primeiro, pela data da compra original.
+    .orderBy(desc(compras.dataCompra), desc(compras.criadoEm));
 
   const compraIds = rows.map((row) => row.compra.id);
   const tagRows = compraIds.length

@@ -214,9 +214,14 @@ porcentagens que somam 100%.
   para ir ao ano anterior/seguinte, desabilitados fora do intervalo de anos com faturas; o ano
   inicial é o ano corrente (ou o mais próximo com faturas).
 - **FR-012**: A lista DEVE ocultar faturas pagas por padrão e oferecer um controle para mostrá-las
-  e ocultá-las novamente, indicando quantas pagas há no ano.
+  e ocultá-las novamente, indicando quantas pagas há no ano. Layout aprovado na prévia
+  (`design/cartoes-e-compra/FaturasPorAno.preview.html`): sem título "Faturas"; navegador de ano logo
+  abaixo do card do cartão; botão "Mostrar pagas (n)"/"Ocultar pagas" no fim da lista; linha da
+  fatura aberta com "Sua parte: R$ X" e fatura prevista com apenas "Prevista".
 - **FR-013**: O detalhe de uma fatura DEVE agrupar as compras pela data da compra, do dia mais
-  recente para o mais antigo, com os mesmos rótulos de dia da tela Compras.
+  recente para o mais antigo, com os mesmos rótulos de dia da tela Compras, sem o título "Compras
+  desta fatura". Parcelas de compras antigas ficam sob a data original da compra (decisão do
+  usuário: é como os extratos dos cartões mostram).
 
 **Visualização de gastos**
 

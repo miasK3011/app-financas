@@ -85,11 +85,11 @@ Story corresponde a uma issue no GitHub.
 
 **Independent Test**: quickstart cenários 9–11.
 
-- [ ] T024 [P] [US3] Criar `src/domain/invoices/invoiceYearView.ts` com `availableYears(invoices)` (anos distintos de `dataVencimento`, asc), `initialYear(years, today)` (ano corrente se presente, senão o mais próximo; `undefined` se vazio), `filterInvoicesForYear(invoices, year, showPaid)` (exclui `status === 'PAGA'` quando `!showPaid`; FUTURA pertence ao ano do vencimento) e `countPaidInYear(invoices, year)`
-- [ ] T025 [P] [US3] Testes em `tests/unit/domain/invoices.test.ts` para `invoiceYearView` (anos de 2025/2026, initialYear sem o ano corrente, pagas ocultas/mostradas, contagem)
-- [ ] T026 [US3] Em `src/app/cartao/[cardId]/index.tsx`: estados `year` (de `initialYear`) e `showPaid` (false); `MonthNavigator` com `label={String(year)}`, `prevDisabled`/`nextDisabled` nos limites de `availableYears` (oculto sem faturas); botão de texto "Mostrar pagas (n)"/"Ocultar pagas" à direita do título "Faturas" (oculto quando n = 0); aplicar a ordenação atual sobre o subconjunto filtrado; estado vazio "Nenhuma fatura em aberto em {ano}" + "{n} paga(s) oculta(s)"
-- [ ] T027 [US3] Em `src/repositories/purchasesRepository.ts`: `listPurchasesForInvoice` com `orderBy(desc(compras.dataCompra), desc(compras.criadoEm))`
-- [ ] T028 [US3] Em `src/app/cartao/[cardId]/fatura/[invoiceId].tsx`: agrupar com `groupByDay(rows, r => r.compra.dataCompra, today)` + `DayGroupHeader`, mantendo o conteúdo de cada linha (avatar, pill, tags, "Sua parte") e linhas planas com divisória (depende de T002/T004)
+- [X] T024 [P] [US3] Criar `src/domain/invoices/invoiceYearView.ts` com `availableYears(invoices)` (anos distintos de `dataVencimento`, asc), `initialYear(years, today)` (ano corrente se presente, senão o mais próximo; `undefined` se vazio), `filterInvoicesForYear(invoices, year, showPaid)` (exclui `status === 'PAGA'` quando `!showPaid`; FUTURA pertence ao ano do vencimento) e `countPaidInYear(invoices, year)`
+- [X] T025 [P] [US3] Testes em `tests/unit/domain/invoices.test.ts` para `invoiceYearView` (anos de 2025/2026, initialYear sem o ano corrente, pagas ocultas/mostradas, contagem)
+- [X] T026 [US3] Em `src/app/cartao/[cardId]/index.tsx`: estados `year` (de `initialYear`) e `showPaid` (false); `MonthNavigator` com `label={String(year)}`, `prevDisabled`/`nextDisabled` nos limites de `availableYears` (oculto sem faturas); botão de texto "Mostrar pagas (n)"/"Ocultar pagas" à direita do título "Faturas" (oculto quando n = 0); aplicar a ordenação atual sobre o subconjunto filtrado; estado vazio "Nenhuma fatura em aberto em {ano}" + "{n} paga(s) oculta(s)"
+- [X] T027 [US3] Em `src/repositories/purchasesRepository.ts`: `listPurchasesForInvoice` com `orderBy(desc(compras.dataCompra), desc(compras.criadoEm))`
+- [X] T028 [US3] Em `src/app/cartao/[cardId]/fatura/[invoiceId].tsx`: agrupar com `groupByDay(rows, r => r.compra.dataCompra, today)` + `DayGroupHeader`, mantendo o conteúdo de cada linha (avatar, pill, tags, "Sua parte") e linhas planas com divisória (depende de T002/T004)
 
 **Checkpoint**: US3 testável sozinha (quickstart 9–11).
 
