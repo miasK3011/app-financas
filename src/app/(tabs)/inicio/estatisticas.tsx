@@ -11,10 +11,12 @@ import { Money } from '@/components/Money';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { SegmentedControl } from '@/components/SegmentedControl';
-import type { PeriodKind } from '@/domain/statistics/types';
+import { amountOf } from '@/domain/statistics/amountOf';
+import type { PeriodKind, SpendingBasis } from '@/domain/statistics/types';
 import { useStatistics } from '@/hooks/useStatistics';
 import { type Category, listCategories } from '@/repositories/categoriesRepository';
 import { getIdealGoalPercent, setIdealGoalPercent } from '@/repositories/idealGoalRepository';
+import { statisticsPrefs } from '@/state/statisticsPrefs';
 
 type IconProps = { size?: number; color?: string };
 const icons = LucideIcons as unknown as Record<string, ComponentType<IconProps>>;
@@ -26,11 +28,17 @@ const PERIOD_LABELS: Record<PeriodKind, string> = {
   ANUAL: 'Anual',
 };
 
+const BASIS_OPTIONS: { value: SpendingBasis; label: string }[] = [
+  { value: 'minha', label: 'Meu gasto' },
+  { value: 'global', label: 'Global' },
+];
+
 /** T098/T099: seletor de período, total + comparação, categoria, maiores gastos, meta ideal. */
 export default function EstatisticasScreen() {
   const router = useRouter();
   const [period, setPeriod] = useState<PeriodKind>('MENSAL');
-  const { stats, loading, refresh } = useStatistics(period);
+  const [basis, setBasisState] = useState<SpendingBasis>(statisticsPrefs.getBasis);
+  const { stats, loading, refresh } = useStatistics(period, basis);
   const [categories, setCategories] = useState<Category[]>([]);
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
@@ -40,6 +48,11 @@ export default function EstatisticasScreen() {
       listCategories().then(setCategories);
     }, []),
   );
+
+  const setBasis = (value: SpendingBasis) => {
+    statisticsPrefs.setBasis(value);
+    setBasisState(value);
+  };
 
   const categoryById = new Map(categories.map((category) => [category.id, category]));
 
@@ -86,6 +99,8 @@ export default function EstatisticasScreen() {
           onChange={setPeriod}
         />
 
+        <SegmentedControl options={BASIS_OPTIONS} value={basis} onChange={setBasis} />
+
         {loading || !stats ? (
           <ActivityIndicator style={{ marginTop: 24 }} />
         ) : (
@@ -99,9 +114,24 @@ export default function EstatisticasScreen() {
               gap="$1"
             >
               <Text fontSize={13} color="$textSecondary">
-                Total gasto no período
+                {stats.basis === 'global'
+                  ? 'Total gasto no período (global)'
+                  : 'Total gasto no período'}
               </Text>
               <Money cents={stats.totalSpent} fontSize={32} fontWeight="600" color="$text" />
+              {stats.basis === 'global' && stats.totalMinhaParte !== stats.totalSpent ? (
+                <XStack gap="$1" alignItems="center">
+                  <Text fontSize={13} color="$textSecondary">
+                    Sua parte:
+                  </Text>
+                  <Money
+                    cents={stats.totalMinhaParte}
+                    fontSize={13}
+                    fontWeight="700"
+                    color="$textSecondary"
+                  />
+                </XStack>
+              ) : null}
               {stats.comparison ? (
                 <Text
                   fontSize={13}
@@ -176,7 +206,7 @@ export default function EstatisticasScreen() {
                   Nenhum gasto neste período.
                 </Text>
               ) : (
-                stats.spendingByCategory
+                [...stats.spendingByCategory]
                   .sort((a, b) => b.total - a.total)
                   .map((entry, index) => {
                     const category = entry.categoriaId
@@ -227,7 +257,7 @@ export default function EstatisticasScreen() {
                       {item.compra.descricao}
                     </Text>
                     <Money
-                      cents={item.valorResponsabilidade}
+                      cents={amountOf(item, stats.basis)}
                       fontSize={14}
                       fontWeight="600"
                       color="$text"

@@ -1,11 +1,11 @@
 export type MonthBalanceInput = {
   /** Renda vigente no mês (centavos), ou `null` se nenhuma configurada. */
   rendaVigente: number | null;
-  /** Valores (centavos) de cada EntradaAvulsa do mês. */
+  /** Valores (centavos) das EntradaAvulsa do mês que contam no saldo (ver `balanceEntries`). */
   entradasAvulsas: number[];
-  /** Valores (centavos) de cada Compra Pix feita no mês. */
+  /** Parte do usuário (centavos) em cada Compra Pix feita no mês (FR-001 da feature 003). */
   comprasPix: number[];
-  /** Valores totais (centavos) de cada Fatura que vence no mês. */
+  /** Parte do usuário (centavos) em cada Fatura que vence no mês (FR-001 da feature 003). */
   faturasVencendo: number[];
 };
 

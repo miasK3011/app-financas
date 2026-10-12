@@ -5,15 +5,20 @@ import { resolvePeriod } from '@/domain/statistics/resolvePeriod';
 import { spendingByCategory } from '@/domain/statistics/spendingByCategory';
 import { subscriptionsShare } from '@/domain/statistics/subscriptionsShare';
 import { topExpenses } from '@/domain/statistics/topExpenses';
+import { amountOf } from '@/domain/statistics/amountOf';
 import { totalSpent } from '@/domain/statistics/totalSpent';
 import type { ParcelaComCompra } from '@/domain/statistics/types';
 
 function parcela(
-  overrides: Partial<ParcelaComCompra['compra']> & { valorResponsabilidade: number },
+  overrides: Partial<ParcelaComCompra['compra']> & {
+    valorResponsabilidade: number;
+    valor?: number;
+  },
 ): ParcelaComCompra {
-  const { valorResponsabilidade, ...compraOverrides } = overrides;
+  const { valorResponsabilidade, valor, ...compraOverrides } = overrides;
   return {
     parcelaId: 'parcela-' + Math.random(),
+    valor: valor ?? valorResponsabilidade,
     valorResponsabilidade,
     compra: {
       id: 'compra-' + Math.random(),
@@ -159,5 +164,57 @@ describe('US12 — a purchase split with someone else (FR-054)', () => {
     expect(totalSpent(parcelas)).toBe(7000); // 5000 + 2000, nunca 10000 + 2000
     expect(spendingByCategory(parcelas)).toEqual([{ categoriaId: 'cat-1', total: 7000 }]);
     expect(topExpenses(parcelas, 1)[0].valorResponsabilidade).toBe(5000);
+  });
+});
+
+describe('003/US1 — SpendingBasis (minha × global)', () => {
+  // Compra de R$100 em que a parte do usuário é R$40 + uma sem divisão de R$20.
+  const parcelas: ParcelaComCompra[] = [
+    parcela({
+      valor: 10000,
+      valorResponsabilidade: 4000,
+      categoriaId: 'cat-1',
+      origem: 'ASSINATURA',
+    }),
+    parcela({ valor: 2000, valorResponsabilidade: 2000, categoriaId: 'cat-2' }),
+  ];
+
+  it('amountOf picks valorResponsabilidade for minha and valor for global', () => {
+    expect(amountOf(parcelas[0], 'minha')).toBe(4000);
+    expect(amountOf(parcelas[0], 'global')).toBe(10000);
+  });
+
+  it('defaults to minha, preserving the pre-003 behaviour', () => {
+    expect(totalSpent(parcelas)).toBe(6000);
+    expect(totalSpent(parcelas, 'minha')).toBe(6000);
+    expect(totalSpent(parcelas, 'global')).toBe(12000);
+  });
+
+  it('spendingByCategory follows the basis', () => {
+    expect(spendingByCategory(parcelas, 'global')).toEqual([
+      { categoriaId: 'cat-1', total: 10000 },
+      { categoriaId: 'cat-2', total: 2000 },
+    ]);
+    expect(spendingByCategory(parcelas, 'minha')).toEqual([
+      { categoriaId: 'cat-1', total: 4000 },
+      { categoriaId: 'cat-2', total: 2000 },
+    ]);
+  });
+
+  it('topExpenses ranks by the basis amount', () => {
+    const tied: ParcelaComCompra[] = [
+      parcela({ valor: 10000, valorResponsabilidade: 1000, descricao: 'dividida' }),
+      parcela({ valor: 3000, valorResponsabilidade: 3000, descricao: 'minha' }),
+    ];
+    expect(topExpenses(tied, 1, 'minha')[0].compra.descricao).toBe('minha');
+    expect(topExpenses(tied, 1, 'global')[0].compra.descricao).toBe('dividida');
+  });
+
+  it('subscriptionsShare follows the basis', () => {
+    expect(subscriptionsShare(parcelas, 12000, 'global')).toEqual({
+      subscriptionsTotal: 10000,
+      percent: 10000 / 12000,
+    });
+    expect(subscriptionsShare(parcelas, 6000).subscriptionsTotal).toBe(4000);
   });
 });

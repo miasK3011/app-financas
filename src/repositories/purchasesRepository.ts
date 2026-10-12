@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, isNull, lt, lte } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNull, lt, lte, sql } from 'drizzle-orm';
 import { randomUUID } from 'expo-crypto';
 
 import { db } from '@/db/client';
@@ -298,20 +298,43 @@ export async function createPixPurchase(input: CreatePixPurchaseInput): Promise<
   return purchase;
 }
 
-/** Compras Pix de um mês de referência — base do saldo do mês (FR-015). */
-export async function listPixPurchasesForMonth(year: number, month: number): Promise<Purchase[]> {
+/**
+ * Compra Pix com a parte efetiva do usuário (Σ `parcelas.valorResponsabilidade`,
+ * já resolvida no write). Nome distinto de `compras.valorResponsabilidade`
+ * (manual, nullable) — data-model da feature 003.
+ */
+export type PixPurchaseWithShare = Purchase & { parteUsuario: number };
+
+/**
+ * Compras Pix de um mês de referência — base do saldo do mês (FR-015 da
+ * 001; FR-001 da 003: o saldo desconta `parteUsuario`, não o total).
+ */
+export async function listPixPurchasesForMonth(
+  year: number,
+  month: number,
+): Promise<PixPurchaseWithShare[]> {
   const monthStart = new Date(year, month - 1, 1);
   const monthEnd = new Date(year, month, 1);
-  return db
-    .select()
+  const rows = await db
+    .select({
+      compra: compras,
+      parteUsuario: sql<number>`coalesce(sum(${parcelas.valorResponsabilidade}), ${compras.valorTotalOriginal})`,
+    })
     .from(compras)
+    .leftJoin(parcelas, eq(parcelas.compraId, compras.id))
     .where(
       and(
         eq(compras.formaPagamento, 'PIX'),
         gte(compras.dataCompra, monthStart),
         lt(compras.dataCompra, monthEnd),
       ),
-    );
+    )
+    .groupBy(compras.id);
+
+  return rows.map(({ compra, parteUsuario }) => ({
+    ...compra,
+    parteUsuario: Number(parteUsuario),
+  }));
 }
 
 export async function getPurchase(compraId: string): Promise<Purchase | undefined> {
