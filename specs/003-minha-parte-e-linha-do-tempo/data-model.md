@@ -80,6 +80,6 @@ Nome distinto de `compras.valorResponsabilidade` (manual, nullable) para evitar 
 | Tela | Estado | Padrão |
 |---|---|---|
 | Estatísticas | `basis` (em `src/state/statisticsPrefs.ts`, sobrevive ao desmonte) | `'minha'` |
-| Estatísticas | `categoryView: 'lista' \| 'grafico'` (idem) | `'lista'` |
+| Detalhamento | categoria destacada | nenhuma |
 | Compras | `filters.soMinhas` | `false` |
 | Cartão | `year`, `showPaid` | `initialYear(...)`, `false` |

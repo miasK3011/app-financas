@@ -1,25 +1,27 @@
 import { useFocusEffect, useRouter } from 'expo-router';
-import * as LucideIcons from 'lucide-react-native';
-import { ChevronLeft, Shapes } from 'lucide-react-native';
-import type { ComponentType } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { AppInput } from '@/components/AppInput';
+import { DonutChart } from '@/components/DonutChart';
 import { Money } from '@/components/Money';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { SegmentedControl } from '@/components/SegmentedControl';
 import { amountOf } from '@/domain/statistics/amountOf';
+import {
+  type CategoryShare,
+  formatSharePct,
+  toCategoryShare,
+} from '@/domain/statistics/categoryShare';
 import type { PeriodKind, SpendingBasis } from '@/domain/statistics/types';
 import { useStatistics } from '@/hooks/useStatistics';
 import { type Category, listCategories } from '@/repositories/categoriesRepository';
 import { getIdealGoalPercent, setIdealGoalPercent } from '@/repositories/idealGoalRepository';
 import { statisticsPrefs } from '@/state/statisticsPrefs';
-
-type IconProps = { size?: number; color?: string };
-const icons = LucideIcons as unknown as Record<string, ComponentType<IconProps>>;
+import { chartColorForRank, colors } from '@/theme/colors';
 
 const PERIOD_LABELS: Record<PeriodKind, string> = {
   DIARIO: 'Diário',
@@ -55,6 +57,17 @@ export default function EstatisticasScreen() {
   };
 
   const categoryById = new Map(categories.map((category) => [category.id, category]));
+  const categoryShares = stats ? toCategoryShare(stats.spendingByCategory) : [];
+  const categoryName = (share: CategoryShare) =>
+    share.isOutras
+      ? 'Outras'
+      : ((share.categoriaId && categoryById.get(share.categoriaId)?.nome) ?? 'Sem categoria');
+  // O detalhamento reabre o mesmo período e a mesma base (FR-016).
+  const openCategoryDetail = () =>
+    router.push({
+      pathname: '/inicio/estatisticas-categorias',
+      params: { kind: period, anchor: new Date().toISOString(), basis },
+    });
 
   const handleSaveGoal = async () => {
     const percent = Number(goalInput.replace(',', '.'));
@@ -135,7 +148,7 @@ export default function EstatisticasScreen() {
               {stats.comparison ? (
                 <Text
                   fontSize={13}
-                  color={stats.comparison.percent <= 0 ? '$success' : '$error'}
+                  color={stats.comparison.percent <= 0 ? '$successDark' : '$error'}
                   marginTop="$1"
                 >
                   {stats.comparison.percent > 0 ? '+' : ''}
@@ -197,41 +210,77 @@ export default function EstatisticasScreen() {
               )}
             </YStack>
 
-            <YStack gap="$2">
+            <YStack gap="$3">
               <Text fontSize={15} fontWeight="600" color="$text">
                 Gasto por categoria
               </Text>
-              {stats.spendingByCategory.length === 0 ? (
+              {categoryShares.length === 0 ? (
                 <Text fontSize={13} color="$textSecondary">
                   Nenhum gasto neste período.
                 </Text>
               ) : (
-                [...stats.spendingByCategory]
-                  .sort((a, b) => b.total - a.total)
-                  .map((entry, index) => {
-                    const category = entry.categoriaId
-                      ? categoryById.get(entry.categoriaId)
-                      : undefined;
-                    const Icon = category ? (icons[category.icone] ?? Shapes) : Shapes;
-                    return (
-                      <XStack
-                        key={entry.categoriaId ?? 'sem-categoria'}
-                        paddingVertical={10}
-                        borderTopWidth={index === 0 ? 0 : 1}
-                        borderColor="$border"
-                        justifyContent="space-between"
-                        alignItems="center"
-                      >
-                        <XStack alignItems="center" gap="$2">
-                          <Icon size={18} color="#1C1C1E" />
-                          <Text fontSize={14} color="$text">
-                            {category?.nome ?? 'Sem categoria'}
+                <YStack gap="$1.5">
+                  {/* FR-015/FR-016 (003, issue #24): rosca + legenda; toque abre o detalhamento. */}
+                  <XStack alignItems="center" gap="$4">
+                    <DonutChart
+                      size={140}
+                      thickness={20}
+                      segments={categoryShares.map((share) => ({
+                        key: share.key,
+                        value: share.total,
+                        color: chartColorForRank(share.rank, share.isOutras),
+                      }))}
+                      centerLabel={
+                        <YStack alignItems="center">
+                          <Money
+                            cents={stats.totalSpent}
+                            fontFamily="$heading"
+                            fontSize={14}
+                            fontWeight="600"
+                            color="$text"
+                          />
+                          <Text fontSize={11.5} color="$textTertiary">
+                            no período
+                          </Text>
+                        </YStack>
+                      }
+                      onPress={openCategoryDetail}
+                      accessibilityLabel="Abrir detalhamento do gasto por categoria"
+                    />
+                    <YStack flex={1} gap={9}>
+                      {categoryShares.map((share) => (
+                        <XStack key={share.key} alignItems="center" gap="$2">
+                          <XStack
+                            width={10}
+                            height={10}
+                            borderRadius={3}
+                            backgroundColor={chartColorForRank(share.rank, share.isOutras)}
+                          />
+                          <Text flex={1} fontSize={13} color="$text" numberOfLines={1}>
+                            {categoryName(share)}
+                          </Text>
+                          <Text fontSize={13} fontWeight="600" color="$textSecondary">
+                            {formatSharePct(share.pct)}
                           </Text>
                         </XStack>
-                        <Money cents={entry.total} fontSize={14} fontWeight="600" color="$text" />
-                      </XStack>
-                    );
-                  })
+                      ))}
+                    </YStack>
+                  </XStack>
+                  <XStack
+                    alignSelf="flex-end"
+                    alignItems="center"
+                    gap="$1"
+                    padding="$1"
+                    pressStyle={{ opacity: 0.55, scale: 0.96 }}
+                    accessibilityRole="button"
+                    onPress={openCategoryDetail}
+                  >
+                    <Text fontSize={13} fontWeight="600" color="$primary">
+                      Ver detalhes
+                    </Text>
+                    <ChevronRight size={15} color={colors.primary} />
+                  </XStack>
+                </YStack>
               )}
             </YStack>
 

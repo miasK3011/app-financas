@@ -36,7 +36,7 @@ Recarrega ao mudar `kind`, `basis` ou `anchor` e a cada foco (`useFocusEffect`).
 - `computeMonthBalance`: assinatura inalterada.
 
 ## Preferências de sessão — `src/state/statisticsPrefs.ts` (novo)
-Variáveis de módulo (sem persistência) `basis` e `categoryView` com getters/setters, lidas como
+Variável de módulo (sem persistência) `basis` com getter/setter, lidas como
 valor inicial do `useState` das telas — sobrevivem ao desmonte da tela enquanto o app está aberto.
 
 ## UI — `estatisticas.tsx`

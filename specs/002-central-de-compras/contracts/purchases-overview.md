@@ -1,5 +1,10 @@
 # Contrato: `domain/purchasesOverview` + `repositories/purchasesRepository` (extensão)
 
+> **Atualização (feature 003):** a decisão-chave abaixo (unidade = Parcela, mês pelo vencimento da
+> fatura) foi substituída para os meses atual/passados pela linha do tempo por Compra, pela data real
+> da compra — ver `specs/003-minha-parte-e-linha-do-tempo/contracts/purchases-timeline.md`. A visão de
+> previsão de meses futuros continua como descrita aqui.
+
 Não há API remota neste projeto (Princípio I) — este documento é o contrato **interno** entre o
 módulo de domínio novo `src/domain/purchasesOverview/`, a extensão de
 `src/repositories/purchasesRepository.ts`, e a tela `(tabs)/compras/index.tsx`.

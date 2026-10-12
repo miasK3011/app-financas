@@ -29,7 +29,7 @@
 | 9 | US3 | Abrir Cartão A | Só faturas não pagas do ano corrente; `< 2026 >` |
 | 10 | US3 | "Mostrar pagas (n)" / "<" | Pagas aparecem; ano anterior navegável; limites desabilitam setas |
 | 11 | US3 | Abrir uma fatura | Compras agrupadas por dia, mais recente primeiro |
-| 12 | US4 | Estatísticas › Gasto por categoria › Gráfico | Rosca com 5 categorias + "Outras", total no centro |
+| 12 | US4 | Estatísticas › Gasto por categoria | Rosca com 5 categorias + "Outras", total no centro, legenda com % |
 | 13 | US4 | Tocar na rosca | Tela de detalhamento: rosca + lista com todas as categorias; % somam 100 |
 | 14 | US4 | Alternar Meu/Global e reabrir | Gráfico e detalhamento seguem a base escolhida |
 

@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Feature 003 — o app permite informar quando uma compra foi dividida (sua parte), mas a interface usa isso de forma inconsistente. US1: saldo do mês da Início pela parte do usuário + filtro Meu/Global em Estatísticas. US2: Compras como linha do tempo real (agrupada pelo dia da compra, mês = compras feitas no mês), filtro 'Só minhas', card de gasto com 'sua parte' como subtítulo. US3: lista de faturas do cartão oculta as pagas por padrão (botão para mostrá-las) e navega por ano com < >; detalhe da fatura agrupado por data, da mais recente à mais antiga. US4: seção de gastos em Estatísticas com visualização selecionável (lista ou gráfico de rosca por categoria) e toque no gráfico abrindo um detalhamento. Referências visuais: design/inicio-estatisticas/Estatisticas.dc.html, design/cartoes-e-compra/CartaoDetalhe.dc.html, design/cartoes-e-compra/FaturaDetalhe.dc.html."
+**Input**: User description: "Feature 003 — o app permite informar quando uma compra foi dividida (sua parte), mas a interface usa isso de forma inconsistente. US1: saldo do mês da Início pela parte do usuário + filtro Meu/Global em Estatísticas. US2: Compras como linha do tempo real (agrupada pelo dia da compra, mês = compras feitas no mês), filtro 'Só minhas', card de gasto com 'sua parte' como subtítulo. US3: lista de faturas do cartão oculta as pagas por padrão (botão para mostrá-las) e navega por ano com < >; detalhe da fatura agrupado por data, da mais recente à mais antiga. US4: seção de gastos em Estatísticas como gráfico de rosca por categoria e toque no gráfico abrindo um detalhamento. Referências visuais: design/inicio-estatisticas/Estatisticas.dc.html, design/cartoes-e-compra/CartaoDetalhe.dc.html, design/cartoes-e-compra/FaturaDetalhe.dc.html."
 
 ## Clarifications
 
@@ -15,7 +15,8 @@
 - Q: Como aparece uma compra parcelada na linha do tempo de Compras? → A: Uma única vez, no dia da compra, com o valor total da compra e um selo com o número de parcelas (ex.: "4x"); o card de gasto do mês soma o valor total.
 - Q: Quais compras o filtro "Só minhas" oculta? → A: Qualquer compra em que a parte do usuário é menor que o total — por divisão manual informada na compra ou por reembolso vinculado.
 - Q: Quantas categorias o gráfico mostra antes de agrupar em "Outras"? → A: As 5 maiores + "Outras" (até 6 segmentos); a tela de detalhamento lista todas as categorias individualmente.
-- Q: A seção de gastos oferece outros recortes além de categoria? → A: Não nesta feature — apenas gasto por categoria, com seletor Lista/Gráfico; recortes por forma de pagamento ou estabelecimento ficam fora de escopo.
+- Q: A seção de gastos oferece outros recortes além de categoria? → A: Não nesta feature — apenas gasto por categoria; recortes por forma de pagamento ou estabelecimento ficam fora de escopo.
+- Q: (revisão da prévia da #24) A seção precisa do seletor Lista/Gráfico? → A: Não. O usuário removeu o seletor: a seção mostra sempre o gráfico de rosca com legenda, e a lista completa fica só na tela de detalhamento (FR-014 removido).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -126,21 +127,19 @@ tocar em "Mostrar pagas" e ver as pagas; abrir uma fatura e conferir o agrupamen
 ### User Story 4 - Gastos por categoria em gráfico de rosca, com detalhamento (Priority: P3)
 
 Em Estatísticas, o gasto por categoria é só uma lista, o que dificulta perceber de relance onde o
-usuário gasta mais. Com esta história, a seção de gastos permite escolher a visualização — lista ou
-gráfico circular (rosca), em que cada segmento é a porcentagem de uma categoria. Tocar no gráfico abre
-uma tela de detalhamento com o gráfico ampliado e a lista com valores e porcentagens.
+usuário gasta mais. Com esta história, a seção de gastos passa a ser um gráfico circular (rosca), em
+que cada segmento é a porcentagem de uma categoria. Tocar no gráfico abre uma tela de detalhamento com
+o gráfico ampliado e a lista com valores e porcentagens.
 
 **Why this priority**: Ganho de leitura, não de correção; depende do filtro Meu/Global da US1 para
 ficar coerente.
 
-**Independent Test**: Com gastos em pelo menos 3 categorias no período, escolher "Gráfico" na seção
-de gastos, ver a rosca com segmentos proporcionais, tocar nela e conferir a tela de detalhamento com
+**Independent Test**: Com gastos em pelo menos 3 categorias no período, abrir Estatísticas, ver a rosca com segmentos proporcionais, tocar nela e conferir a tela de detalhamento com
 porcentagens que somam 100%.
 
 **Acceptance Scenarios**:
 
-1. **Given** gastos em várias categorias no período, **When** o usuário escolhe a visualização
-   "Gráfico", **Then** vê um gráfico de rosca com um segmento por categoria, proporcional ao valor, e
+1. **Given** gastos em várias categorias no período, **When** o usuário abre Estatísticas, **Then** vê um gráfico de rosca com um segmento por categoria, proporcional ao valor, e
    o total no centro.
 2. **Given** o gráfico exibido, **When** o usuário toca nele, **Then** abre uma tela de
    detalhamento com o gráfico e a lista de categorias com valor e porcentagem.
@@ -148,8 +147,8 @@ porcentagens que somam 100%.
    **Then** os valores usam o total das compras; com "Meu gasto", usam a parte do usuário.
 4. **Given** gastos em mais de 5 categorias, **When** o gráfico é exibido, **Then** as 5 maiores
    têm segmento próprio e as demais são agrupadas em um segmento "Outras".
-5. **Given** o usuário escolheu "Gráfico", **When** volta à tela de Estatísticas depois, **Then** a
-   última visualização escolhida é mantida durante a sessão.
+5. **Given** o detalhamento aberto, **When** o usuário toca numa categoria da lista, **Then** o
+   segmento dela é destacado na rosca e o centro mostra a porcentagem e o valor; tocar de novo desfaz.
 
 ---
 
@@ -225,9 +224,8 @@ porcentagens que somam 100%.
 
 **Visualização de gastos**
 
-- **FR-014**: A seção de gasto por categoria em Estatísticas DEVE permitir escolher entre as
-  visualizações "Lista" e "Gráfico".
-- **FR-015**: A visualização "Gráfico" DEVE ser um gráfico de rosca com um segmento por categoria,
+- ~~FR-014~~: *Removido na revisão da prévia — a seção não tem seletor Lista/Gráfico.*
+- **FR-015**: A seção de gasto por categoria em Estatísticas DEVE ser um gráfico de rosca com um segmento por categoria,
   proporcional à participação no gasto do período, exibindo as 5 maiores categorias e agrupando as
   demais em "Outras" (até 6 segmentos); o detalhamento (FR-016) lista todas individualmente.
 - **FR-016**: Tocar no gráfico DEVE abrir uma tela de detalhamento com o gráfico e a lista de
@@ -271,9 +269,9 @@ porcentagens que somam 100%.
 - O total exibido nos cards de "Faturas do mês" da Início e no detalhe da fatura continua sendo o
   valor total da fatura (é o que será pago ao banco); só o saldo muda.
 - O histórico "Consumo mensal" da Início já usa a parte do usuário e permanece como está.
-- A escolha de visualização (Lista/Gráfico) e do filtro Meu/Global é lembrada enquanto o app estiver
+- A escolha do filtro Meu/Global é lembrada enquanto o app estiver
   aberto, inclusive ao sair e voltar para Estatísticas; não é necessário persistir entre aberturas
   do app.
 - **Fora de escopo**: recortes de gasto além de categoria (forma de pagamento, cartão,
-  estabelecimento) e persistência das preferências de visualização entre aberturas do app.
+  estabelecimento) e persistência do filtro Meu/Global entre aberturas do app.
 - Não há mudança no armazenamento de dados nem migração; tudo é derivado de dados existentes.

@@ -32,3 +32,24 @@ export const colors = {
   textSecondary: '#5B5B5E',
   textTertiary: '#6C6C6D',
 } as const;
+
+/**
+ * Paleta categórica do gráfico de gasto por categoria (feature 003,
+ * issue #24), atribuída pela posição no ranking. Validada com o
+ * validador de paleta do skill de dataviz: separação para daltonismo
+ * (CVD ΔE ≥ 9,1 entre vizinhos) e visão normal (ΔE ≥ 19,6). As cores
+ * dos ícones de categoria (`getIconColors`) reprovaram nesse teste
+ * (roxo × azul quase iguais), por isso o gráfico não as usa. Três
+ * cores ficam abaixo de 3:1 sobre o fundo — o gráfico sempre mostra
+ * nome e % na legenda, então a cor nunca é a única pista.
+ */
+export const chartColors = {
+  categorical: ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4'],
+  /** Segmento "Outras" (cinza neutro do app). */
+  other: colors.neutralFill,
+} as const;
+
+export function chartColorForRank(rank: number, isOutras = false): string {
+  if (isOutras) return chartColors.other;
+  return chartColors.categorical[rank] ?? chartColors.other;
+}

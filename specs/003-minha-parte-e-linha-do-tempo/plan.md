@@ -114,11 +114,11 @@ src/
 ├── components/
 │   ├── DonutChart.tsx               # NOVO (react-native-svg)
 │   └── DayGroupHeader.tsx           # NOVO: cabeçalho de dia compartilhado Compras/Fatura
-├── state/statisticsPrefs.ts         # NOVO: basis/categoryView lembrados durante a sessão
+├── state/statisticsPrefs.ts         # NOVO: basis lembrado durante a sessão
 ├── theme/colors.ts                  # + paleta categórica do gráfico (6 cores)
 └── app/
     ├── (tabs)/inicio/index.tsx                  # subtítulo "Gastos" pela parte
-    ├── (tabs)/inicio/estatisticas.tsx           # SegmentedControl Meu/Global + Lista/Gráfico
+    ├── (tabs)/inicio/estatisticas.tsx           # SegmentedControl Meu/Global + rosca por categoria
     ├── (tabs)/inicio/estatisticas-categorias.tsx # NOVO: detalhamento
     ├── (tabs)/inicio/_layout.tsx                # registra a rota nova
     ├── (tabs)/compras/index.tsx                 # chip "Só minhas", card com "Sua parte", selo "Nx"

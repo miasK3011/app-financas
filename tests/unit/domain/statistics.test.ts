@@ -6,6 +6,12 @@ import { spendingByCategory } from '@/domain/statistics/spendingByCategory';
 import { subscriptionsShare } from '@/domain/statistics/subscriptionsShare';
 import { topExpenses } from '@/domain/statistics/topExpenses';
 import { amountOf } from '@/domain/statistics/amountOf';
+import {
+  formatSharePct,
+  toCategoryShare,
+  toCategoryShareFull,
+} from '@/domain/statistics/categoryShare';
+import { periodLabel } from '@/domain/statistics/periodLabel';
 import { totalSpent } from '@/domain/statistics/totalSpent';
 import type { ParcelaComCompra } from '@/domain/statistics/types';
 
@@ -216,5 +222,69 @@ describe('003/US1 — SpendingBasis (minha × global)', () => {
       percent: 10000 / 12000,
     });
     expect(subscriptionsShare(parcelas, 6000).subscriptionsTotal).toBe(4000);
+  });
+});
+
+describe('003/US4 — categoryShare', () => {
+  const spending = (totals: number[]) =>
+    totals.map((total, index) => ({ categoriaId: `cat-${index}`, total }));
+  const sumPct = (list: { pct: number }[]) =>
+    Math.round(list.reduce((acc, item) => acc + item.pct, 0) * 10) / 10;
+
+  it('keeps the 5 largest and folds the rest into "Outras", last', () => {
+    const result = toCategoryShare(spending([500, 8000, 300, 1200, 50, 2000, 900, 700]));
+    expect(result).toHaveLength(6);
+    expect(result.map((item) => item.total)).toEqual([8000, 2000, 1200, 900, 700, 850]);
+    expect(result[5]).toMatchObject({ key: 'outras', isOutras: true, rank: 5 });
+    expect(result.slice(0, 5).map((item) => item.rank)).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it('has no "Outras" when there are 5 categories or fewer', () => {
+    const result = toCategoryShare(spending([300, 100, 600]));
+    expect(result.map((item) => item.key)).toEqual(['cat-2', 'cat-0', 'cat-1']);
+    expect(result.some((item) => item.isOutras)).toBe(false);
+  });
+
+  it('percentages always add up to exactly 100', () => {
+    expect(sumPct(toCategoryShare(spending([1, 1, 1])))).toBe(100);
+    expect(sumPct(toCategoryShare(spending([3333, 3333, 3334, 17, 9, 4, 1])))).toBe(100);
+    expect(sumPct(toCategoryShareFull(spending([3333, 3333, 3334, 17, 9, 4, 1])))).toBe(100);
+  });
+
+  it('a single category is 100%', () => {
+    expect(toCategoryShare(spending([4200]))).toEqual([
+      { key: 'cat-0', categoriaId: 'cat-0', total: 4200, pct: 100, rank: 0, isOutras: false },
+    ]);
+  });
+
+  it('returns [] when there is no spending, ignoring zero totals', () => {
+    expect(toCategoryShare([])).toEqual([]);
+    expect(toCategoryShare(spending([0, 0]))).toEqual([]);
+    expect(toCategoryShare(spending([0, 500])).map((item) => item.key)).toEqual(['cat-1']);
+  });
+
+  it('uncategorised spending gets a stable key', () => {
+    expect(toCategoryShare([{ categoriaId: null, total: 100 }])[0].key).toBe('sem-categoria');
+  });
+
+  it('toCategoryShareFull lists every category without folding', () => {
+    const result = toCategoryShareFull(spending([500, 8000, 300, 1200, 50, 2000, 900, 700]));
+    expect(result).toHaveLength(8);
+    expect(result[7]).toMatchObject({ total: 50, rank: 7, isOutras: false });
+  });
+});
+
+describe('003/US4 — rótulos', () => {
+  it('formats share percentages with a decimal comma', () => {
+    expect(formatSharePct(38.2)).toBe('38,2%');
+    expect(formatSharePct(100)).toBe('100,0%');
+  });
+
+  it('labels each period kind for the detail header', () => {
+    const anchor = new Date(2026, 9, 12);
+    expect(periodLabel('DIARIO', resolvePeriod('DIARIO', anchor).current)).toBe('12/10/2026');
+    expect(periodLabel('SEMANAL', resolvePeriod('SEMANAL', anchor).current)).toBe('12/10 – 18/10');
+    expect(periodLabel('MENSAL', resolvePeriod('MENSAL', anchor).current)).toBe('Outubro 2026');
+    expect(periodLabel('ANUAL', resolvePeriod('ANUAL', anchor).current)).toBe('2026');
   });
 });
